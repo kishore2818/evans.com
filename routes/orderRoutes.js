@@ -30,28 +30,35 @@ router.post('/', protect, async (req, res) => {
 
   try {
     // ── QUEUE-BASED ATOMIC STOCK VALIDATION & DEDUCTION ──
-    // Atomically deduct stock for each item; if any fails, restore already-deducted ones
     const deducted = [];
+    let calculatedTotal = 0;
+
     for (const item of items) {
-      const updated = await Product.findOneAndUpdate(
+      const product = await Product.findOneAndUpdate(
         { _id: item.product, stock: { $gte: item.quantity } },
         { $inc: { stock: -item.quantity } },
         { new: true }
       );
 
-      if (!updated) {
+      if (!product) {
         // Restore stock for all previously deducted items
         for (const d of deducted) {
           await Product.findByIdAndUpdate(d.product, { $inc: { stock: d.quantity } });
         }
-        const product = await Product.findById(item.product);
-        const available = product ? product.stock : 0;
+        const p = await Product.findById(item.product);
+        const available = p ? p.stock : 0;
         return res.status(400).json({
           message: `Sorry! Only ${available} unit(s) of "${item.name}" left in stock. Please update your cart.`,
           productId: item.product,
           availableStock: available
         });
       }
+
+      // Verify and fix price from DB
+      const dbPrice = product.price * (1 - (product.discountPercentage || 0) / 100);
+      item.price = dbPrice; // Update item price to DB price
+      calculatedTotal += dbPrice * item.quantity;
+
       deducted.push({ product: item.product, quantity: item.quantity });
     }
 
@@ -59,7 +66,7 @@ router.post('/', protect, async (req, res) => {
     const order = new Order({
       user: req.user._id,
       items,
-      totalAmount,
+      totalAmount: calculatedTotal, // Use calculated total instead of frontend total
       shippingAddress,
       paymentStatus: paymentStatus || 'pending'
     });

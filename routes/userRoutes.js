@@ -23,10 +23,15 @@ router.post('/register', async (req, res) => {
   const { username, email, mobile, password } = req.body;
 
   try {
-    const userExists = await User.findOne({ mobile });
+    const userExists = await User.findOne({ $or: [{ mobile }, { email }] });
 
     if (userExists) {
-      return res.status(400).json({ message: 'User already exists with this mobile number' });
+      if (userExists.mobile === mobile) {
+        return res.status(400).json({ message: 'User already exists with this mobile number' });
+      }
+      if (userExists.email === email) {
+        return res.status(400).json({ message: 'User already exists with this email address' });
+      }
     }
 
     const user = await User.create({

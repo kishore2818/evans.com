@@ -12,10 +12,10 @@ const router = express.Router();
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find({ isActive: true });
+    const products = await Product.find({ isActive: true }).select('-reviews').lean();
     res.json(products);
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: 'Server Error', error: error.message, stack: error.stack });
   }
 });
 
@@ -24,10 +24,10 @@ router.get('/', async (req, res) => {
 // @access  Private (Admin)
 router.get('/admin', protectAdmin, async (req, res) => {
   try {
-    const products = await Product.find({});
+    const products = await Product.find({}).select('-reviews').lean();
     res.json(products);
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: 'Server Error', error: error.message, stack: error.stack });
   }
 });
 

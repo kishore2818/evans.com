@@ -80,6 +80,11 @@ const productSchema = new mongoose.Schema({
   timestamps: true // Automatically adds createdAt and updatedAt fields
 });
 
+// Add indexes for product queries
+productSchema.index({ isActive: 1, createdAt: -1 }); // For fetching active products
+productSchema.index({ category: 1 }); // For filtering by category
+productSchema.index({ name: 'text', description: 'text' }); // Allow faster text search in the future
+
 const Product = mongoose.model('Product', productSchema);
 
 export default Product;

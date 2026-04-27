@@ -44,6 +44,11 @@ const orderSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Add indexes to optimize queries
+orderSchema.index({ createdAt: -1 }); // For sorting admin orders by newest
+orderSchema.index({ user: 1, createdAt: -1 }); // For fetching a specific user's orders
+orderSchema.index({ orderStatus: 1 }); // For admin dashboard filtering/counts
+
 const Order = mongoose.model('Order', orderSchema);
 
 export default Order;

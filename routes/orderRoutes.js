@@ -59,6 +59,10 @@ router.post('/', protect, async (req, res) => {
       item.price = dbPrice; // Update item price to DB price
       calculatedTotal += dbPrice * item.quantity;
 
+      // Increment soldCount
+      product.soldCount += item.quantity;
+      await product.save();
+
       deducted.push({ product: item.product, quantity: item.quantity });
     }
 

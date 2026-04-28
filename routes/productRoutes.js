@@ -133,14 +133,15 @@ router.post('/:id/reviews', protect, async (req, res) => {
         (r) => r.user.toString() === req.user._id.toString()
       );
 
-      // Check if user has bought this item
-      const hasPurchased = await Order.findOne({
+      // Check if user has a DELIVERED order for this item
+      const hasDeliveredOrder = await Order.findOne({
         user: req.user._id,
-        'items.product': product._id
+        'items.product': product._id,
+        orderStatus: 'delivered'
       });
 
-      if (!hasPurchased) {
-        return res.status(400).json({ message: 'You can only review products you have purchased' });
+      if (!hasDeliveredOrder) {
+        return res.status(400).json({ message: 'You can only review products after they have been delivered' });
       }
 
       if (alreadyReviewed) {

@@ -32,11 +32,23 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
+
+    // Normalize origin by removing trailing slash for comparison
+    const normalizedOrigin = origin.replace(/\/$/, '');
+
     // Allow any localhost port during development
-    if (origin.startsWith('http://localhost:')) return callback(null, true);
-    if (allowedOrigins.some(o => origin.startsWith(o))) {
+    if (normalizedOrigin.startsWith('http://localhost:')) return callback(null, true);
+
+    const isAllowed = allowedOrigins.some(o => {
+      const normalizedO = o.replace(/\/$/, '');
+      return normalizedOrigin === normalizedO || normalizedOrigin.startsWith(normalizedO);
+    });
+
+    if (isAllowed) {
       return callback(null, true);
     }
+    
+    console.log('CORS Blocked for origin:', origin);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true

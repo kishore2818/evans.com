@@ -20,7 +20,9 @@ const app = express();
 const allowedOrigins = [
   'https://evanscom.vercel.app',
   'https://evans-com.vercel.app',
+  'https://admin-evans.vercel.app',
   process.env.FRONTEND_URL,
+  process.env.ADMIN_URL,
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:3001',

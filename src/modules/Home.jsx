@@ -1,4 +1,7 @@
+"use client";
+
 import API_BASE_URL from '@/config/api';
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight, ShieldCheck, Leaf, Droplet } from 'lucide-react';

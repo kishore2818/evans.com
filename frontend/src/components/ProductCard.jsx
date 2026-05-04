@@ -1,4 +1,7 @@
+"use client";
+
 import { Star, Plus } from 'lucide-react';
+
 import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import Link from 'next/link';

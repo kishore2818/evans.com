@@ -2,6 +2,9 @@ import API_BASE_URL from '@/config/api';
 import ProductsClient from '@/components/products/ProductsClient';
 import { Suspense } from 'react';
 
+export const dynamic = 'force-dynamic';
+
+
 async function getProducts() {
   try {
     const response = await fetch(`${API_BASE_URL}/api/products`, {

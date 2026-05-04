@@ -174,7 +174,6 @@ const BottomNav = ({ cartItemCount }) => {
     { name: 'Home', path: '/', icon: Home },
     { name: 'Shop', path: '/products', icon: Grid },
     { name: 'Cart', path: '/cart', icon: ShoppingBag, badge: cartItemCount },
-    { name: 'Contact', path: '/contact', icon: MessageCircle },
     { name: 'Profile', path: '/profile', icon: User },
   ];
 

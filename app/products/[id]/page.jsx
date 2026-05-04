@@ -2,6 +2,9 @@ import API_BASE_URL from '@/config/api';
 import ProductDetailsClient from '@/components/products/ProductDetailsClient';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
+
 async function getProduct(id) {
   try {
     const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {

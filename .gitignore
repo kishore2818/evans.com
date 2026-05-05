@@ -25,9 +25,10 @@ pnpm-debug.log*
 # Mac system
 .DS_Store
 
-# Images (served from CDN/backend) - except logo
+# Images (served from CDN/backend) - except logo and hero background
 public/images/*
 !public/images/logo.jpg
+!public/images/hero_background_1775973263788.png
 
 # Vercel
 .vercel

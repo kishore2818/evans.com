@@ -81,6 +81,39 @@ const Profile = () => {
 
   const [trackingOrder, setTrackingOrder] = useState(null);
 
+  const fetchPincodeDetails = async (pincode, isEdit = false) => {
+    if (pincode.length === 6 && /^\d+$/.test(pincode)) {
+      try {
+        const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+        const data = await response.json();
+        if (data && data[0] && data[0].Status === 'Success') {
+          const postOffice = data[0].PostOffice[0];
+          const exactCity = postOffice.Block && postOffice.Block !== "NA" ? postOffice.Block : postOffice.Name;
+          if (isEdit) {
+            setEditAddressData(prev => ({ ...prev, city: exactCity }));
+          } else {
+            setNewAddress(prev => ({ ...prev, city: exactCity }));
+          }
+          toast.success(`Location auto-filled for ${pincode}`);
+        } else {
+          toast.error('Invalid Pincode');
+        }
+      } catch (error) {
+        console.error('Error fetching pincode details:', error);
+      }
+    }
+  };
+
+  const handlePincodeChange = (e, isEdit = false) => {
+    const value = e.target.value;
+    if (isEdit) {
+      setEditAddressData(prev => ({ ...prev, pincode: value }));
+    } else {
+      setNewAddress(prev => ({ ...prev, pincode: value }));
+    }
+    fetchPincodeDetails(value, isEdit);
+  };
+
   useEffect(() => {
     if (user) {
       fetchProfile();
@@ -369,7 +402,7 @@ const Profile = () => {
                             <form onSubmit={handleAddAddress} className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                               <input placeholder="Full Name" required value={newAddress.name} onChange={e => setNewAddress({...newAddress, name: e.target.value})} className="px-3 py-2 md:py-3 rounded-lg border border-gray-300 text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"/>
                               <input placeholder="Mobile Number" required value={newAddress.phone} onChange={e => setNewAddress({...newAddress, phone: e.target.value})} className="px-3 py-2 md:py-3 rounded-lg border border-gray-300 text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"/>
-                              <input placeholder="Pincode" required value={newAddress.pincode} onChange={e => setNewAddress({...newAddress, pincode: e.target.value})} className="px-3 py-2 md:py-3 rounded-lg border border-gray-300 text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"/>
+                              <input placeholder="Pincode" required value={newAddress.pincode} onChange={e => handlePincodeChange(e, false)} className="px-3 py-2 md:py-3 rounded-lg border border-gray-300 text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"/>
                               <input placeholder="City/Town" required value={newAddress.city} onChange={e => setNewAddress({...newAddress, city: e.target.value})} className="px-3 py-2 md:py-3 rounded-lg border border-gray-300 text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"/>
                               <textarea placeholder="Address (House No, Area and Street)" required rows={2} value={newAddress.address} onChange={e => setNewAddress({...newAddress, address: e.target.value})} className="col-span-1 md:col-span-2 px-3 py-2 md:py-3 rounded-lg border border-gray-300 text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"/>
                               <div className="col-span-1 md:col-span-2 flex items-center space-x-3 mt-1 md:mt-2">
@@ -390,7 +423,7 @@ const Profile = () => {
                             <form onSubmit={(e) => handleEditAddressSave(e, addr._id)} className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                               <input placeholder="Full Name" required value={editAddressData.name} onChange={e => setEditAddressData({...editAddressData, name: e.target.value})} className="px-3 py-2 md:py-3 rounded-lg border border-gray-300 text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"/>
                               <input placeholder="Mobile Number" required value={editAddressData.phone} onChange={e => setEditAddressData({...editAddressData, phone: e.target.value})} className="px-3 py-2 md:py-3 rounded-lg border border-gray-300 text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"/>
-                              <input placeholder="Pincode" required value={editAddressData.pincode} onChange={e => setEditAddressData({...editAddressData, pincode: e.target.value})} className="px-3 py-2 md:py-3 rounded-lg border border-gray-300 text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"/>
+                              <input placeholder="Pincode" required value={editAddressData.pincode} onChange={e => handlePincodeChange(e, true)} className="px-3 py-2 md:py-3 rounded-lg border border-gray-300 text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"/>
                               <input placeholder="City/Town" required value={editAddressData.city} onChange={e => setEditAddressData({...editAddressData, city: e.target.value})} className="px-3 py-2 md:py-3 rounded-lg border border-gray-300 text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"/>
                               <textarea placeholder="Address (House No, Area and Street)" required rows={2} value={editAddressData.address} onChange={e => setEditAddressData({...editAddressData, address: e.target.value})} className="col-span-1 md:col-span-2 px-3 py-2 md:py-3 rounded-lg border border-gray-300 text-xs md:text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"/>
                               <div className="col-span-1 md:col-span-2 flex items-center space-x-3 mt-1 md:mt-2">

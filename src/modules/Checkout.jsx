@@ -38,6 +38,31 @@ const Checkout = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handlePincodeChange = async (e) => {
+    const value = e.target.value;
+    setNewAddress(prev => ({ ...prev, pincode: value }));
+    
+    if (value.length === 6 && /^\d+$/.test(value)) {
+      try {
+        const response = await fetch(`https://api.postalpincode.in/pincode/${value}`);
+        const data = await response.json();
+        if (data && data[0] && data[0].Status === 'Success') {
+          const postOffice = data[0].PostOffice[0];
+          const exactCity = postOffice.Block && postOffice.Block !== "NA" ? postOffice.Block : postOffice.Name;
+          setNewAddress(prev => ({
+            ...prev,
+            city: exactCity // Use exact city/town name instead of just District
+          }));
+          toast.success(`Location auto-filled for ${value}`);
+        } else {
+          toast.error('Invalid Pincode');
+        }
+      } catch (error) {
+        console.error('Error fetching pincode details:', error);
+      }
+    }
+  };
+
   useEffect(() => {
     if (!token) {
       navigate('/auth', { state: { from: { pathname: '/checkout' } } });
@@ -242,7 +267,7 @@ const Checkout = () => {
                                 placeholder="Pincode *"
                                 required
                                 value={newAddress.pincode}
-                                onChange={e => setNewAddress({...newAddress, pincode: e.target.value})}
+                                onChange={handlePincodeChange}
                                 className="w-full px-5 py-3 rounded-xl border border-beige-200 focus:outline-none focus:border-purple-300 bg-white"
                               />
                               <textarea 

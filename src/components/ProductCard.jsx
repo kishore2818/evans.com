@@ -38,6 +38,7 @@ const ProductCard = ({ product }) => {
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
             className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+            unoptimized
           />
           {product.isBestSeller && (
             <div className="absolute top-3 left-3 bg-purple-900/90 backdrop-blur-md text-gold-300 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg">

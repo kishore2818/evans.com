@@ -20,9 +20,19 @@ import { useStore } from '../store/useStore';
 import { useAuthStore } from '../store/useAuthStore';
 import toast from 'react-hot-toast';
 
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 const Checkout = () => {
   const navigate = useNavigate();
-  const { cart, clearCart, placeOrder } = useStore();
+  const { cart, clearCart, placeOrder, createRazorpayOrder, verifyPayment } = useStore();
   const { user, token, fetchProfile, addAddress, loading: authLoading } = useAuthStore();
 
   const [activeStep, setActiveStep] = useState(1); // 1: Address, 2: Summary, 3: Payment
@@ -99,24 +109,75 @@ const Checkout = () => {
 
     setIsSubmitting(true);
     try {
-      const orderData = {
-        items: cart.map(item => ({
-          product: item.id || item._id,
-          name: item.name,
-          image: item.image || item.images?.[0] || '/images/placeholder.png',
-          price: item.price * (1 - (item.discountPercentage || 0) / 100),
-          quantity: item.quantity
-        })),
-        totalAmount,
-        shippingAddress: user.addresses[selectedAddressIndex],
-        paymentStatus: 'pending' // For COD
+      const isScriptLoaded = await loadRazorpayScript();
+      if (!isScriptLoaded) {
+        toast.error('Razorpay SDK failed to load. Are you online?');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 1. Create Razorpay Order on Backend
+      const razorpayOrder = await createRazorpayOrder(totalAmount);
+
+      // 2. Open Razorpay Checkout Modal
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_Sq7rC65YVSMg4g', // Ensure this is set in frontend/.env.local
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        name: 'Evans Luxe',
+        description: 'Payment for your order',
+        order_id: razorpayOrder.id,
+        handler: async function (response) {
+          try {
+            // 3. Verify Payment
+            await verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+
+            // 4. Place Order in Database
+            const orderData = {
+              items: cart.map(item => ({
+                product: item.id || item._id,
+                name: item.name,
+                image: item.image || item.images?.[0] || '/images/placeholder.png',
+                price: item.price * (1 - (item.discountPercentage || 0) / 100),
+                quantity: item.quantity
+              })),
+              totalAmount,
+              shippingAddress: user.addresses[selectedAddressIndex],
+              paymentStatus: 'paid', // Mark as paid since Razorpay verified
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature
+            };
+
+            await placeOrder(orderData);
+            setActiveStep(4); // Success Step
+            toast.success('Payment successful & Order placed!');
+          } catch (err) {
+            toast.error(err.message || 'Payment verification failed');
+          }
+        },
+        prefill: {
+          name: user.name,
+          email: user.email,
+          contact: user.addresses[selectedAddressIndex]?.phone
+        },
+        theme: {
+          color: '#581c87' // Purple-900 to match Evans Luxe theme
+        }
       };
 
-      await placeOrder(orderData);
-      setActiveStep(4); // Success Step
-      toast.success('Order placed successfully!');
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.on('payment.failed', function (response) {
+        toast.error(response.error.description || 'Payment Failed');
+      });
+      paymentObject.open();
+
     } catch (error) {
-      toast.error(error.message || 'Failed to place order');
+      toast.error(error.message || 'Failed to initiate payment');
     } finally {
       setIsSubmitting(false);
     }
@@ -399,31 +460,68 @@ const Checkout = () => {
 
                     {activeStep === 3 && (
                       <div className="px-6 md:px-8 pb-8">
-                        <div className="bg-purple-50/50 border border-purple-100 p-5 rounded-2xl flex items-start space-x-4 mb-8">
-                          <div className="w-6 h-6 rounded-full border-2 border-purple-900 flex items-center justify-center mt-1">
-                            <div className="w-3 h-3 bg-purple-900 rounded-full" />
+                        <div className="bg-gradient-to-r from-purple-50 to-white border border-purple-200 p-6 rounded-2xl mb-8 shadow-sm">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center space-x-4">
+                              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-900">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="h-4" />
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-gray-900 mb-0.5">UPI & Online Payment</h4>
+                                <p className="text-xs text-gray-500">Pay directly from your installed apps</p>
+                              </div>
+                            </div>
+                            <div className="w-5 h-5 rounded-full border-4 border-purple-900 flex items-center justify-center" />
                           </div>
-                          <div>
-                            <h4 className="font-bold text-purple-900 mb-1 leading-none uppercase">Cash on Delivery</h4>
-                            <p className="text-xs text-purple-800/60 leading-relaxed">Pay conveniently upon delivery. As we are in beta, COD is our preferred protocol for your organic rituals.</p>
+                          
+                          {/* Payment App Logos */}
+                          <div className="bg-white rounded-xl p-4 border border-beige-100 flex justify-between items-center shadow-sm">
+                            <div className="flex flex-col items-center space-y-1 group cursor-pointer">
+                              <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 group-hover:border-green-500 group-hover:bg-green-50 transition-all">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp Pay" className="h-7 w-7" />
+                              </div>
+                              <span className="text-[10px] font-bold text-gray-600">WhatsApp</span>
+                            </div>
+                            <div className="flex flex-col items-center space-y-1 group cursor-pointer">
+                              <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 group-hover:border-blue-500 group-hover:bg-blue-50 transition-all">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="h-5" />
+                              </div>
+                              <span className="text-[10px] font-bold text-gray-600">GPay</span>
+                            </div>
+                            <div className="flex flex-col items-center space-y-1 group cursor-pointer">
+                              <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 group-hover:border-purple-500 group-hover:bg-purple-50 transition-all">
+                                <img src="https://download.logo.wine/logo/PhonePe/PhonePe-Logo.wine.png" alt="PhonePe" className="h-10 w-10 object-contain" />
+                              </div>
+                              <span className="text-[10px] font-bold text-gray-600">PhonePe</span>
+                            </div>
+                            <div className="flex flex-col items-center space-y-1 group cursor-pointer">
+                              <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 group-hover:border-blue-400 group-hover:bg-blue-50 transition-all">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/c/cb/Paytm_Logo_standalone.svg" alt="Paytm" className="h-4" />
+                              </div>
+                              <span className="text-[10px] font-bold text-gray-600">Paytm</span>
+                            </div>
                           </div>
                         </div>
 
                         <button 
                           onClick={handlePlaceOrder}
                           disabled={isSubmitting}
-                          className="w-full bg-purple-900 text-white py-5 rounded-3xl font-bold shadow-luxury hover:bg-purple-800 transition-all flex items-center justify-center space-x-3 disabled:opacity-70"
+                          className="w-full bg-[#3399cc] text-white py-5 rounded-3xl font-bold shadow-luxury hover:bg-[#2b82ad] transition-all flex items-center justify-center space-x-3 disabled:opacity-70 relative overflow-hidden group"
                         >
+                          <div className="absolute inset-0 bg-white/20 group-hover:translate-x-full transition-transform duration-500 ease-in-out -translate-x-full skew-x-12" />
                           {isSubmitting ? (
                             <Loader2 className="animate-spin" size={24} />
                           ) : (
                             <>
                               <ShieldCheck size={24} />
-                              <span className="text-lg whitespace-nowrap">Place Order • ₹{totalAmount.toLocaleString()}</span>
+                              <span className="text-lg whitespace-nowrap">Pay ₹{totalAmount.toLocaleString()} Securely</span>
                             </>
                           )}
                         </button>
-                        <p className="text-center text-[10px] text-gray-400 mt-4 uppercase tracking-[0.2em] font-bold">100% Secure Checkout</p>
+                        <div className="flex items-center justify-center space-x-2 mt-6">
+                          <span className="text-xs text-gray-400 font-medium">Secured by</span>
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg" alt="Razorpay" className="h-4 opacity-80" />
+                        </div>
                       </div>
                     )}
                   </motion.div>

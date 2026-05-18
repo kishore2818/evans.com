@@ -475,13 +475,7 @@ const Checkout = () => {
                           </div>
                           
                           {/* Payment App Logos */}
-                          <div className="bg-white rounded-xl p-4 border border-beige-100 flex justify-between items-center shadow-sm">
-                            <div className="flex flex-col items-center space-y-1 group cursor-pointer">
-                              <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 group-hover:border-green-500 group-hover:bg-green-50 transition-all">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp Pay" className="h-7 w-7" />
-                              </div>
-                              <span className="text-[10px] font-bold text-gray-600">WhatsApp</span>
-                            </div>
+                          <div className="bg-white rounded-xl p-4 border border-beige-100 flex justify-around items-center shadow-sm">
                             <div className="flex flex-col items-center space-y-1 group cursor-pointer">
                               <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 group-hover:border-blue-500 group-hover:bg-blue-50 transition-all">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="h-5" />

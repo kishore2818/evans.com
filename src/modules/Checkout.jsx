@@ -496,7 +496,7 @@ const Checkout = () => {
                             </div>
                             <div className="flex flex-col items-center space-y-1 group cursor-pointer">
                               <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 group-hover:border-blue-400 group-hover:bg-blue-50 transition-all">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/c/cb/Paytm_Logo_standalone.svg" alt="Paytm" className="h-4" />
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="h-4" />
                               </div>
                               <span className="text-[10px] font-bold text-gray-600">Paytm</span>
                             </div>

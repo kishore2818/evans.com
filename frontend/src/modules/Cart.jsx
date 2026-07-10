@@ -1,14 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Link from 'next/link';
 import Image from 'next/image';
 
 const Cart = () => {
-  const { cart, removeFromCart, updateQuantity } = useStore();
+  const { cart, removeFromCart, updateQuantity, storeSettings, fetchStoreSettings } = useStore();
+
+  useEffect(() => {
+    fetchStoreSettings();
+  }, [fetchStoreSettings]);
 
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = subtotal > 2000 ? 0 : 150;
+  const threshold = storeSettings?.freeShippingThreshold ?? 2000;
+  const fee = storeSettings?.shippingFee ?? 150;
+  const shipping = subtotal > threshold ? 0 : fee;
   const total = subtotal > 0 ? subtotal + shipping : 0;
 
   if (cart.length === 0) {

@@ -238,19 +238,19 @@ const ProductDetails = () => {
             <h1 className="font-serif text-3xl md:text-4xl font-bold text-purple-900 leading-tight mb-2">
               {product.name}
             </h1>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+            <div className="flex flex-wrap items-end justify-between gap-y-4">
+              <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center space-x-1 bg-gold-50 px-3 py-1.5 rounded-full text-gold-700">
                   <Star size={14} className="fill-gold-400 text-gold-400" />
                   <span className="text-sm font-black leading-none">{product.rating || 0}</span>
                 </div>
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{product.reviewsCount || 0} Review(s)</span>
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">{product.reviewsCount || 0} Review(s)</span>
               </div>
-              <div className="flex flex-col items-end">
+              <div className="flex flex-row sm:flex-col items-baseline sm:items-end space-x-2 sm:space-x-0 whitespace-nowrap">
                 {product.discountPercentage > 0 && (
-                  <span className="text-sm text-gray-400 line-through whitespace-nowrap">₹{product.price.toLocaleString('en-IN')}</span>
+                  <span className="text-sm text-gray-400 line-through">₹{product.price.toLocaleString('en-IN')}</span>
                 )}
-                <span className="font-sans text-2xl font-black text-purple-900 whitespace-nowrap">
+                <span className="font-sans text-2xl font-black text-purple-900">
                   ₹{(product.discountPercentage > 0 
                     ? product.price - (product.price * (product.discountPercentage / 100)) 
                     : product.price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
@@ -282,32 +282,34 @@ const ProductDetails = () => {
 
           <div className="mt-auto space-y-8">
             {/* Quantity Control */}
-            <div className="flex items-center space-x-6">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-900/40">Quantity</span>
-              <div className="flex items-center bg-beige-50 rounded-2xl p-1 shadow-sm border border-beige-100">
-                <button 
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  disabled={product.stock === 0}
-                  className="w-10 h-10 flex items-center justify-center text-purple-700 hover:bg-white hover:shadow-sm rounded-xl transition-all disabled:opacity-30"
-                >
-                  <Minus size={18} strokeWidth={3} />
-                </button>
-                <span className="w-10 text-center font-black font-sans text-sm text-purple-900">{quantity}</span>
-                <button 
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                  disabled={product.stock === 0 || quantity >= product.stock}
-                  className="w-10 h-10 flex items-center justify-center text-purple-700 hover:bg-white hover:shadow-sm rounded-xl transition-all disabled:opacity-30"
-                >
-                  <Plus size={18} strokeWidth={3} />
-                </button>
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-900/40 block mb-3">Quantity</span>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center bg-beige-50 rounded-2xl p-1 shadow-sm border border-beige-100">
+                  <button 
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={product.stock === 0}
+                    className="w-10 h-10 flex items-center justify-center text-purple-700 hover:bg-white hover:shadow-sm rounded-xl transition-all disabled:opacity-30"
+                  >
+                    <Minus size={18} strokeWidth={3} />
+                  </button>
+                  <span className="w-10 text-center font-black font-sans text-sm text-purple-900">{quantity}</span>
+                  <button 
+                    onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                    disabled={product.stock === 0 || quantity >= product.stock}
+                    className="w-10 h-10 flex items-center justify-center text-purple-700 hover:bg-white hover:shadow-sm rounded-xl transition-all disabled:opacity-30"
+                  >
+                    <Plus size={18} strokeWidth={3} />
+                  </button>
+                </div>
+                {/* Live stock indicator */}
+                {product.stock > 0 && product.stock <= 10 && (
+                  <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full whitespace-nowrap">Only {product.stock} left!</span>
+                )}
+                {product.stock === 0 && (
+                  <span className="text-[10px] font-black uppercase tracking-widest text-red-600 bg-red-50 px-3 py-1.5 rounded-full whitespace-nowrap">Out of Stock</span>
+                )}
               </div>
-              {/* Live stock indicator */}
-              {product.stock > 0 && product.stock <= 10 && (
-                <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full">Only {product.stock} left!</span>
-              )}
-              {product.stock === 0 && (
-                <span className="text-[10px] font-black uppercase tracking-widest text-red-600 bg-red-50 px-3 py-1.5 rounded-full">Out of Stock</span>
-              )}
             </div>
 
             {/* Buying Actions */}

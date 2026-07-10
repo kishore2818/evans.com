@@ -115,16 +115,19 @@ const Profile = () => {
   };
 
   useEffect(() => {
+    fetchProfile();
+    fetchMyOrders();
+  }, []);
+
+  useEffect(() => {
     if (user) {
-      fetchProfile();
-      fetchMyOrders();
       setEditProfileData({
-        username: user.username,
-        email: user.email,
+        username: user.username || '',
+        email: user.email || '',
         mobile: user.mobile || ''
       });
     }
-  }, []);
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -282,7 +285,7 @@ const Profile = () => {
                   {/* Personal Information section */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-8">
                     <div className="flex justify-between items-center mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-100">
-                      <h3 className="text-lg md:text-xl font-bold text-gray-900">Personal Data</h3>
+                      <h3 className="text-lg md:text-xl font-bold text-gray-900">Profile Details</h3>
                       {!isEditingProfile && (
                         <button onClick={() => setIsEditingProfile(true)} className="text-purple-900 font-bold text-xs md:text-sm flex items-center space-x-1 hover:text-purple-700 transition-colors">
                           <Edit2 size={14}/>
@@ -369,7 +372,7 @@ const Profile = () => {
                         <div className="space-y-1 md:space-y-2">
                           <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Email Address</label>
                           <div className="p-2 md:p-3 bg-gray-50/50 rounded-lg border border-gray-100">
-                            <p className="text-xs md:text-sm font-semibold text-gray-900 truncate">{user.email}</p>
+                            <p className="text-xs md:text-sm font-semibold text-gray-900 truncate">{user.email || 'Not provided'}</p>
                           </div>
                         </div>
                         <div className="space-y-1 md:space-y-2">

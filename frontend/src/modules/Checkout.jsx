@@ -130,7 +130,7 @@ const Checkout = () => {
 
       // 2. Open Razorpay Checkout Modal
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Sq7rC65YVSMg4g', // Ensure this is set in frontend/.env.local
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
         name: 'Evans Luxe',

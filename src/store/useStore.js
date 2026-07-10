@@ -6,6 +6,7 @@ export const useStore = create((set, get) => ({
   cart: [],
   wishlist: [],
   myOrders: [],
+  storeSettings: { shippingFee: 150, freeShippingThreshold: 2000 },
   
   addToCart: (product, quantity = 1) => set((state) => {
     const maxStock = product.stock !== undefined ? product.stock : 9999;
@@ -38,6 +39,19 @@ export const useStore = create((set, get) => ({
 
   
   clearCart: () => set({ cart: [] }),
+
+  // Settings Logic
+  fetchStoreSettings: async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/settings`);
+      const data = await res.json();
+      if (res.ok && data) {
+        set({ storeSettings: data });
+      }
+    } catch (err) {
+      console.error('Settings fetch error', err);
+    }
+  },
 
   // Wishlist Logic
   fetchWishlist: async () => {
@@ -98,6 +112,44 @@ export const useStore = create((set, get) => ({
         throw err;
       }
       set({ cart: [] });
+      return data;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  createRazorpayOrder: async (amount) => {
+    const token = useAuthStore.getState().token;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/payment/checkout`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ amount })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to create payment order');
+      return data;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  verifyPayment: async (paymentData) => {
+    const token = useAuthStore.getState().token;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/payment/verify`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify(paymentData)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Payment verification failed');
       return data;
     } catch (err) {
       throw err;

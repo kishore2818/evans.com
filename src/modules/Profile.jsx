@@ -585,10 +585,18 @@ const Profile = () => {
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             />
             <motion.div
-              initial={{ opacity: 0, y: 60 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(e, info) => {
+                if (info.offset.y > 100 && info.velocity.y >= 0) {
+                  setReviewingItem(null);
+                }
+              }}
+              initial={{ opacity: 0, y: "100%" }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 60 }}
-              className="w-full md:max-w-md bg-white rounded-t-3xl md:rounded-2xl shadow-2xl relative z-10 overflow-hidden"
+              exit={{ opacity: 0, y: "100%" }}
+              className="w-full md:max-w-md bg-white rounded-t-3xl md:rounded-2xl shadow-2xl relative z-10 overflow-hidden mt-auto md:mt-0"
             >
               {/* Handle bar */}
               <div className="flex justify-center pt-3 pb-1 md:hidden">
@@ -674,17 +682,25 @@ const Profile = () => {
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             />
             <motion.div
-              initial={{ opacity: 0, y: 80 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(e, info) => {
+                if (info.offset.y > 100 && info.velocity.y >= 0) {
+                  setTrackingOrder(null);
+                }
+              }}
+              initial={{ opacity: 0, y: "100%" }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 80 }}
-              className="w-full md:max-w-sm bg-white rounded-t-3xl md:rounded-2xl shadow-2xl relative z-10 max-h-[90vh] overflow-y-auto"
+              exit={{ opacity: 0, y: "100%" }}
+              className="w-full md:max-w-lg bg-white rounded-t-3xl md:rounded-2xl shadow-2xl relative z-10 overflow-hidden flex flex-col h-[65vh] md:h-auto mt-auto md:mt-0 pb-20 md:pb-0"
             >
-              {/* Handle */}
-              <div className="flex justify-center pt-3 pb-1 md:hidden sticky top-0 bg-white">
+              {/* Drag Handle (Mobile) */}
+              <div className="flex justify-center pt-3 pb-1 md:hidden">
                 <div className="w-10 h-1 bg-gray-200 rounded-full" />
               </div>
 
-              <div className="px-5 pt-3 pb-6 md:p-6">
+              <div className="px-5 pt-3 pb-6 md:p-6 overflow-y-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div>

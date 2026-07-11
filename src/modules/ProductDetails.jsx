@@ -237,6 +237,25 @@ const ProductDetails = () => {
     await toggleWishlist(product.id);
   };
 
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: `Check out ${product.name} on Evans Luxe`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing', error);
+        }
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copied to clipboard!');
+    }
+  };
+
   const isLiked = wishlist.includes(id);
 
   const handleReviewSubmit = async (e) => {
@@ -272,7 +291,18 @@ const ProductDetails = () => {
   };
 
   return (
-    <div className="bg-white min-h-[calc(100vh-80px)] pb-24 md:pb-12 md:mt-4 md:rounded-3xl md:shadow-card md:mx-6 md:overflow-hidden relative max-w-6xl lg:mx-auto">
+    <motion.div 
+      drag="y"
+      dragConstraints={{ top: 0, bottom: 0 }}
+      dragElastic={0.2}
+      onDragEnd={(e, info) => {
+        // If swiped down significantly
+        if (info.offset.y > 100 && info.velocity.y >= 0) {
+          navigate(-1);
+        }
+      }}
+      className="bg-white min-h-[calc(100vh-80px)] pb-24 md:pb-12 md:mt-4 md:rounded-3xl md:shadow-card md:mx-6 md:overflow-hidden relative max-w-6xl lg:mx-auto touch-pan-x"
+    >
       {/* Mobile Top Bar Overlay */}
       <div className="md:hidden absolute top-0 w-full z-10 flex justify-between items-center p-6 bg-gradient-to-b from-black/20 to-transparent pt-10">
         <button 
@@ -282,14 +312,11 @@ const ProductDetails = () => {
           <ChevronLeft size={24} />
         </button>
         <div className="flex space-x-3">
-          <button className="w-10 h-10 bg-white/70 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-sm">
-            <Share2 size={20} />
-          </button>
           <button 
-            onClick={toggleLike}
-            className="w-10 h-10 bg-white/70 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm"
+            onClick={handleShare}
+            className="w-10 h-10 bg-white/70 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-sm"
           >
-            <Heart size={20} className={isLiked ? "text-red-500 fill-red-500" : "text-purple-900"} />
+            <Share2 size={20} />
           </button>
         </div>
       </div>
@@ -306,14 +333,11 @@ const ProductDetails = () => {
             />
             {/* Desktop Quick Actions */}
             <div className="hidden lg:flex absolute top-6 right-6 space-x-3 z-10">
-              <button className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-md hover:bg-white hover:scale-110 transition-all font-bold">
-                <Share2 size={18} />
-              </button>
               <button 
-                onClick={toggleLike}
-                className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-md hover:bg-white hover:scale-110 transition-all"
+                onClick={handleShare}
+                className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-md hover:bg-white hover:scale-110 transition-all font-bold"
               >
-                <Heart size={18} className={isLiked ? "text-red-500 fill-red-500" : "text-purple-900"} />
+                <Share2 size={18} />
               </button>
             </div>
           </div>
@@ -524,7 +548,7 @@ const ProductDetails = () => {
       </div>
 
 
-    </div>
+    </motion.div>
   );
 };
 

@@ -230,21 +230,10 @@ const Profile = () => {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row gap-4 lg:gap-8">
           
-          {/* Left Sidebar */}
+          {/* Left Sidebar (Desktop Only for Menu, Mobile shows differently) */}
           <div className="w-full md:w-72 flex-shrink-0 space-y-4">
-            {/* User Info Card */}
-            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-3 md:space-x-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-900 font-serif text-lg md:text-xl font-bold">
-                {user.username[0]}
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <p className="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Hello,</p>
-                <h2 className="font-bold text-gray-900 text-sm md:text-base truncate">{user.username}</h2>
-              </div>
-            </div>
-
-            {/* Navigation Menu (Grid on Mobile / Sidebar on Desktop) */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Navigation Menu */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-4 md:mt-0">
               <nav className="grid grid-cols-2 md:flex md:flex-col">
                 {tabs.map((tab) => {
                   const isActive = activeTab === tab.id;
@@ -282,8 +271,20 @@ const Profile = () => {
               {activeTab === 'profile' && (
                 <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}} className="space-y-4 md:space-y-6">
                   
+                  {/* Professional User Info Header */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-8 flex items-center space-x-4 md:space-x-5">
+                    <div className="w-14 h-14 md:w-16 md:h-16 bg-purple-100 rounded-full flex items-center justify-center text-purple-900 font-serif text-2xl md:text-3xl font-bold">
+                      {user.username[0].toUpperCase()}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs md:text-sm text-gray-500 mb-0.5">Hello,</p>
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900 truncate">{user.username}</h2>
+                      <p className="text-xs md:text-sm text-gray-500 mt-0.5">{user.email || user.mobile}</p>
+                    </div>
+                  </div>
+
                   {/* Personal Information section */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-8">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-8">
                     <div className="flex justify-between items-center mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-100">
                       <h3 className="text-lg md:text-xl font-bold text-gray-900">Profile Details</h3>
                       {!isEditingProfile && (
@@ -362,23 +363,19 @@ const Profile = () => {
                         </div>
                       </form>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-6 max-w-2xl">
-                        <div className="space-y-1 md:space-y-2">
-                          <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Full Name</label>
-                          <div className="p-2 md:p-3 bg-gray-50/50 rounded-lg border border-gray-100">
-                            <p className="text-xs md:text-sm font-semibold text-gray-900 truncate">{user.username}</p>
+                      <div className="max-w-2xl">
+                        <div className="flex flex-col space-y-4 md:space-y-6">
+                          <div className="flex flex-col sm:flex-row sm:items-center py-3 border-b border-gray-50">
+                            <span className="w-40 text-[11px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-0">Full Name</span>
+                            <span className="text-sm md:text-base font-semibold text-gray-900 flex-1">{user.username}</span>
                           </div>
-                        </div>
-                        <div className="space-y-1 md:space-y-2">
-                          <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Email Address</label>
-                          <div className="p-2 md:p-3 bg-gray-50/50 rounded-lg border border-gray-100">
-                            <p className="text-xs md:text-sm font-semibold text-gray-900 truncate">{user.email || 'Not provided'}</p>
+                          <div className="flex flex-col sm:flex-row sm:items-center py-3 border-b border-gray-50">
+                            <span className="w-40 text-[11px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-0">Email Address</span>
+                            <span className="text-sm md:text-base font-semibold text-gray-900 flex-1">{user.email || 'Not provided'}</span>
                           </div>
-                        </div>
-                        <div className="space-y-1 md:space-y-2">
-                          <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Mobile Number</label>
-                          <div className="p-2 md:p-3 bg-gray-50/50 rounded-lg border border-gray-100">
-                            <p className="text-xs md:text-sm font-semibold text-gray-900 truncate">{user.mobile || '+91 - Not provided'}</p>
+                          <div className="flex flex-col sm:flex-row sm:items-center py-3">
+                            <span className="w-40 text-[11px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-0">Mobile Number</span>
+                            <span className="text-sm md:text-base font-semibold text-gray-900 flex-1">{user.mobile || '+91 - Not provided'}</span>
                           </div>
                         </div>
                       </div>
@@ -386,7 +383,7 @@ const Profile = () => {
                   </div>
 
                   {/* Address Section */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-8">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-8">
                     <div className="flex flex-row justify-between items-center mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-100">
                       <h3 className="text-lg md:text-xl font-bold text-gray-900">Manage Addresses</h3>
                       {!isAddingAddress && (
@@ -436,8 +433,8 @@ const Profile = () => {
                             </form>
                           </div>
                         ) : (
-                          <div key={addr._id || idx} className="border border-gray-200 rounded-xl p-4 md:p-5 hover:border-purple-300 hover:shadow-sm transition-all group relative bg-gray-50/50">
-                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-1">
+                          <div key={addr._id || idx} className="border border-gray-200 rounded-xl p-4 md:p-5 hover:border-purple-300 hover:shadow-md transition-all group relative bg-white">
+                            <div className="absolute top-3 right-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center space-x-1">
                               <button onClick={() => { setEditingAddressId(addr._id); setEditAddressData(addr); }} className="p-1 text-gray-400 hover:text-purple-600"><Edit2 size={14}/></button>
                               <button onClick={() => handleDeleteAddress(addr._id)} className="p-1 text-gray-400 hover:text-red-500"><Trash2 size={14}/></button>
                             </div>
@@ -581,7 +578,7 @@ const Profile = () => {
       {/* Review Modal */}
       <AnimatePresence>
         {reviewingItem && (
-          <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+          <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-4">
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setReviewingItem(null)}
@@ -670,7 +667,7 @@ const Profile = () => {
       {/* Order Tracking Modal — Vertical Stepper */}
       <AnimatePresence>
         {trackingOrder && (
-          <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+          <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-4">
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setTrackingOrder(null)}

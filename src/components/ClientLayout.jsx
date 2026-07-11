@@ -194,10 +194,7 @@ const BottomNav = ({ cartItemCount }) => {
     { name: 'Profile', path: '/profile', icon: User },
   ];
   
-  if (user) {
-    navItems.push({ name: 'Logout', action: logout, icon: LogOut });
-  }
-
+  // Logout is only available in the menu bar and profile section
   return (
     <div className="md:hidden fixed bottom-0 w-full bg-white border-t border-beige-200 px-2 sm:px-6 py-3 pb-8 z-50 rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
       <nav className="flex justify-between items-center">

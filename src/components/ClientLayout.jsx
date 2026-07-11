@@ -4,14 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Home, Grid, ShoppingBag, User, Menu, X, ChevronRight, MessageCircle } from 'lucide-react';
+import { Home, Grid, ShoppingBag, User, Menu, X, ChevronRight, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { useStore } from '@/store/useStore';
 import { useAuthStore } from '@/store/useAuthStore';
 
 const TopNav = ({ cartItemCount }) => {
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,8 +36,8 @@ const TopNav = ({ cartItemCount }) => {
       <header 
         className={`fixed top-0 w-full z-50 transition-all duration-500 ${
           scrolled 
-            ? 'bg-white/95 backdrop-blur-xl shadow-md py-2' 
-            : 'bg-white/80 backdrop-blur-md py-3'
+            ? 'bg-white shadow-[0_2px_20px_rgba(88,28,135,0.12)] border-b border-purple-50 py-2' 
+            : 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-purple-50/60 py-3'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-8 w-full flex justify-between items-center">
@@ -133,30 +133,47 @@ const TopNav = ({ cartItemCount }) => {
                   <X size={28} />
                 </button>
               </div>
-              <nav className="flex flex-col space-y-6">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    href={link.path}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="text-lg font-bold text-gray-700 hover:text-purple-900 py-2 border-b border-gray-50 flex items-center justify-between min-h-[48px]"
-                  >
-                    <span>{link.name}</span>
-                    <ChevronRight size={18} className="text-gray-300" />
-                  </Link>
-                ))}
+              <nav className="flex flex-col space-y-1">
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.path || (link.path !== '/' && pathname.startsWith(link.path));
+                  return (
+                    <Link
+                      key={link.name}
+                      href={link.path}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`flex items-center justify-between px-3 py-3.5 rounded-xl min-h-[48px] transition-colors ${
+                        isActive ? 'bg-purple-50 text-purple-900' : 'text-gray-700 hover:bg-gray-50 hover:text-purple-900'
+                      }`}
+                    >
+                      <span className="font-semibold text-base">{link.name}</span>
+                      <ChevronRight size={16} className={isActive ? 'text-purple-400' : 'text-gray-300'} />
+                    </Link>
+                  );
+                })}
                 <Link
                   href="/profile"
                   onClick={() => setIsMenuOpen(false)}
-                  className="text-lg font-bold text-gray-700 hover:text-purple-900 py-2 border-b border-gray-50 flex items-center justify-between min-h-[48px]"
+                  className="flex items-center justify-between px-3 py-3.5 rounded-xl min-h-[48px] text-gray-700 hover:bg-gray-50 hover:text-purple-900 transition-colors"
                 >
-                  <span>My Account</span>
-                  <ChevronRight size={18} className="text-gray-300" />
+                  <div className="flex items-center space-x-2">
+                    <User size={16} className="text-gray-400" />
+                    <span className="font-semibold text-base">My Account</span>
+                  </div>
+                  <ChevronRight size={16} className="text-gray-300" />
                 </Link>
               </nav>
-              <div className="mt-auto pt-8 border-t border-gray-100">
-                <p className="text-xs text-gray-400 uppercase tracking-widest font-bold mb-4">Evans Luxe Beauty</p>
-                <p className="text-xs text-gray-500 leading-relaxed italic">"Inspired by nature, perfected by science."</p>
+
+              <div className="mt-auto pt-6 space-y-3">
+                {user && (
+                  <button
+                    onClick={() => { logout(); setIsMenuOpen(false); }}
+                    className="w-full flex items-center justify-center space-x-2 bg-red-50 text-red-600 border border-red-100 py-3 rounded-xl font-bold text-sm hover:bg-red-100 transition-colors min-h-[48px]"
+                  >
+                    <LogOut size={16} />
+                    <span>Sign Out</span>
+                  </button>
+                )}
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold text-center">Evans Luxe · Pure Botanicals</p>
               </div>
             </motion.div>
           </>
@@ -168,7 +185,7 @@ const TopNav = ({ cartItemCount }) => {
 
 const BottomNav = ({ cartItemCount }) => {
   const pathname = usePathname();
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -176,13 +193,35 @@ const BottomNav = ({ cartItemCount }) => {
     { name: 'Cart', path: '/cart', icon: ShoppingBag, badge: cartItemCount },
     { name: 'Profile', path: '/profile', icon: User },
   ];
+  
+  if (user) {
+    navItems.push({ name: 'Logout', action: logout, icon: LogOut });
+  }
 
   return (
-    <div className="md:hidden fixed bottom-0 w-full bg-white border-t border-beige-200 px-6 py-3 pb-8 z-50 rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    <div className="md:hidden fixed bottom-0 w-full bg-white border-t border-beige-200 px-2 sm:px-6 py-3 pb-8 z-50 rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
       <nav className="flex justify-between items-center">
         {navItems.map((item) => {
-          const isActive = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
+          const isActive = item.path ? (pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path))) : false;
           const Icon = item.icon;
+          
+          if (item.action) {
+            return (
+              <button
+                key={item.name}
+                onClick={item.action}
+                className="relative flex flex-col items-center p-2 transition-colors duration-300 text-gray-400 hover:text-red-500"
+              >
+                <div className="relative">
+                  <Icon size={24} strokeWidth={2} />
+                </div>
+                <span className="text-[10px] mt-1 font-medium opacity-100 transition-opacity">
+                  {item.name}
+                </span>
+              </button>
+            );
+          }
+
           return (
             <Link
               key={item.name}
@@ -199,7 +238,7 @@ const BottomNav = ({ cartItemCount }) => {
                   </span>
                 )}
               </div>
-              <span className={`text-[10px] mt-1 font-medium ${isActive ? 'opacity-100' : 'opacity-0'} transition-opacity`}>
+              <span className={`text-[10px] mt-1 font-medium ${isActive ? 'opacity-100' : 'opacity-100'} transition-opacity`}>
                 {item.name}
               </span>
               {isActive && (
@@ -220,6 +259,7 @@ const BottomNav = ({ cartItemCount }) => {
 
 const ClientLayout = ({ children }) => {
   const pathname = usePathname();
+  const isCheckout = pathname === '/checkout';
   const cart = useStore((state) => state.cart);
   const cartItemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 

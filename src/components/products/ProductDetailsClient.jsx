@@ -9,7 +9,6 @@ import toast from 'react-hot-toast';
 import { 
   ChevronLeft, 
   Star, 
-  Heart, 
   Share2, 
   Plus, 
   Minus, 
@@ -23,7 +22,7 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
   const router = useRouter();
   const pathname = usePathname();
   const addToCart = useStore((state) => state.addToCart);
-  const { wishlist, toggleWishlist, addReview, myOrders, fetchMyOrders } = useStore();
+  const { addReview, myOrders, fetchMyOrders } = useStore();
   const { user, token } = useAuthStore();
   
   const [product] = useState(initialProduct);
@@ -62,16 +61,24 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
     toast.success(`${quantity} ${product.name} added to cart!`);
   };
 
-  const toggleLike = async () => {
-    if (!token) {
-      toast.error('Please login to adjust wishlist');
-      router.push(`/auth?from=${pathname}`);
-      return;
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: `Check out ${product.name} on Evans Luxe`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing', error);
+        }
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copied to clipboard!');
     }
-    await toggleWishlist(product.id);
   };
-
-  const isLiked = wishlist.includes(product.id);
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -114,14 +121,11 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
           <ChevronLeft size={24} />
         </button>
         <div className="flex space-x-3">
-          <button className="w-10 h-10 bg-white/70 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-sm">
-            <Share2 size={20} />
-          </button>
           <button 
-            onClick={toggleLike}
-            className="w-10 h-10 bg-white/70 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm"
+            onClick={handleShare}
+            className="w-10 h-10 bg-white/70 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-sm"
           >
-            <Heart size={20} className={isLiked ? "text-red-500 fill-red-500" : "text-purple-900"} />
+            <Share2 size={20} />
           </button>
         </div>
       </div>
@@ -135,14 +139,11 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div className="hidden lg:flex absolute top-6 right-6 space-x-3 z-10">
-              <button className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-md hover:bg-white hover:scale-110 transition-all font-bold">
-                <Share2 size={18} />
-              </button>
               <button 
-                onClick={toggleLike}
-                className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-md hover:bg-white hover:scale-110 transition-all"
+                onClick={handleShare}
+                className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-md hover:bg-white hover:scale-110 transition-all font-bold"
               >
-                <Heart size={18} className={isLiked ? "text-red-500 fill-red-500" : "text-purple-900"} />
+                <Share2 size={18} />
               </button>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import API_BASE_URL from '@/config/api';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from '@/router-shim';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
@@ -7,24 +7,137 @@ import { useAuthStore } from '../store/useAuthStore';
 import Skeleton from '../components/Skeleton';
 import toast from 'react-hot-toast';
 import { 
-  ChevronLeft, 
+  ChevronLeft,
+  ChevronRight,
   Star, 
-  Heart, 
   Share2, 
   Plus, 
   Minus, 
   ShoppingBag, 
   MessageSquare, 
   Send,
-  Loader2
+  Loader2,
+  Quote
 } from 'lucide-react';
 
+// ─── Review Slider Component ───────────────────────────────────────────────────
+const StarRating = ({ rating }) => (
+  <div className="flex space-x-0.5">
+    {[...Array(5)].map((_, i) => (
+      <Star
+        key={i}
+        size={11}
+        className={i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200 fill-gray-200'}
+      />
+    ))}
+  </div>
+);
+
+const ReviewSlider = ({ reviews, hasPurchased }) => {
+  const scrollRef = useRef(null);
+
+  const scroll = (dir) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir === 'left' ? -300 : 300, behavior: 'smooth' });
+  };
+
+  if (!reviews || reviews.length === 0) {
+    return (
+      <div className="py-16 text-center bg-beige-50/50 rounded-[3rem] border border-dashed border-beige-100">
+        <MessageSquare size={32} className="mx-auto text-beige-200 mb-4" />
+        <p className="text-gray-400 font-bold uppercase tracking-[0.2em] text-[10px]">No reflections yet</p>
+        {hasPurchased && (
+          <p className="text-purple-600 text-xs font-bold mt-2">Be the first to share your experience.</p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      {/* Arrow Buttons — Desktop */}
+      {reviews.length > 1 && (
+        <>
+          <button
+            onClick={() => scroll('left')}
+            className="hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-purple-100 rounded-full shadow-md items-center justify-center text-purple-700 hover:bg-purple-50 transition-colors"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            onClick={() => scroll('right')}
+            className="hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-purple-100 rounded-full shadow-md items-center justify-center text-purple-700 hover:bg-purple-50 transition-colors"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </>
+      )}
+
+      {/* Scrollable Row */}
+      <div
+        ref={scrollRef}
+        className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {reviews.map((review, idx) => (
+          <div
+            key={idx}
+            className="flex-shrink-0 w-72 md:w-80 snap-start bg-white rounded-3xl border border-beige-50 shadow-luxury p-6 flex flex-col justify-between hover:border-purple-100 transition-colors"
+          >
+            {/* Quote icon */}
+            <Quote size={20} className="text-purple-100 mb-3 flex-shrink-0" />
+
+            {/* Review text */}
+            <p className="text-gray-600 text-sm leading-relaxed font-medium flex-1 mb-5 line-clamp-4">
+              "{review.comment}"
+            </p>
+
+            {/* Reviewer info */}
+            <div className="flex items-center space-x-3 pt-4 border-t border-beige-50">
+              <div className="w-9 h-9 bg-gradient-to-br from-purple-100 to-beige-100 rounded-xl flex items-center justify-center text-purple-600 font-serif text-base font-bold flex-shrink-0">
+                {review.name?.[0]?.toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <h4 className="font-bold text-gray-900 text-xs truncate">{review.name}</h4>
+                <div className="flex items-center space-x-2 mt-0.5">
+                  <StarRating rating={review.rating} />
+                  <span className="text-[9px] text-gray-300 font-bold uppercase tracking-wider">
+                    {new Date(review.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Dot Indicators */}
+      {reviews.length > 1 && (
+        <div className="flex justify-center space-x-1.5 mt-3">
+          {reviews.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                const el = scrollRef.current;
+                if (el) el.scrollTo({ left: i * 304, behavior: 'smooth' });
+              }}
+              className="w-1.5 h-1.5 rounded-full bg-purple-200 hover:bg-purple-700 transition-colors"
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ProductDetails = () => {
+
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const addToCart = useStore((state) => state.addToCart);
-  const { wishlist, toggleWishlist, addReview, myOrders, fetchMyOrders } = useStore();
+  const { addReview, myOrders, fetchMyOrders } = useStore();
   const { user, token } = useAuthStore();
   
   const [product, setProduct] = useState(null);
@@ -114,16 +227,28 @@ const ProductDetails = () => {
     toast.success(`${quantity} ${product.name} added to cart!`);
   };
 
-  const toggleLike = async () => {
-    if (!token) {
-      toast.error('Please login to adjust wishlist');
-      navigate('/auth', { state: { from: location } });
-      return;
+
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: `Check out ${product.name} on Evans Luxe`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing', error);
+        }
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copied to clipboard!');
     }
-    await toggleWishlist(product.id);
   };
 
-  const isLiked = wishlist.includes(id);
+
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -158,7 +283,18 @@ const ProductDetails = () => {
   };
 
   return (
-    <div className="bg-white min-h-[calc(100vh-80px)] pb-24 md:pb-12 md:mt-4 md:rounded-3xl md:shadow-card md:mx-6 md:overflow-hidden relative max-w-6xl lg:mx-auto">
+    <motion.div 
+      drag="y"
+      dragConstraints={{ top: 0, bottom: 0 }}
+      dragElastic={0.2}
+      onDragEnd={(e, info) => {
+        // If swiped down significantly
+        if (info.offset.y > 100 && info.velocity.y >= 0) {
+          navigate(-1);
+        }
+      }}
+      className="bg-white min-h-[calc(100vh-80px)] pb-24 md:pb-12 md:mt-4 md:rounded-3xl md:shadow-card md:mx-6 md:overflow-hidden relative max-w-6xl lg:mx-auto touch-pan-x"
+    >
       {/* Mobile Top Bar Overlay */}
       <div className="md:hidden absolute top-0 w-full z-10 flex justify-between items-center p-6 bg-gradient-to-b from-black/20 to-transparent pt-10">
         <button 
@@ -168,14 +304,11 @@ const ProductDetails = () => {
           <ChevronLeft size={24} />
         </button>
         <div className="flex space-x-3">
-          <button className="w-10 h-10 bg-white/70 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-sm">
-            <Share2 size={20} />
-          </button>
           <button 
-            onClick={toggleLike}
-            className="w-10 h-10 bg-white/70 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm"
+            onClick={handleShare}
+            className="w-10 h-10 bg-white/70 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-sm"
           >
-            <Heart size={20} className={isLiked ? "text-red-500 fill-red-500" : "text-purple-900"} />
+            <Share2 size={20} />
           </button>
         </div>
       </div>
@@ -192,14 +325,11 @@ const ProductDetails = () => {
             />
             {/* Desktop Quick Actions */}
             <div className="hidden lg:flex absolute top-6 right-6 space-x-3 z-10">
-              <button className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-md hover:bg-white hover:scale-110 transition-all font-bold">
-                <Share2 size={18} />
-              </button>
               <button 
-                onClick={toggleLike}
-                className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-md hover:bg-white hover:scale-110 transition-all"
+                onClick={handleShare}
+                className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-md hover:bg-white hover:scale-110 transition-all font-bold"
               >
-                <Heart size={18} className={isLiked ? "text-red-500 fill-red-500" : "text-purple-900"} />
+                <Share2 size={18} />
               </button>
             </div>
           </div>
@@ -404,47 +534,13 @@ const ProductDetails = () => {
             )}
           </AnimatePresence>
 
-          {/* Review List */}
-          <div className="space-y-8">
-            {product.reviews && product.reviews.length > 0 ? (
-              product.reviews.map((review, idx) => (
-                <div key={idx} className="bg-white p-6 md:p-8 rounded-3xl border border-beige-50 shadow-luxury group hover:border-purple-100 transition-colors">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-beige-100 to-white rounded-xl flex items-center justify-center text-purple-300 font-serif text-lg font-bold">
-                        {review.name?.[0]}
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900 text-sm leading-none mb-1 whitespace-nowrap truncate">{review.name}</h4>
-                        <div className="flex items-center space-x-2">
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} size={10} className={`${i < review.rating ? 'fill-gold-400 text-gold-400' : 'text-gray-200'}`} />
-                            ))}
-                          </div>
-                          <span className="text-[10px] text-gray-300 font-bold uppercase tracking-widest">{new Date(review.createdAt).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 text-sm leading-relaxed font-medium pl-1">
-                    "{review.comment}"
-                  </p>
-                </div>
-              ))
-            ) : (
-              <div className="py-20 text-center bg-beige-50/50 rounded-[3rem] border border-dashed border-beige-100">
-                <MessageSquare size={32} className="mx-auto text-beige-200 mb-4" />
-                <p className="text-gray-400 font-bold uppercase tracking-[0.2em] text-[10px]">No reflections yet</p>
-                {hasPurchased && <p className="text-purple-600 text-xs font-bold mt-2">Be the first to share your experience.</p>}
-              </div>
-            )}
-          </div>
+          {/* Review Slider */}
+          <ReviewSlider reviews={product.reviews} hasPurchased={hasPurchased} />
         </div>
       </div>
 
 
-    </div>
+    </motion.div>
   );
 };
 

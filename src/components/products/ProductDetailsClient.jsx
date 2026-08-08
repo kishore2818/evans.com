@@ -123,21 +123,7 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
 
 
 
-  const handleReviewSubmit = async (e) => {
-    e.preventDefault();
-    if (reviewData.comment.length < 5) { toast.error('Write a more detailed review.'); return; }
-    setIsSubmitting(true);
-    try {
-      await addReview(product.id, reviewData);
-      toast.success('Review published!');
-      setShowReviewForm(false);
-      router.refresh();
-    } catch (error) {
-      toast.error(error.message || 'Failed to submit');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+
 
   const discountedPrice = product.discountPercentage > 0
     ? product.price - (product.price * (product.discountPercentage / 100))

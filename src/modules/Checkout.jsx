@@ -7,19 +7,15 @@ import {
   CreditCard, 
   CheckCircle2, 
   Plus, 
-  Home, 
-  Briefcase, 
-  ArrowLeft,
+  Package, 
+  ShieldCheck, 
+  Sparkles, 
+  ChevronRight, 
+  Phone, 
   Loader2,
-  Package,
-  ShieldCheck,
-  Sparkles,
-  ChevronRight,
-  User,
-  Phone,
-  FileText
+  X
 } from 'lucide-react';
-import { useNavigate, Link } from '@/router-shim';
+import { useNavigate } from '@/router-shim';
 import { useStore } from '../store/useStore';
 import { useAuthStore } from '../store/useAuthStore';
 import Image from 'next/image';
@@ -40,8 +36,9 @@ const Checkout = () => {
   const { cart, clearCart, placeOrder, createRazorpayOrder, verifyPayment, storeSettings, fetchStoreSettings } = useStore();
   const { user, token, fetchProfile, addAddress, loading: authLoading } = useAuthStore();
 
-  const [activeStep, setActiveStep] = useState(1); // 1: Address, 2: Summary, 3: Payment
+  const [activeStep, setActiveStep] = useState(1); // 1: Checkout, 4: Success
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
+  const [showAddressList, setShowAddressList] = useState(false);
   const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [upiId, setUpiId] = useState('');
   const [newAddress, setNewAddress] = useState({
@@ -110,13 +107,17 @@ const Checkout = () => {
       setIsAddingAddress(false);
       setNewAddress({ name: '', phone: '', address: '', city: '', pincode: '', isDefault: false });
       toast.success('Address saved successfully');
+      // Auto select the newly added address (which is appended to the end of user.addresses)
+      if (user?.addresses) {
+        setSelectedAddressIndex(user.addresses.length);
+      }
     } catch (error) {
       toast.error(error.message || 'Failed to add address');
     }
   };
 
   const handlePlaceOrder = async () => {
-    if (user.addresses.length === 0) {
+    if (!user.addresses || user.addresses.length === 0) {
       toast.error('Please add a delivery address');
       return;
     }
@@ -220,6 +221,8 @@ const Checkout = () => {
     );
   }
 
+  const currentAddress = user.addresses?.[selectedAddressIndex];
+
   return (
     <div className="min-h-screen bg-beige-50 pb-28 pt-6 relative overflow-hidden">
       
@@ -234,56 +237,12 @@ const Checkout = () => {
         {/* Header Title */}
         <div className="mb-6 md:mb-8 text-center sm:text-left">
           <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-purple-900 mb-1 md:mb-2">Secure checkout</h1>
-          <p className="text-gray-400 text-xs sm:text-sm font-medium">Verify details and finalize your botanical package</p>
+          <p className="text-gray-400 text-xs sm:text-sm font-medium">Verify your package and shipping details in one click</p>
         </div>
-
-        {/* Elegant Progress Tracker */}
-        {activeStep < 4 && (
-          <div className="relative mb-10 md:mb-12 max-w-xl mx-auto px-2">
-            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -translate-y-1/2 rounded-full overflow-hidden">
-              <motion.div 
-                className="h-full"
-                style={{ background: 'linear-gradient(90deg, #3e1d4a, #D4AF37)' }}
-                initial={{ width: '0%' }}
-                animate={{ width: `${((activeStep - 1) / 2) * 100}%` }}
-                transition={{ duration: 0.4 }}
-              />
-            </div>
-            <div className="flex justify-between items-center relative z-10">
-              {[
-                { id: 1, label: 'Delivery', icon: MapPin },
-                { id: 2, label: 'Summary', icon: ShoppingBag },
-                { id: 3, label: 'Payment', icon: CreditCard }
-              ].map((s) => {
-                const isCompleted = activeStep > s.id;
-                const isActive = activeStep === s.id;
-                return (
-                  <div key={s.id} className="flex flex-col items-center">
-                    <motion.div
-                      animate={{ scale: isActive ? 1.08 : 1 }}
-                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        isCompleted 
-                          ? 'bg-purple-900 text-gold-400 shadow-luxury border border-gold-400/30' 
-                          : isActive 
-                            ? 'bg-gradient-to-r from-purple-900 to-purple-800 text-white shadow-luxury ring-4 ring-purple-100' 
-                            : 'bg-white text-gray-400 border border-beige-200'
-                      }`}
-                    >
-                      {isCompleted ? <CheckCircle2 size={14} /> : <s.icon size={14} />}
-                    </motion.div>
-                    <span className={`text-[8px] sm:text-[9px] mt-2 font-black uppercase tracking-[0.15em] ${isActive ? 'text-purple-900' : 'text-gray-400'}`}>
-                      {s.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 md:gap-8 items-start">
           
-          {/* Main Steps Content */}
+          {/* Main Content Area */}
           <div className="lg:col-span-6 space-y-4 md:space-y-5">
             <AnimatePresence mode="wait">
               {activeStep === 4 ? (
@@ -329,366 +288,287 @@ const Checkout = () => {
               ) : (
                 <div className="space-y-4 md:space-y-5">
                   
-                  {/* ════ STEP 1: DELIVERY ADDRESS ════ */}
-                  <motion.div 
-                    layout
-                    className={`bg-white rounded-3xl md:rounded-[2.5rem] overflow-hidden border transition-all duration-300 ${
-                      activeStep === 1 
-                        ? 'border-purple-200/80 shadow-luxury' 
-                        : 'border-beige-100 shadow-sm opacity-50'
-                    }`}
-                  >
-                    <div 
-                      className="p-5 md:p-8 flex justify-between items-center cursor-pointer select-none"
-                      onClick={() => setActiveStep(1)}
-                    >
-                      <div className="flex items-center space-x-3 md:space-x-4">
-                        <div className={`w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl flex items-center justify-center font-bold text-xs md:text-sm ${activeStep === 1 ? 'bg-purple-900 text-white' : 'bg-beige-100 text-purple-900'}`}>
-                          1
-                        </div>
-                        <h3 className="font-serif text-base sm:text-lg md:text-xl font-bold text-purple-900">Delivery details</h3>
+                  {/* ════ SECTION 1: DELIVERY ADDRESS ════ */}
+                  <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-beige-100 p-5 md:p-8 shadow-sm">
+                    <div className="flex justify-between items-center mb-4 pb-3 border-b border-beige-100">
+                      <div className="flex items-center space-x-2 md:space-x-3">
+                        <MapPin size={16} className="text-purple-900" />
+                        <h3 className="font-serif text-base sm:text-lg font-bold text-purple-900">Delivery details</h3>
                       </div>
-                      {activeStep > 1 && (
-                        <span className="text-[9px] sm:text-[10px] text-purple-600 font-bold uppercase tracking-widest border-b border-purple-200">Change</span>
+                      {user.addresses?.length > 0 && (
+                        <button 
+                          onClick={() => { setShowAddressList(prev => !prev); setIsAddingAddress(false); }}
+                          className="text-[10px] text-purple-600 font-bold uppercase tracking-widest border-b border-purple-200 hover:text-purple-900 transition-colors"
+                        >
+                          {showAddressList ? 'Cancel' : 'Change'}
+                        </button>
                       )}
                     </div>
 
-                    <AnimatePresence>
-                      {activeStep === 1 && (
-                        <motion.div 
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="px-5 md:px-8 pb-6 md:pb-8 overflow-hidden"
-                        >
-                          <div className="grid grid-cols-1 gap-3 mb-5">
-                            {user.addresses?.map((addr, idx) => (
-                              <div 
-                                key={idx}
-                                onClick={() => setSelectedAddressIndex(idx)}
-                                className={`p-4 md:p-5 rounded-2xl border-2 cursor-pointer transition-all flex items-start space-x-3 md:space-x-4 bg-white ${
-                                  selectedAddressIndex === idx 
-                                    ? 'border-purple-900 bg-purple-50/20 shadow-sm' 
-                                    : 'border-beige-100 hover:border-purple-100'
-                                }`}
-                              >
-                                <div className={`w-4 h-4 md:w-5 md:h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                                  selectedAddressIndex === idx ? 'border-purple-900' : 'border-gray-300'
-                                }`}>
-                                  {selectedAddressIndex === idx && <div className="w-2 md:w-2.5 h-2 md:h-2.5 bg-purple-900 rounded-full" />}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center space-x-2 mb-1 flex-wrap gap-y-1">
-                                    <span className="font-bold text-gray-900 text-xs sm:text-sm truncate">{addr.name}</span>
-                                    <span className="text-[7px] sm:text-[8px] font-black tracking-widest uppercase bg-gold-400/10 text-gold-600 px-1.5 py-0.5 rounded-full">
-                                      {addr.isDefault ? 'Primary' : 'Saved'}
-                                    </span>
-                                  </div>
-                                  <p className="text-[10px] sm:text-xs text-gray-500 mb-1 leading-relaxed">{addr.address}</p>
-                                  <p className="text-[10px] sm:text-xs font-semibold text-gray-700 mb-1.5">{addr.city} · {addr.pincode}</p>
-                                  <div className="flex items-center space-x-1 text-gray-400">
-                                    <Phone size={8} />
-                                    <span className="text-[8px] sm:text-[9px] font-bold tracking-widest">{addr.phone}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          {isAddingAddress ? (
-                            <motion.form 
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              onSubmit={handleAddAddress}
-                              className="bg-beige-50/30 border border-beige-100 rounded-2xl md:rounded-3xl p-4 md:p-5 space-y-3"
+                    {/* Address Selection List (Collapsed by default) */}
+                    {showAddressList && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="mb-6 space-y-3"
+                      >
+                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Select a saved address:</p>
+                        <div className="grid grid-cols-1 gap-3">
+                          {user.addresses?.map((addr, idx) => (
+                            <div 
+                              key={idx}
+                              onClick={() => { setSelectedAddressIndex(idx); setShowAddressList(false); }}
+                              className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-start space-x-3 bg-white ${
+                                selectedAddressIndex === idx 
+                                  ? 'border-purple-900 bg-purple-50/20' 
+                                  : 'border-beige-100 hover:border-purple-100'
+                              }`}
                             >
-                              <h4 className="font-serif text-xs md:text-sm font-bold text-purple-900 flex items-center gap-1.5">
-                                <Plus size={12} /> Add new address
-                              </h4>
-                              
-                              <div className="grid grid-cols-2 gap-3">
-                                <input 
-                                  placeholder="Full Name *"
-                                  required
-                                  value={newAddress.name}
-                                  onChange={e => setNewAddress({...newAddress, name: e.target.value})}
-                                  className="col-span-2 w-full px-4 py-2.5 sm:py-3 rounded-xl border border-beige-200 focus:outline-none focus:border-gold-400 bg-white text-[10px] sm:text-xs font-medium focus:ring-1 focus:ring-gold-400"
-                                />
-                                <input 
-                                  placeholder="Phone Number *"
-                                  required
-                                  value={newAddress.phone}
-                                  onChange={e => setNewAddress({...newAddress, phone: e.target.value})}
-                                  className="w-full px-4 py-2.5 sm:py-3 rounded-xl border border-beige-200 focus:outline-none focus:border-gold-400 bg-white text-[10px] sm:text-xs font-medium focus:ring-1 focus:ring-gold-400"
-                                />
-                                <input 
-                                  placeholder="Pincode *"
-                                  required
-                                  value={newAddress.pincode}
-                                  onChange={handlePincodeChange}
-                                  className="w-full px-4 py-2.5 sm:py-3 rounded-xl border border-beige-200 focus:outline-none focus:border-gold-400 bg-white text-[10px] sm:text-xs font-medium focus:ring-1 focus:ring-gold-400"
-                                />
-                                <textarea 
-                                  placeholder="Flat, House no., Area, Street *"
-                                  required
-                                  rows={2}
-                                  value={newAddress.address}
-                                  onChange={e => setNewAddress({...newAddress, address: e.target.value})}
-                                  className="col-span-2 w-full px-4 py-2.5 sm:py-3 rounded-xl border border-beige-200 focus:outline-none focus:border-gold-400 bg-white text-[10px] sm:text-xs font-medium focus:ring-1 focus:ring-gold-400"
-                                />
-                                <input 
-                                  placeholder="City / District *"
-                                  required
-                                  value={newAddress.city}
-                                  onChange={e => setNewAddress({...newAddress, city: e.target.value})}
-                                  className="w-full px-4 py-2.5 sm:py-3 rounded-xl border border-beige-200 focus:outline-none focus:border-gold-400 bg-white text-[10px] sm:text-xs font-medium focus:ring-1 focus:ring-gold-400"
-                                />
-                                <label className="flex items-center space-x-1.5 cursor-pointer select-none">
-                                  <input 
-                                    type="checkbox" 
-                                    checked={newAddress.isDefault}
-                                    onChange={e => setNewAddress({...newAddress, isDefault: e.target.checked})}
-                                    className="w-3 h-3 rounded text-purple-900 border-beige-300 focus:ring-0"
-                                  />
-                                  <span className="text-[8px] sm:text-[9px] font-black text-gray-400 uppercase tracking-wider">Set as default</span>
-                                </label>
+                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                                selectedAddressIndex === idx ? 'border-purple-900' : 'border-gray-300'
+                              }`}>
+                                {selectedAddressIndex === idx && <div className="w-2 h-2 bg-purple-900 rounded-full" />}
                               </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center space-x-2 mb-0.5">
+                                  <span className="font-bold text-gray-900 text-xs truncate">{addr.name}</span>
+                                  <span className="text-[7px] font-black tracking-widest uppercase bg-gold-400/10 text-gold-600 px-1.5 py-0.5 rounded-full">
+                                    {addr.isDefault ? 'Primary' : 'Saved'}
+                                  </span>
+                                </div>
+                                <p className="text-[10px] text-gray-500">{addr.address}, {addr.city} - {addr.pincode}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
 
-                              <div className="flex space-x-2.5 pt-1.5">
-                                <button 
-                                  type="submit"
-                                  className="px-4 py-2.5 rounded-lg font-bold text-[10px] uppercase tracking-wider bg-purple-950 text-white hover:bg-purple-900 active:scale-95 transition-all min-h-0 flex-1"
-                                >
-                                  Save & Select
-                                </button>
-                                <button 
-                                  type="button"
-                                  onClick={() => setIsAddingAddress(false)}
-                                  className="px-4 py-2.5 rounded-lg font-bold text-[10px] uppercase tracking-wider border border-beige-200 text-gray-500 bg-white hover:bg-beige-50 active:scale-95 transition-all min-h-0"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </motion.form>
-                          ) : (
+                        {!isAddingAddress && (
+                          <button 
+                            onClick={() => setIsAddingAddress(true)}
+                            className="flex items-center space-x-1.5 text-purple-600 font-bold hover:text-purple-900 transition-colors group text-[10px] min-h-0 pt-2"
+                          >
+                            <Plus size={12} />
+                            <span>Add a new delivery address</span>
+                          </button>
+                        )}
+                      </motion.div>
+                    )}
+
+                    {/* Inline Add Address Form */}
+                    {isAddingAddress && (
+                      <motion.form 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        onSubmit={handleAddAddress}
+                        className="bg-beige-50/30 border border-beige-100 rounded-2xl p-4 space-y-3 mb-6"
+                      >
+                        <h4 className="font-serif text-xs font-bold text-purple-900 flex items-center gap-1.5">
+                          <Plus size={12} /> Add new address
+                        </h4>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <input 
+                            placeholder="Full Name *"
+                            required
+                            value={newAddress.name}
+                            onChange={e => setNewAddress({...newAddress, name: e.target.value})}
+                            className="col-span-2 w-full px-4 py-2.5 rounded-xl border border-beige-200 focus:outline-none focus:border-gold-400 bg-white text-[10px] sm:text-xs font-medium focus:ring-1 focus:ring-gold-400"
+                          />
+                          <input 
+                            placeholder="Phone Number *"
+                            required
+                            value={newAddress.phone}
+                            onChange={e => setNewAddress({...newAddress, phone: e.target.value})}
+                            className="w-full px-4 py-2.5 rounded-xl border border-beige-200 focus:outline-none focus:border-gold-400 bg-white text-[10px] sm:text-xs font-medium focus:ring-1 focus:ring-gold-400"
+                          />
+                          <input 
+                            placeholder="Pincode *"
+                            required
+                            value={newAddress.pincode}
+                            onChange={handlePincodeChange}
+                            className="w-full px-4 py-2.5 rounded-xl border border-beige-200 focus:outline-none focus:border-gold-400 bg-white text-[10px] sm:text-xs font-medium focus:ring-1 focus:ring-gold-400"
+                          />
+                          <textarea 
+                            placeholder="Flat, House no., Area, Street *"
+                            required
+                            rows={2}
+                            value={newAddress.address}
+                            onChange={e => setNewAddress({...newAddress, address: e.target.value})}
+                            className="col-span-2 w-full px-4 py-2.5 rounded-xl border border-beige-200 focus:outline-none focus:border-gold-400 bg-white text-[10px] sm:text-xs font-medium focus:ring-1 focus:ring-gold-400"
+                          />
+                          <input 
+                            placeholder="City / District *"
+                            required
+                            value={newAddress.city}
+                            onChange={e => setNewAddress({...newAddress, city: e.target.value})}
+                            className="w-full px-4 py-2.5 rounded-xl border border-beige-200 focus:outline-none focus:border-gold-400 bg-white text-[10px] sm:text-xs font-medium focus:ring-1 focus:ring-gold-400"
+                          />
+                          <label className="flex items-center space-x-1.5 cursor-pointer select-none">
+                            <input 
+                              type="checkbox" 
+                              checked={newAddress.isDefault}
+                              onChange={e => setNewAddress({...newAddress, isDefault: e.target.checked})}
+                              className="w-3 h-3 rounded text-purple-900 border-beige-300 focus:ring-0"
+                            />
+                            <span className="text-[8px] sm:text-[9px] font-black text-gray-400 uppercase tracking-wider">Set as default</span>
+                          </label>
+                        </div>
+
+                        <div className="flex space-x-2.5 pt-1.5">
+                          <button 
+                            type="submit"
+                            className="px-4 py-2.5 rounded-lg font-bold text-[10px] uppercase tracking-wider bg-purple-950 text-white hover:bg-purple-900 active:scale-95 transition-all min-h-0 flex-1"
+                          >
+                            Save & Select
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => setIsAddingAddress(false)}
+                            className="px-4 py-2.5 rounded-lg font-bold text-[10px] uppercase tracking-wider border border-beige-200 text-gray-500 bg-white hover:bg-beige-50 active:scale-95 transition-all min-h-0"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </motion.form>
+                    )}
+
+                    {/* Selected Address View */}
+                    {!showAddressList && !isAddingAddress && (
+                      <div className="bg-purple-50/10 rounded-2xl border border-beige-100/60 p-4">
+                        {currentAddress ? (
+                          <div>
+                            <div className="flex items-center space-x-2.5 mb-1">
+                              <span className="font-bold text-purple-950 text-xs sm:text-sm">{currentAddress.name}</span>
+                              <span className="text-[8px] font-black tracking-widest uppercase bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                                Selected
+                              </span>
+                            </div>
+                            <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 leading-relaxed">{currentAddress.address}</p>
+                            <p className="text-[10px] sm:text-xs font-semibold text-purple-900 mb-2">{currentAddress.city} · {currentAddress.pincode}</p>
+                            <div className="flex items-center space-x-1.5 text-gray-400">
+                              <Phone size={8} />
+                              <span className="text-[8px] sm:text-[9px] font-bold tracking-widest">{currentAddress.phone}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center py-4">
+                            <p className="text-xs text-gray-500 mb-3">No delivery address saved yet.</p>
                             <button 
                               onClick={() => setIsAddingAddress(true)}
-                              className="flex items-center space-x-1.5 text-purple-600 font-bold hover:text-purple-900 transition-colors group text-[10px] sm:text-xs mt-1.5 min-h-0"
+                              className="px-5 py-2.5 bg-purple-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-luxury min-h-0"
                             >
-                              <Plus size={12} />
-                              <span>Add a new delivery address</span>
+                              Add Delivery Address
                             </button>
-                          )}
-
-                          {user.addresses?.length > 0 && !isAddingAddress && (
-                            <motion.button 
-                              whileHover={{ scale: 1.01, y: -1 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => setActiveStep(2)}
-                              className="w-full mt-6 bg-purple-900 text-gold-400 py-3.5 rounded-xl md:rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-luxury min-h-0"
-                              style={{ background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)', border: '1px solid rgba(255,255,255,0.08)' }}
-                            >
-                              Deliver to this address
-                            </motion.button>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-
-                  {/* ════ STEP 2: SUMMARY ════ */}
-                  <motion.div 
-                    layout
-                    className={`bg-white rounded-3xl md:rounded-[2.5rem] overflow-hidden border transition-all duration-300 ${
-                      activeStep === 2 
-                        ? 'border-purple-200/80 shadow-luxury' 
-                        : 'border-beige-100 shadow-sm opacity-50'
-                    }`}
-                  >
-                    <div 
-                      className="p-5 md:p-8 flex justify-between items-center cursor-pointer select-none"
-                      onClick={() => activeStep >= 2 && setActiveStep(2)}
-                    >
-                      <div className="flex items-center space-x-3 md:space-x-4">
-                        <div className={`w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl flex items-center justify-center font-bold text-xs md:text-sm ${activeStep === 2 ? 'bg-purple-900 text-white' : 'bg-beige-100 text-purple-900'}`}>
-                          2
-                        </div>
-                        <h3 className="font-serif text-base sm:text-lg md:text-xl font-bold text-purple-900">Order package</h3>
+                          </div>
+                        )}
                       </div>
+                    )}
+                  </div>
+
+                  {/* ════ SECTION 2: ORDER SUMMARY ════ */}
+                  <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-beige-100 p-5 md:p-8 shadow-sm">
+                    <div className="flex items-center space-x-2 md:space-x-3 mb-4 pb-3 border-b border-beige-100">
+                      <ShoppingBag size={16} className="text-purple-900" />
+                      <h3 className="font-serif text-base sm:text-lg font-bold text-purple-900">Your rituals ({cart.length})</h3>
                     </div>
 
-                    <AnimatePresence>
-                      {activeStep === 2 && (
-                        <motion.div 
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="px-5 md:px-8 pb-6 md:pb-8 overflow-hidden"
-                        >
-                          <div className="divide-y divide-beige-100/60 mb-5 max-h-[260px] overflow-y-auto pr-1.5 no-scrollbar">
-                            {cart.map((item) => {
-                              const discPrice = item.price * (1 - (item.discountPercentage || 0) / 100);
-                              return (
-                                <div key={item.id} className="py-3 flex items-center space-x-3 first:pt-0 last:pb-0">
-                                  <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-beige-50 border border-beige-100/60 flex-shrink-0 shadow-sm">
-                                    <Image src={item.image || '/images/placeholder.png'} alt="" fill sizes="48px" className="object-cover" unoptimized />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <h4 className="text-[11px] font-bold text-purple-900 leading-tight mb-0.5 truncate">{item.name}</h4>
-                                    <div className="flex items-center space-x-1.5 text-[9px]">
-                                      <span className="font-extrabold text-gray-900">₹{discPrice.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-                                      <span className="text-gray-400 font-medium">Qty: {item.quantity}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
+                    <div className="divide-y divide-beige-100/60 max-h-[220px] overflow-y-auto pr-1.5 no-scrollbar">
+                      {cart.map((item) => {
+                        const discPrice = item.price * (1 - (item.discountPercentage || 0) / 100);
+                        return (
+                          <div key={item.id} className="py-3 flex items-center space-x-3 first:pt-0 last:pb-0">
+                            <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-beige-50 border border-beige-100/60 flex-shrink-0 shadow-sm">
+                              <Image src={item.image || '/images/placeholder.png'} alt="" fill sizes="48px" className="object-cover" unoptimized />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-[11px] font-bold text-purple-900 leading-tight mb-0.5 truncate">{item.name}</h4>
+                              <div className="flex items-center space-x-1.5 text-[9px]">
+                                <span className="font-extrabold text-gray-900">₹{discPrice.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                                <span className="text-gray-400 font-medium">Qty: {item.quantity}</span>
+                              </div>
+                            </div>
                           </div>
-                          
-                          <motion.button 
-                            whileHover={{ scale: 1.01, y: -1 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => setActiveStep(3)}
-                            className="w-full bg-purple-900 text-gold-400 py-3.5 rounded-xl md:rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-luxury min-h-0"
-                            style={{ background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)', border: '1px solid rgba(255,255,255,0.08)' }}
-                          >
-                            Confirm summary
-                          </motion.button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
+                        );
+                      })}
+                    </div>
+                  </div>
 
-                  {/* ════ STEP 3: PAYMENT OPTIONS ════ */}
-                  <motion.div 
-                    layout
-                    className={`bg-white rounded-3xl md:rounded-[2.5rem] overflow-hidden border transition-all duration-300 ${
-                      activeStep === 3 
-                        ? 'border-purple-200/80 shadow-luxury' 
-                        : 'border-beige-100 shadow-sm opacity-50'
-                    }`}
-                  >
-                    <div 
-                      className="p-5 md:p-8 flex justify-between items-center cursor-pointer select-none"
-                      onClick={() => activeStep >= 3 && setActiveStep(3)}
-                    >
-                      <div className="flex items-center space-x-3 md:space-x-4">
-                        <div className={`w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl flex items-center justify-center font-bold text-xs md:text-sm ${activeStep === 3 ? 'bg-purple-900 text-white' : 'bg-beige-100 text-purple-900'}`}>
-                          3
-                        </div>
-                        <h3 className="font-serif text-base sm:text-lg md:text-xl font-bold text-purple-900">Secure Payment</h3>
-                      </div>
+                  {/* ════ SECTION 3: PAYMENT METHOD ════ */}
+                  <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-beige-100 p-5 md:p-8 shadow-sm">
+                    <div className="flex items-center space-x-2 md:space-x-3 mb-4 pb-3 border-b border-beige-100">
+                      <CreditCard size={16} className="text-purple-900" />
+                      <h3 className="font-serif text-base sm:text-lg font-bold text-purple-900">Payment details</h3>
                     </div>
 
-                    <AnimatePresence>
-                      {activeStep === 3 && (
-                        <motion.div 
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="px-5 md:px-8 pb-6 md:pb-8 overflow-hidden"
-                        >
-                          <div className="bg-gradient-to-r from-purple-50/40 to-white border border-purple-100 p-4 md:p-6 rounded-2xl md:rounded-[2rem] mb-5 shadow-sm">
-                            <div className="flex items-center justify-between mb-4">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-900 flex-shrink-0">
-                                  <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="h-2.5" />
-                                </div>
-                                <div className="leading-tight">
-                                  <h4 className="font-bold text-purple-900 text-xs sm:text-sm mb-0.5">UPI & Online checkout</h4>
-                                  <p className="text-[8px] sm:text-[9px] text-gray-400 font-medium">Automatic redirect to secure banking gateway</p>
-                                </div>
-                              </div>
-                              <div className="w-3.5 h-3.5 rounded-full border-4 border-purple-900 flex items-center justify-center flex-shrink-0" />
-                            </div>
-                            
-                            {/* Payment Method Badges */}
-                            <div className="grid grid-cols-3 gap-2.5 bg-white/70 backdrop-blur-md rounded-xl p-2.5 border border-beige-100/60 shadow-sm mb-4">
-                              <div className="flex flex-col items-center py-2 hover:bg-beige-50/50 rounded-lg transition-all cursor-pointer border border-transparent hover:border-beige-100">
-                                <div className="h-4.5 flex items-center justify-center mb-0.5 w-8">
-                                  <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="max-h-full max-w-full" />
-                                </div>
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider">GPay</span>
-                              </div>
-                              <div className="flex flex-col items-center py-2 hover:bg-beige-50/50 rounded-lg transition-all cursor-pointer border border-transparent hover:border-beige-100">
-                                <div className="h-4.5 flex items-center justify-center mb-0.5 w-8">
-                                  <img src="https://download.logo.wine/logo/PhonePe/PhonePe-Logo.wine.png" alt="PhonePe" className="max-h-full max-w-full object-contain" />
-                                </div>
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider">PhonePe</span>
-                              </div>
-                              <div className="flex flex-col items-center py-2 hover:bg-beige-50/50 rounded-lg transition-all cursor-pointer border border-transparent hover:border-beige-100">
-                                <div className="h-4.5 flex items-center justify-center mb-0.5 w-8">
-                                  <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="max-h-full max-w-full" />
-                                </div>
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider">Paytm</span>
-                              </div>
-                            </div>
-
-                            {/* VPA UPI Input */}
-                            <div className="pt-3 border-t border-purple-100/60">
-                              <label className="text-[8px] sm:text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Optional UPI ID (VPA)</label>
-                              <input 
-                                type="text" 
-                                placeholder="e.g. yourname@okaxis" 
-                                value={upiId}
-                                onChange={(e) => setUpiId(e.target.value)}
-                                className="w-full px-3.5 py-2.5 sm:py-3 rounded-lg border border-beige-200 focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400 bg-white text-[10px] sm:text-xs font-semibold shadow-sm transition-all text-purple-900"
-                              />
-                              <p className="text-[8px] sm:text-[9px] text-gray-400 mt-1.5 font-medium">Entering VPA here will auto-fill your identifier securely inside the Razorpay gateway.</p>
-                            </div>
+                    <div className="bg-gradient-to-r from-purple-50/40 to-white border border-purple-100 p-4 md:p-6 rounded-2xl shadow-sm">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-900 flex-shrink-0">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="h-2.5" />
                           </div>
-
-                          {/* CTA Secure Pay Button */}
-                          <motion.button 
-                            whileHover={{ scale: 1.015, y: -2 }}
-                            whileTap={{ scale: 0.985 }}
-                            onClick={handlePlaceOrder}
-                            disabled={isSubmitting}
-                            className="w-full py-4 sm:py-5 rounded-xl sm:rounded-[2rem] font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all flex items-center justify-center space-x-2 disabled:opacity-75 relative overflow-hidden group min-h-0"
-                            style={{
-                              background: 'linear-gradient(135deg, #D4AF37, #edc757)',
-                              color: '#1a0a22',
-                              boxShadow: '0 6px 24px rgba(212,175,55,0.3)',
-                            }}
-                          >
-                            <div className="absolute inset-0 bg-white/30 group-hover:translate-x-full transition-transform duration-700 ease-in-out -translate-x-full skew-x-12" />
-                            {isSubmitting ? (
-                              <Loader2 className="animate-spin text-purple-950" size={16} />
-                            ) : (
-                              <>
-                                <ShieldCheck size={16} className="text-purple-950" strokeWidth={2.5} />
-                                <span className="text-purple-950 font-black">Pay ₹{totalAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })} securely</span>
-                              </>
-                            )}
-                          </motion.button>
-                          
-                          <div className="flex items-center justify-center space-x-2 mt-4">
-                            <span className="text-[8px] sm:text-[9px] text-gray-400 font-bold uppercase tracking-wider">Secured via</span>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg" alt="Razorpay" className="h-2.5 opacity-60" />
+                          <div className="leading-tight">
+                            <h4 className="font-bold text-purple-900 text-xs sm:text-sm mb-0.5">UPI & Online checkout</h4>
+                            <p className="text-[8px] sm:text-[9px] text-gray-400 font-medium">Redirect to secure Razorpay screen</p>
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
+                        </div>
+                        <div className="w-3.5 h-3.5 rounded-full border-4 border-purple-900 flex items-center justify-center flex-shrink-0" />
+                      </div>
+                      
+                      {/* Payment App Badges */}
+                      <div className="grid grid-cols-3 gap-2 bg-white/70 backdrop-blur-md rounded-xl p-2 border border-beige-100/60 shadow-sm mb-4">
+                        <div className="flex flex-col items-center py-2 hover:bg-beige-50/50 rounded-lg transition-all border border-transparent">
+                          <div className="h-4 flex items-center justify-center mb-0.5 w-8">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="max-h-full max-w-full" />
+                          </div>
+                          <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider">GPay</span>
+                        </div>
+                        <div className="flex flex-col items-center py-2 hover:bg-beige-50/50 rounded-lg transition-all border border-transparent">
+                          <div className="h-4 flex items-center justify-center mb-0.5 w-8">
+                            <img src="https://download.logo.wine/logo/PhonePe/PhonePe-Logo.wine.png" alt="PhonePe" className="max-h-full max-w-full object-contain" />
+                          </div>
+                          <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider">PhonePe</span>
+                        </div>
+                        <div className="flex flex-col items-center py-2 hover:bg-beige-50/50 rounded-lg transition-all border border-transparent">
+                          <div className="h-4 flex items-center justify-center mb-0.5 w-8">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="max-h-full max-w-full" />
+                          </div>
+                          <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider">Paytm</span>
+                        </div>
+                      </div>
+
+                      {/* VPA UPI Input */}
+                      <div className="pt-3 border-t border-purple-100/60">
+                        <label className="text-[8px] sm:text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Optional UPI ID (VPA)</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. yourname@okaxis" 
+                          value={upiId}
+                          onChange={(e) => setUpiId(e.target.value)}
+                          className="w-full px-3.5 py-2.5 sm:py-3 rounded-lg border border-beige-200 focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400 bg-white text-[10px] sm:text-xs font-semibold shadow-sm transition-all text-purple-900"
+                        />
+                      </div>
+                    </div>
+                  </div>
 
                 </div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* Pricing Summary Sidebar */}
+          {/* Pricing Summary Sidebar (Includes Pay Button) */}
           {activeStep < 4 && (
             <div className="lg:col-span-4 lg:sticky lg:top-32">
               <div 
                 className="bg-white rounded-3xl md:rounded-[2.5rem] p-5 md:p-7 border border-beige-100/60"
                 style={{ boxShadow: '0 8px 32px rgba(90,42,108,0.06)' }}
               >
-                <div className="flex items-center space-x-1.5 mb-4 md:mb-6 border-b border-beige-100/60 pb-3 md:pb-4">
+                <div className="flex items-center space-x-1.5 mb-4 border-b border-beige-100/60 pb-3">
                   <Sparkles size={14} className="text-gold-500" />
-                  <h3 className="font-serif text-sm sm:text-base md:text-lg font-bold text-purple-900">Ritual Invoice</h3>
+                  <h3 className="font-serif text-sm sm:text-base font-bold text-purple-900">Ritual Invoice</h3>
                 </div>
 
-                <div className="space-y-3 md:space-y-4 mb-4 md:mb-6">
+                {/* Invoice rows */}
+                <div className="space-y-3 mb-4">
                   <div className="flex justify-between text-[10px] sm:text-xs text-gray-500 font-medium">
                     <span>Base package total</span>
                     <span className="font-extrabold text-gray-800">
@@ -713,13 +593,37 @@ const Checkout = () => {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-dashed border-beige-200 flex justify-between items-center mb-4 md:mb-6">
-                  <span className="font-serif text-xs sm:text-sm font-bold text-purple-955">Grand Total</span>
+                <div className="pt-4 border-t border-dashed border-beige-200 flex justify-between items-center mb-6">
+                  <span className="font-serif text-xs sm:text-sm font-bold text-purple-950">Grand Total</span>
                   <span className="text-lg sm:text-xl md:text-2xl font-black text-purple-900">₹{totalAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                 </div>
 
+                {/* Pay Securely CTA Button */}
+                <motion.button 
+                  whileHover={{ scale: 1.015, y: -2 }}
+                  whileTap={{ scale: 0.985 }}
+                  onClick={handlePlaceOrder}
+                  disabled={isSubmitting}
+                  className="w-full py-4 rounded-xl font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all flex items-center justify-center space-x-2 disabled:opacity-75 relative overflow-hidden group min-h-0 mb-4"
+                  style={{
+                    background: 'linear-gradient(135deg, #D4AF37, #edc757)',
+                    color: '#1a0a22',
+                    boxShadow: '0 6px 24px rgba(212,175,55,0.3)',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-white/30 group-hover:translate-x-full transition-transform duration-700 ease-in-out -translate-x-full skew-x-12" />
+                  {isSubmitting ? (
+                    <Loader2 className="animate-spin text-purple-950" size={16} />
+                  ) : (
+                    <>
+                      <ShieldCheck size={16} className="text-purple-950" strokeWidth={2.5} />
+                      <span className="text-purple-950 font-black">Pay ₹{totalAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })} securely</span>
+                    </>
+                  )}
+                </motion.button>
+
                 {/* Secure Trust Callout */}
-                <div className="bg-beige-50/50 rounded-xl md:rounded-2xl p-3 md:p-4 border border-beige-100/60 flex items-start space-x-2.5">
+                <div className="bg-beige-50/50 rounded-xl p-3 border border-beige-100/60 flex items-start space-x-2.5">
                   <ShieldCheck size={14} className="text-gold-500 flex-shrink-0 mt-0.5" />
                   <p className="text-[8px] sm:text-[9px] text-gray-400 font-bold uppercase tracking-wider leading-relaxed">
                     Evans protocols guarantee complete secure processing & organic sourcing standards.

@@ -108,7 +108,6 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
     } finally {
       setIsSubmitting(false);
     }
->>>>>>> 374c7490883085863ee2dfb76cf89d3988f8bb0d
   };
 
   const handleBuyNow = () => {

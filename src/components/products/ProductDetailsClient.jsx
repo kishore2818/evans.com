@@ -6,45 +6,54 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import toast from 'react-hot-toast';
-import { 
-  ChevronLeft, 
-  Star, 
-  Heart, 
-  Share2, 
-  Plus, 
-  Minus, 
-  ShoppingBag, 
-  MessageSquare, 
+import {
+  ChevronLeft,
+  Star,
+  Share2,
+  Plus,
+  Minus,
+  ShoppingBag,
+  MessageSquare,
   Send,
-  Loader2
+  Loader2,
+  Heart,
+  Leaf,
+  Shield,
+  Package,
+  CheckCircle2,
+  ZoomIn,
 } from 'lucide-react';
+
+const TABS = ['Description', 'Benefits', 'Reviews'];
 
 const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchased }) => {
   const router = useRouter();
   const pathname = usePathname();
   const addToCart = useStore((state) => state.addToCart);
-  const { wishlist, toggleWishlist, addReview, myOrders, fetchMyOrders } = useStore();
+  const { addReview, myOrders, fetchMyOrders } = useStore();
   const { user, token } = useAuthStore();
-  
+
   const [product] = useState(initialProduct);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  
+  const [activeTab, setActiveTab] = useState('Description');
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
+  const [imageZoomed, setImageZoomed] = useState(false);
+
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [canReview, setCanReview] = useState(false);
   const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (token && myOrders.length === 0) {
-      fetchMyOrders();
-    }
+    if (token && myOrders.length === 0) fetchMyOrders();
   }, [token, fetchMyOrders, myOrders.length]);
 
   useEffect(() => {
     if (myOrders && myOrders.length > 0 && product) {
-      const hasDelivered = myOrders.some(order => 
-        order.orderStatus === 'delivered' && 
+      const hasDelivered = myOrders.some(order =>
+        order.orderStatus === 'delivered' &&
         order.items.some(item => (item.product === product.id || item.product === product._id))
       );
       setCanReview(hasDelivered);
@@ -52,45 +61,11 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
   }, [myOrders, product]);
 
   const handleAddToCart = () => {
-    if (!token) {
-      toast.error('Please login to add items to cart');
-      router.push(`/auth?from=${pathname}`);
-      return;
-    }
     const cartItem = { ...product, image: product.images[0] };
     addToCart(cartItem, quantity);
-    toast.success(`${quantity} ${product.name} added to cart!`);
-  };
-
-  const toggleLike = async () => {
-    if (!token) {
-      toast.error('Please login to adjust wishlist');
-      router.push(`/auth?from=${pathname}`);
-      return;
-    }
-    await toggleWishlist(product.id);
-  };
-
-  const isLiked = wishlist.includes(product.id);
-
-  const handleReviewSubmit = async (e) => {
-    e.preventDefault();
-    if (reviewData.comment.length < 5) {
-      toast.error('Please write a more detailed review.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await addReview(product.id, reviewData);
-      toast.success('Review published successfully!');
-      setShowReviewForm(false);
-      router.refresh();
-    } catch (error) {
-      toast.error(error.message || 'Failed to submit review');
-    } finally {
-      setIsSubmitting(false);
-    }
+    toast.success(`${quantity} × ${product.name} added!`);
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
   };
 
   const handleBuyNow = () => {
@@ -104,316 +79,539 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
     router.push('/cart');
   };
 
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: product.name, text: `Check out ${product.name} on Evans Luxe`, url: window.location.href });
+      } catch (error) {
+        if (error.name !== 'AbortError') console.error(error);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copied!');
+    }
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (reviewData.comment.length < 5) { toast.error('Write a more detailed review.'); return; }
+    setIsSubmitting(true);
+    try {
+      await addReview(product.id, reviewData);
+      toast.success('Review published!');
+      setShowReviewForm(false);
+      router.refresh();
+    } catch (error) {
+      toast.error(error.message || 'Failed to submit');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const discountedPrice = product.discountPercentage > 0
+    ? product.price - (product.price * (product.discountPercentage / 100))
+    : product.price;
+
+  const savingsAmount = product.discountPercentage > 0
+    ? product.price - discountedPrice
+    : 0;
+
   return (
-    <div className="bg-white min-h-[calc(100vh-80px)] pb-24 md:pb-12 md:mt-4 md:rounded-3xl md:shadow-card md:mx-6 md:overflow-hidden relative max-w-6xl lg:mx-auto">
-      <div className="md:hidden absolute top-0 w-full z-10 flex justify-between items-center p-6 bg-gradient-to-b from-black/20 to-transparent pt-10">
-        <button 
-          onClick={() => router.back()} 
-          className="w-10 h-10 bg-white/70 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-sm"
+    <div className="bg-white min-h-[calc(100vh-80px)] pb-28 md:pb-12 md:mt-4 md:rounded-[2.5rem] md:overflow-hidden relative max-w-6xl lg:mx-auto md:shadow-luxury">
+
+      {/* ── Mobile floating action bar ── */}
+      <div className="md:hidden absolute top-0 w-full z-20 flex justify-between items-center p-5 pt-8"
+        style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 100%)' }}>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => router.back()}
+          className="w-10 h-10 rounded-full flex items-center justify-center shadow-md min-h-0 min-w-0"
+          style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)' }}
         >
-          <ChevronLeft size={24} />
-        </button>
-        <div className="flex space-x-3">
-          <button className="w-10 h-10 bg-white/70 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-sm">
-            <Share2 size={20} />
-          </button>
-          <button 
-            onClick={toggleLike}
-            className="w-10 h-10 bg-white/70 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm"
+          <ChevronLeft size={22} className="text-purple-900" />
+        </motion.button>
+        <div className="flex space-x-2.5">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setIsWishlisted(v => !v)}
+            className="w-10 h-10 rounded-full flex items-center justify-center shadow-md min-h-0 min-w-0"
+            style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)' }}
           >
-            <Heart size={20} className={isLiked ? "text-red-500 fill-red-500" : "text-purple-900"} />
-          </button>
+            <Heart size={18} fill={isWishlisted ? '#ef4444' : 'transparent'} stroke={isWishlisted ? '#ef4444' : '#5A2A6C'} strokeWidth={2} />
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={handleShare}
+            className="w-10 h-10 rounded-full flex items-center justify-center shadow-md min-h-0 min-w-0"
+            style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)' }}
+          >
+            <Share2 size={18} className="text-purple-900" />
+          </motion.button>
         </div>
       </div>
 
-      <div className="lg:flex lg:h-full">
-        <div className="w-full lg:w-1/2 p-0 lg:p-8 bg-beige-50/30">
-          <div className="w-full h-[50vh] md:h-[65vh] md:rounded-[3rem] overflow-hidden relative shadow-luxury group bg-beige-100">
-            <img 
-              src={product.images[activeImageIndex]} 
-              alt={product.name} 
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="hidden lg:flex absolute top-6 right-6 space-x-3 z-10">
-              <button className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-purple-900 shadow-md hover:bg-white hover:scale-110 transition-all font-bold">
-                <Share2 size={18} />
-              </button>
-              <button 
-                onClick={toggleLike}
-                className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-md hover:bg-white hover:scale-110 transition-all"
+      <div className="lg:flex lg:min-h-full">
+
+        {/* ══ LEFT: Image Gallery ══ */}
+        <div className="w-full lg:w-[52%] lg:sticky lg:top-20 lg:h-[calc(100vh-80px)] lg:overflow-y-auto">
+          {/* Main Image */}
+          <div
+            className="relative w-full bg-beige-50 cursor-zoom-in overflow-hidden"
+            style={{ height: '52vh', minHeight: '320px' }}
+            onClick={() => setImageZoomed(true)}
+          >
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={activeImageIndex}
+                src={product.images[activeImageIndex]}
+                alt={product.name}
+                initial={{ opacity: 0, scale: 1.06 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full h-full object-cover"
+                style={{ willChange: 'transform' }}
+              />
+            </AnimatePresence>
+
+            {/* Zoom hint */}
+            <div className="absolute bottom-4 right-4 flex items-center space-x-1.5 text-white/70 text-[10px] font-bold uppercase tracking-wider">
+              <ZoomIn size={14} />
+              <span className="hidden md:inline">Tap to zoom</span>
+            </div>
+
+            {/* Desktop share + wishlist */}
+            <div className="hidden lg:flex absolute top-5 right-5 space-x-2.5 z-10">
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsWishlisted(v => !v); }}
+                className="w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all min-h-0 min-w-0"
+                style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)' }}
               >
-                <Heart size={18} className={isLiked ? "text-red-500 fill-red-500" : "text-purple-900"} />
+                <Heart size={17} fill={isWishlisted ? '#ef4444' : 'transparent'} stroke={isWishlisted ? '#ef4444' : '#5A2A6C'} strokeWidth={2} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleShare(); }}
+                className="w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all min-h-0 min-w-0"
+                style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)' }}
+              >
+                <Share2 size={17} className="text-purple-900" />
               </button>
             </div>
+
+            {/* Best seller badge */}
+            {product.isBestSeller && (
+              <div
+                className="absolute top-5 left-5 text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-md"
+                style={{ background: 'rgba(62,29,74,0.92)', color: '#D4AF37', backdropFilter: 'blur(8px)' }}
+              >
+                ✦ Best Seller
+              </div>
+            )}
           </div>
 
+          {/* Thumbnail strip */}
           {product.images.length > 1 && (
-            <div className="flex overflow-x-auto no-scrollbar space-x-3 mt-4 px-6 md:px-0">
+            <div className="flex gap-3 px-4 md:px-6 py-4 overflow-x-auto no-scrollbar">
               {product.images.map((img, idx) => (
-                <button
+                <motion.button
                   key={idx}
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.94 }}
                   onClick={() => setActiveImageIndex(idx)}
-                  className={`relative flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
-                    activeImageIndex === idx 
-                    ? 'border-gold-400 scale-105 shadow-md' 
-                    : 'border-transparent opacity-60 hover:opacity-100'
-                  }`}
+                  className="relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 transition-all duration-300 min-h-0 min-w-0"
+                  style={{
+                    borderColor: activeImageIndex === idx ? '#D4AF37' : 'transparent',
+                    boxShadow: activeImageIndex === idx ? '0 0 0 1px #D4AF37, 0 4px 12px rgba(212,175,55,0.3)' : '0 2px 8px rgba(0,0,0,0.08)',
+                  }}
                 >
                   <img src={img} alt="" className="w-full h-full object-cover" />
-                </button>
+                  {activeImageIndex === idx && (
+                    <div className="absolute inset-0 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)' }} />
+                  )}
+                </motion.button>
               ))}
             </div>
           )}
+
+          {/* Back button — desktop */}
+          <button
+            onClick={() => router.back()}
+            className="hidden lg:flex items-center space-x-2 text-purple-500 hover:text-purple-900 font-bold px-6 py-4 transition-all hover:-translate-x-1 min-h-0 text-xs uppercase tracking-widest"
+          >
+            <ChevronLeft size={18} strokeWidth={2.5} />
+            <span>Botanical Collection</span>
+          </button>
         </div>
 
-        <div className="px-6 lg:px-12 pt-8 lg:pt-16 bg-white relative -mt-6 lg:mt-0 rounded-t-[3.5rem] lg:rounded-none lg:w-1/2 flex flex-col justify-start">
-          <button 
-            onClick={() => router.back()} 
-            className="hidden lg:flex items-center space-x-2 text-purple-600 hover:text-purple-900 font-bold mb-8 transition-all hover:-translate-x-1"
-          >
-            <ChevronLeft size={20} strokeWidth={2.5} />
-            <span className="text-xs uppercase tracking-[0.2em]">Botanical Collection</span>
-          </button>
+        {/* ══ RIGHT: Product Info ══ */}
+        <div className="px-6 lg:px-10 pt-8 lg:pt-10 bg-white relative -mt-8 lg:mt-0 rounded-t-[2.5rem] lg:rounded-none lg:w-[48%] flex flex-col">
 
-          <div className="flex flex-col mb-8">
-            <h1 className="font-serif text-3xl md:text-4xl font-bold text-purple-900 leading-tight mb-2">
+          {/* ── Name + Meta ── */}
+          <div className="mb-6">
+            {product.category && (
+              <span className="inline-block text-[9px] font-black uppercase tracking-[0.3em] text-purple-600 bg-purple-50 px-3 py-1 rounded-full mb-3">
+                {product.category}
+              </span>
+            )}
+            <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-purple-900 leading-tight mb-4">
               {product.name}
             </h1>
-            <div className="flex flex-wrap items-end justify-between gap-y-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center space-x-1 bg-gold-50 px-3 py-1.5 rounded-full text-gold-700 whitespace-nowrap">
-                  <Star size={14} className="fill-gold-400 text-gold-400" />
-                  <span className="text-sm font-black leading-none">{product.rating || 0}</span>
+
+            {/* Rating + sales row */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full"
+                style={{ background: '#fdf9ec', border: '1px solid rgba(212,175,55,0.25)' }}>
+                <div className="flex space-x-0.5">
+                  {[1,2,3,4,5].map(i => (
+                    <Star key={i} size={11} fill={i <= Math.round(product.rating || 0) ? '#D4AF37' : 'transparent'}
+                      className={i <= Math.round(product.rating || 0) ? 'text-gold-400' : 'text-gray-200'} />
+                  ))}
                 </div>
-                <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
-                    <span className="whitespace-nowrap">{product.reviewsCount || 0} Review(s)</span>
-                    <span className="text-gray-200">|</span>
-                    <span className="text-[10px] font-black text-purple-900 bg-purple-50 px-2 py-1 rounded-md uppercase tracking-wider whitespace-nowrap">{product.soldCount || 0} Sold</span>
-                </div>
+                <span className="text-xs font-black text-gold-700">{product.rating || 0}</span>
               </div>
-              <div className="flex flex-row sm:flex-col items-baseline sm:items-end space-x-2 sm:space-x-0 whitespace-nowrap">
-                {product.discountPercentage > 0 && (
-                  <span className="text-sm text-gray-400 line-through">₹{product.price.toLocaleString('en-IN')}</span>
-                )}
-                <span className="font-sans text-2xl font-black text-purple-900">
-                  ₹{(product.discountPercentage > 0 
-                    ? product.price - (product.price * (product.discountPercentage / 100)) 
-                    : product.price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              <span className="text-xs font-bold text-gray-400">({product.reviewsCount || 0} reviews)</span>
+              {(product.soldCount || 0) > 0 && (
+                <span className="text-[10px] font-black text-purple-900 bg-purple-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  {product.soldCount} sold
                 </span>
-              </div>
+              )}
             </div>
           </div>
 
-          <div className="space-y-6 mb-10">
-            <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-900/40 mb-3">Product Essence</h4>
-              <p className="text-gray-600 text-sm leading-relaxed font-medium">
-                {product.description}
-              </p>
+          {/* ── Price Block ── */}
+          <div className="mb-6 p-4 rounded-2xl" style={{ background: '#fdfcfb', border: '1px solid rgba(62,29,74,0.07)' }}>
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <span className="font-sans text-3xl font-black text-purple-900">
+                ₹{discountedPrice.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </span>
+              {product.discountPercentage > 0 && (
+                <>
+                  <span className="text-base text-gray-400 line-through">₹{product.price.toLocaleString('en-IN')}</span>
+                  <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+                    Save ₹{savingsAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  </span>
+                </>
+              )}
             </div>
-
-            <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-900/40 mb-3">Key Benefits</h4>
-              <ul className="grid grid-cols-1 gap-2.5">
-                {product.benefits?.map((benefit, idx) => (
-                  <li key={idx} className="flex items-center space-x-3 text-xs text-gray-700 font-bold">
-                    <div className="w-1.5 h-1.5 bg-gold-400 rounded-full flex-shrink-0" />
-                    <span>{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1.5">
+              Inclusive of all taxes · Free shipping above ₹999
+            </p>
           </div>
 
-          <div className="mt-auto space-y-8">
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-900/40 block mb-3">Quantity</span>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center bg-beige-50 rounded-2xl p-1 shadow-sm border border-beige-100">
-                  <button 
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    disabled={product.stock === 0}
-                    className="w-10 h-10 flex items-center justify-center text-purple-700 hover:bg-white hover:shadow-sm rounded-xl transition-all disabled:opacity-30"
-                  >
-                    <Minus size={18} strokeWidth={3} />
-                  </button>
-                  <span className="w-10 text-center font-black font-sans text-sm text-purple-900">{quantity}</span>
-                  <button 
-                    onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                    disabled={product.stock === 0 || quantity >= product.stock}
-                    className="w-10 h-10 flex items-center justify-center text-purple-700 hover:bg-white hover:shadow-sm rounded-xl transition-all disabled:opacity-30"
-                  >
-                    <Plus size={18} strokeWidth={3} />
-                  </button>
-                </div>
-                {product.stock > 0 && product.stock <= 10 && (
-                  <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full whitespace-nowrap">Only {product.stock} left!</span>
-                )}
-                {product.stock === 0 && (
-                  <span className="text-[10px] font-black uppercase tracking-widest text-red-600 bg-red-50 px-3 py-1.5 rounded-full whitespace-nowrap">Out of Stock</span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-col md:flex-row w-full space-y-3 md:space-y-0 md:space-x-4">
-              <button 
-                onClick={handleAddToCart}
-                disabled={product.stock === 0}
-                className="flex-[1.2] border-2 border-purple-900 text-purple-900 font-black py-5 rounded-2xl flex justify-center items-center space-x-3 text-xs uppercase tracking-widest hover:bg-purple-900 hover:text-white transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-purple-900"
-              >
-                <ShoppingBag size={18} strokeWidth={2.5} />
-                <span>{product.stock === 0 ? 'Out of Stock' : 'Add to Bag'}</span>
-              </button>
-              <button 
-                onClick={handleBuyNow}
-                disabled={product.stock === 0}
-                className="flex-1 bg-purple-900 text-gold-300 font-black py-5 rounded-2xl flex justify-center items-center shadow-luxury text-xs uppercase tracking-widest hover:bg-purple-800 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Buy Now
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-6 lg:px-12 py-16 border-t border-beige-100 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 space-y-4 md:space-y-0">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-600 mb-2">Verified Community Content</p>
-              <h2 className="font-serif text-3xl font-bold text-purple-900">Community Reflections</h2>
-            </div>
-            
-            {canReview && (
-              <button 
-                onClick={() => setShowReviewForm(!showReviewForm)}
-                className="bg-beige-50 text-purple-900 px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-purple-900 hover:text-white transition-all flex items-center space-x-2"
-              >
-                <MessageSquare size={16} />
-                <span>{showReviewForm ? 'Cancel Reflection' : 'Write a Reflection'}</span>
-              </button>
-            )}
-          </div>
-
-          <AnimatePresence>
-            {showReviewForm && (
-              <motion.div 
-                initial={{ height: 0, opacity: 0, y: 20 }}
-                animate={{ height: 'auto', opacity: 1, y: 0 }}
-                exit={{ height: 0, opacity: 0, y: 20 }}
-                className="overflow-hidden mb-12"
-              >
-                <form onSubmit={handleReviewSubmit} className="bg-gradient-to-br from-beige-50/50 to-white p-8 md:p-12 rounded-[3.5rem] border border-beige-100 shadow-luxury relative">
-                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-purple-50 rounded-full opacity-20 blur-2xl" />
-                  
-                  <div className="mb-10 text-center">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-purple-900/40 mb-6 block">Rate Your Experience</label>
-                    <div className="flex justify-center space-x-4">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button 
-                          key={star}
-                          type="button"
-                          onClick={() => setReviewData({...reviewData, rating: star})}
-                          className="transform hover:scale-125 transition-all duration-300 active:scale-95"
-                        >
-                          <Star 
-                            size={38} 
-                            strokeWidth={1.5}
-                            className={`${star <= reviewData.rating ? 'fill-gold-400 text-gold-400' : 'text-gray-200'}`} 
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <AnimatePresence>
-                    {reviewData.rating > 0 && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="space-y-8"
-                        >
-                            <div className="relative">
-                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-4 block">Share Your Botanical Reflection</label>
-                                <textarea 
-                                    required
-                                    placeholder="How has this product transformed your daily ritual? Describe the essence..." 
-                                    rows={4}
-                                    value={reviewData.comment}
-                                    onChange={(e) => setReviewData({...reviewData, comment: e.target.value})}
-                                    className="w-full bg-white/80 backdrop-blur-sm border border-beige-100 rounded-[2rem] p-6 text-sm focus:outline-none focus:border-purple-300 focus:ring-4 focus:ring-purple-50 transition-all font-medium shadow-inner"
-                                />
-                                <div className="absolute bottom-4 right-6 pointer-events-none opacity-10">
-                                    <MessageSquare size={40} className="text-purple-900" />
-                                </div>
-                            </div>
-
-                            <div className="flex justify-center">
-                                <button 
-                                    disabled={isSubmitting}
-                                    className="bg-purple-900 text-gold-300 px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center space-x-3 shadow-luxury hover:bg-purple-800 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 disabled:translate-y-0"
-                                >
-                                    {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-                                    <span>Publish Reflection</span>
-                                </button>
-                            </div>
-                        </motion.div>
-                    )}
-                  </AnimatePresence>
-                </form>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="space-y-8">
-            {product.reviews && product.reviews.length > 0 ? (
-              product.reviews.map((review, idx) => (
-                <motion.div 
-                    key={idx}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-beige-50 shadow-luxury group hover:border-purple-100 transition-all duration-500 relative overflow-hidden"
+          {/* ── Tabs: Description / Benefits / Reviews ── */}
+          <div className="mb-6">
+            {/* Tab bar */}
+            <div className="flex space-x-1 p-1 rounded-2xl mb-5" style={{ background: '#f5f0f9' }}>
+              {TABS.map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 min-h-0 relative`}
+                  style={activeTab === tab ? {
+                    background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)',
+                    color: '#D4AF37',
+                    boxShadow: '0 4px 12px rgba(62,29,74,0.25)',
+                  } : { color: '#9ca3af' }}
                 >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50/30 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-                  
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-14 h-14 bg-gradient-to-br from-purple-100 to-beige-50 rounded-2xl flex items-center justify-center text-purple-900 font-serif text-xl font-bold shadow-sm">
-                        {review.name?.[0]}
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            <AnimatePresence mode="wait">
+              {activeTab === 'Description' && (
+                <motion.div
+                  key="desc"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <p className="text-gray-600 text-sm leading-relaxed font-medium">
+                    {product.description}
+                  </p>
+                  {/* Trust icons */}
+                  <div className="flex flex-wrap gap-3 mt-5">
+                    {[
+                      { icon: Leaf, label: 'Organic' },
+                      { icon: Shield, label: 'Cruelty-Free' },
+                      { icon: Package, label: 'Eco Packaging' },
+                    ].map(({ icon: Icon, label }) => (
+                      <div key={label} className="flex items-center space-x-1.5 text-xs font-bold text-purple-700 bg-purple-50 px-3 py-2 rounded-full">
+                        <Icon size={13} />
+                        <span>{label}</span>
                       </div>
-                      <div>
-                        <h4 className="font-bold text-purple-900 text-base leading-none mb-2">{review.name}</h4>
-                        <div className="flex items-center space-x-3">
-                          <div className="flex space-x-0.5">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} size={12} className={`${i < review.rating ? 'fill-gold-400 text-gold-400' : 'text-gray-200'}`} />
-                            ))}
-                          </div>
-                          <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{new Date(review.createdAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <span className="absolute -top-4 -left-2 text-6xl text-purple-100 font-serif pointer-events-none">“</span>
-                    <p className="text-gray-600 text-sm leading-relaxed font-medium pl-6 relative z-10 italic">
-                        {review.comment}
-                    </p>
+                    ))}
                   </div>
                 </motion.div>
-              ))
-            ) : (
-              <div className="py-20 text-center bg-beige-50/50 rounded-[3rem] border border-dashed border-beige-100">
-                <MessageSquare size={32} className="mx-auto text-beige-200 mb-4" />
-                <p className="text-gray-400 font-bold uppercase tracking-[0.2em] text-[10px]">No reflections yet</p>
-                {canReview && <p className="text-purple-600 text-xs font-bold mt-2">Be the first to share your experience.</p>}
-              </div>
-            )}
+              )}
+
+              {activeTab === 'Benefits' && (
+                <motion.div
+                  key="benefits"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {product.benefits && product.benefits.length > 0 ? (
+                    <ul className="space-y-3">
+                      {product.benefits.map((benefit, idx) => (
+                        <motion.li
+                          key={idx}
+                          initial={{ opacity: 0, x: -12 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.07 }}
+                          className="flex items-start space-x-3 text-sm text-gray-700 font-medium"
+                        >
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                            style={{ background: 'linear-gradient(135deg, #D4AF37, #edc757)' }}>
+                            <CheckCircle2 size={11} className="text-purple-900" strokeWidth={3} />
+                          </div>
+                          <span>{benefit}</span>
+                        </motion.li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-400 text-sm italic">No benefits listed yet.</p>
+                  )}
+                </motion.div>
+              )}
+
+              {activeTab === 'Reviews' && (
+                <motion.div
+                  key="reviews"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-4 max-h-60 overflow-y-auto no-scrollbar"
+                >
+                  {product.reviews && product.reviews.length > 0 ? (
+                    product.reviews.map((review, idx) => (
+                      <div key={idx} className="p-4 rounded-2xl" style={{ background: '#fdfcfb', border: '1px solid rgba(62,29,74,0.06)' }}>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-gold-300 font-serif font-bold text-sm flex-shrink-0"
+                            style={{ background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)' }}>
+                            {review.name?.[0]}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-purple-900">{review.name}</p>
+                            <div className="flex space-x-0.5">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} size={8} fill={i < review.rating ? '#D4AF37' : 'transparent'}
+                                  className={i < review.rating ? 'text-gold-400' : 'text-gray-200'} />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-gray-600 text-xs leading-relaxed italic">"{review.comment}"</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <MessageSquare size={24} className="mx-auto text-gray-200 mb-2" />
+                      <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">No reviews yet</p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
+
+          {/* ── Quantity + Stock ── */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-900/50">Quantity</span>
+              {product.stock > 0 && product.stock <= 10 && (
+                <motion.span
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="text-[10px] font-black uppercase tracking-wider text-amber-600 bg-amber-50 px-3 py-1 rounded-full"
+                >
+                  Only {product.stock} left!
+                </motion.span>
+              )}
+              {product.stock === 0 && (
+                <span className="text-[10px] font-black uppercase tracking-wider text-red-600 bg-red-50 px-3 py-1 rounded-full">
+                  Out of Stock
+                </span>
+              )}
+            </div>
+            <div className="inline-flex items-center rounded-2xl p-1"
+              style={{ background: '#f5f0f9', border: '1px solid rgba(62,29,74,0.08)' }}>
+              <motion.button
+                whileTap={{ scale: 0.85 }}
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                disabled={product.stock === 0}
+                className="w-11 h-11 flex items-center justify-center text-purple-700 hover:bg-white rounded-xl transition-all disabled:opacity-30 min-h-0 min-w-0"
+              >
+                <Minus size={16} strokeWidth={3} />
+              </motion.button>
+              <span className="w-12 text-center font-black font-sans text-base text-purple-900">{quantity}</span>
+              <motion.button
+                whileTap={{ scale: 0.85 }}
+                onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                disabled={product.stock === 0 || quantity >= product.stock}
+                className="w-11 h-11 flex items-center justify-center text-purple-700 hover:bg-white rounded-xl transition-all disabled:opacity-30 min-h-0 min-w-0"
+              >
+                <Plus size={16} strokeWidth={3} />
+              </motion.button>
+            </div>
+          </div>
+
+          {/* ── CTA Buttons ── */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-8">
+            {/* Add to Bag */}
+            <motion.button
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleAddToCart}
+              disabled={product.stock === 0}
+              className="flex-[1.2] py-5 rounded-2xl flex justify-center items-center space-x-2.5 text-xs font-black uppercase tracking-widest transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed min-h-0"
+              style={addedToCart ? {
+                background: 'linear-gradient(135deg, #16a34a, #15803d)',
+                color: 'white',
+                boxShadow: '0 8px 24px rgba(22,163,74,0.35)',
+              } : {
+                border: '2px solid #3e1d4a',
+                color: '#3e1d4a',
+                background: 'white',
+              }}
+            >
+              <AnimatePresence mode="wait">
+                {addedToCart ? (
+                  <motion.div
+                    key="check"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    className="flex items-center space-x-2"
+                  >
+                    <CheckCircle2 size={18} strokeWidth={2.5} />
+                    <span>Added!</span>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="bag"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    className="flex items-center space-x-2"
+                  >
+                    <ShoppingBag size={18} strokeWidth={2.5} />
+                    <span>{product.stock === 0 ? 'Out of Stock' : 'Add to Bag'}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+
+            {/* Buy Now */}
+            <motion.button
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleBuyNow}
+              disabled={product.stock === 0}
+              className="flex-1 py-5 rounded-2xl flex justify-center items-center text-xs font-black uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed min-h-0"
+              style={{
+                background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)',
+                color: '#D4AF37',
+                boxShadow: '0 8px 24px rgba(62,29,74,0.35)',
+              }}
+            >
+              Buy Now
+            </motion.button>
+          </div>
+
+          {/* ── Review Form (can review only) ── */}
+          {canReview && (
+            <div className="mb-8">
+              <button
+                onClick={() => setShowReviewForm(v => !v)}
+                className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all min-h-0"
+                style={{ background: '#f5f0f9', color: '#5A2A6C', border: '1px solid rgba(90,42,108,0.12)' }}
+              >
+                <MessageSquare size={15} />
+                <span>{showReviewForm ? 'Cancel' : 'Write a Review'}</span>
+              </button>
+
+              <AnimatePresence>
+                {showReviewForm && (
+                  <motion.form
+                    onSubmit={handleReviewSubmit}
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.35 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-4 space-y-4">
+                      {/* Star rating */}
+                      <div className="text-center">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">Rate your experience</p>
+                        <div className="flex justify-center space-x-3">
+                          {[1,2,3,4,5].map(star => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setReviewData({...reviewData, rating: star})}
+                              className="hover:scale-125 transition-all min-h-0 min-w-0 w-8 h-8"
+                            >
+                              <Star size={32} fill={star <= reviewData.rating ? '#D4AF37' : 'transparent'}
+                                className={star <= reviewData.rating ? 'text-gold-400' : 'text-gray-200'} strokeWidth={1.5} />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <textarea
+                        required
+                        placeholder="Share your experience with this product..."
+                        rows={3}
+                        value={reviewData.comment}
+                        onChange={(e) => setReviewData({...reviewData, comment: e.target.value})}
+                        className="w-full border border-beige-200 rounded-2xl p-4 text-sm focus:outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-50 transition-all font-medium resize-none"
+                      />
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center space-x-2 transition-all disabled:opacity-50 min-h-0"
+                        style={{ background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)', color: '#D4AF37' }}
+                      >
+                        {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                        <span>Publish Review</span>
+                      </button>
+                    </div>
+                  </motion.form>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* ── Zoomed Image Modal ── */}
+      <AnimatePresence>
+        {imageZoomed && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setImageZoomed(false)}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            style={{ background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(12px)' }}
+          >
+            <motion.img
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              src={product.images[activeImageIndex]}
+              alt={product.name}
+              className="max-w-full max-h-full object-contain rounded-3xl"
+              style={{ maxWidth: '90vw', maxHeight: '90vh' }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

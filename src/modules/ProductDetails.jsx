@@ -10,7 +10,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Star, 
-  Heart, 
   Share2, 
   Plus, 
   Minus, 
@@ -138,7 +137,7 @@ const ProductDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const addToCart = useStore((state) => state.addToCart);
-  const { wishlist, toggleWishlist, addReview, myOrders, fetchMyOrders } = useStore();
+  const { addReview, myOrders, fetchMyOrders } = useStore();
   const { user, token } = useAuthStore();
   
   const [product, setProduct] = useState(null);
@@ -228,14 +227,7 @@ const ProductDetails = () => {
     toast.success(`${quantity} ${product.name} added to cart!`);
   };
 
-  const toggleLike = async () => {
-    if (!token) {
-      toast.error('Please login to adjust wishlist');
-      navigate('/auth', { state: { from: location } });
-      return;
-    }
-    await toggleWishlist(product.id);
-  };
+
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -256,7 +248,7 @@ const ProductDetails = () => {
     }
   };
 
-  const isLiked = wishlist.includes(id);
+
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();

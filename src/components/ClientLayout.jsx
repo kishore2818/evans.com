@@ -1,26 +1,39 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Home, Grid, ShoppingBag, User, Menu, X, ChevronRight, LogOut } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Home, Grid, ShoppingBag, User, X, ChevronRight, Sparkles, Heart } from 'lucide-react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { useStore } from '@/store/useStore';
 import { useAuthStore } from '@/store/useAuthStore';
 
+/* ─────────────────────────────────────────
+   TOP NAV — Glassmorphism header
+───────────────────────────────────────── */
 const TopNav = ({ cartItemCount }) => {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const prevCount = useRef(cartItemCount);
+  const [cartBounce, setCartBounce] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => setScrolled(window.scrollY > 30);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (cartItemCount !== prevCount.current && cartItemCount > prevCount.current) {
+      setCartBounce(true);
+      setTimeout(() => setCartBounce(false), 600);
+    }
+    prevCount.current = cartItemCount;
+  }, [cartItemCount]);
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -28,33 +41,51 @@ const TopNav = ({ cartItemCount }) => {
     { name: 'Contact Us', path: '/contact' },
   ];
 
-  // Don't render TopNav on home page — home has its own built-in header
+  // Don't render on home page – it has its own header
   if (pathname === '/') return null;
 
   return (
     <>
-      <header 
+      <motion.header
+        initial={{ y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className={`fixed top-0 w-full z-50 transition-all duration-500 ${
-          scrolled 
-            ? 'bg-white shadow-[0_2px_20px_rgba(88,28,135,0.12)] border-b border-purple-50 py-2' 
-            : 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-purple-50/60 py-3'
+          scrolled
+            ? 'py-2 shadow-nav'
+            : 'py-3'
         }`}
+        style={{
+          background: scrolled
+            ? 'rgba(255,255,255,0.88)'
+            : 'rgba(255,255,255,0.72)',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          borderBottom: scrolled ? '1px solid rgba(90,42,108,0.08)' : '1px solid transparent',
+        }}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-8 w-full flex justify-between items-center">
+          {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 md:space-x-3 group whitespace-nowrap min-h-[48px]">
-            <div className="relative w-8 h-8 md:w-10 md:h-10 overflow-hidden rounded-full border-2 border-purple-100 shadow-md">
+            <motion.div
+              whileHover={{ scale: 1.08, rotate: 6 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+              className="relative w-8 h-8 md:w-10 md:h-10 overflow-hidden rounded-full shadow-luxury"
+              style={{ border: '2px solid rgba(212,175,55,0.3)' }}
+            >
               <Image src="/images/logo.jpg" alt="Evans Luxe Logo" fill sizes="40px" className="object-cover" priority />
-            </div>
+            </motion.div>
             <div className="flex flex-col leading-none">
-              <span className="font-serif text-lg md:text-xl font-bold tracking-tight text-purple-900">
+              <span className="font-serif text-lg md:text-xl font-bold tracking-tight text-purple-900 group-hover:text-purple-700 transition-colors">
                 Evans Luxe
               </span>
-              <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.25em] text-gold-500">
+              <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-gold-500">
                 Beauty
               </span>
             </div>
           </Link>
-          
+
+          {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center space-x-10">
             {navLinks.map((link) => {
               const isActive = pathname === link.path || (link.path !== '/' && pathname.startsWith(link.path));
@@ -62,51 +93,83 @@ const TopNav = ({ cartItemCount }) => {
                 <Link
                   key={link.name}
                   href={link.path}
-                  className={`relative font-bold text-base transition-colors pb-1 group min-h-[48px] flex items-center ${
-                    isActive ? 'text-purple-900' : 'text-gray-500 hover:text-purple-700'
+                  className={`relative font-semibold text-sm transition-colors pb-1.5 group min-h-[48px] flex items-center ${
+                    isActive ? 'text-purple-900' : 'text-gray-500 hover:text-purple-800'
                   }`}
                 >
                   {link.name}
-                  <span className={`absolute bottom-0 left-0 h-0.5 bg-purple-700 rounded-full transition-all duration-300 ${
-                    isActive ? 'w-full' : 'w-0 group-hover:w-full'
-                  }`} />
+                  <motion.span
+                    className="absolute bottom-0 left-0 h-0.5 rounded-full"
+                    style={{ background: 'linear-gradient(90deg, #D4AF37, #edc757)' }}
+                    initial={false}
+                    animate={{ width: isActive ? '100%' : '0%' }}
+                    whileHover={{ width: '100%' }}
+                    transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+                  />
                 </Link>
-              )
+              );
             })}
           </nav>
 
-          <div className="flex items-center space-x-2 md:space-x-6">
-            <Link 
-              href="/profile" 
-              className="hidden md:flex items-center space-x-2 text-gray-600 hover:text-purple-700 transition-colors group min-h-[48px]"
+          {/* Actions */}
+          <div className="flex items-center space-x-2 md:space-x-4">
+            {/* Profile */}
+            <Link
+              href="/profile"
+              className="hidden md:flex items-center justify-center w-9 h-9 rounded-full bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition-all group min-h-[48px] min-w-[36px]"
+              title="My Account"
             >
-              <div className="w-9 h-9 rounded-full bg-beige-100 flex items-center justify-center group-hover:bg-purple-100 transition-colors">
-                <User size={20} strokeWidth={2} />
-              </div>
+              <motion.div whileHover={{ scale: 1.15 }} transition={{ type: 'spring', stiffness: 400, damping: 15 }}>
+                <User size={19} strokeWidth={2} />
+              </motion.div>
             </Link>
 
-            <Link href="/cart" className="relative flex items-center space-x-2 text-gray-600 hover:text-purple-700 transition-colors group min-h-[48px] px-2">
-              <div className="w-9 h-9 rounded-full bg-beige-100 flex items-center justify-center group-hover:bg-purple-100 relative transition-colors">
-                <ShoppingBag size={20} strokeWidth={2} />
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-purple-700 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
-                    {cartItemCount > 9 ? '9+' : cartItemCount}
-                  </span>
-                )}
-              </div>
+            {/* Cart */}
+            <Link href="/cart" className="relative flex items-center justify-center min-h-[48px] px-1">
+              <motion.div
+                animate={cartBounce ? { scale: [1, 1.3, 0.9, 1.1, 1] } : {}}
+                transition={{ duration: 0.5 }}
+                className="w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition-all relative"
+              >
+                <ShoppingBag size={19} strokeWidth={2} />
+                <AnimatePresence>
+                  {cartItemCount > 0 && (
+                    <motion.span
+                      key={cartItemCount}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                      className="absolute -top-1.5 -right-1.5 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-sm"
+                      style={{
+                        background: 'linear-gradient(135deg, #5A2A6C, #8540b0)',
+                        width: '18px',
+                        height: '18px',
+                        fontSize: '9px',
+                      }}
+                    >
+                      {cartItemCount > 9 ? '9+' : cartItemCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             </Link>
 
-            <button 
+            {/* Mobile hamburger – custom 3-line icon */}
+            <button
               onClick={() => setIsMenuOpen(true)}
-              className="md:hidden w-10 h-10 flex items-center justify-center text-purple-900 min-h-[48px] min-w-[48px] active:scale-90 transition-transform"
-              aria-label="Menu"
+              className="md:hidden flex flex-col justify-center items-center w-10 h-10 min-h-[48px] min-w-[48px] space-y-1.5 text-purple-900"
+              aria-label="Open menu"
             >
-              <Menu size={28} />
+              <span className="block w-6 h-0.5 bg-purple-900 rounded-full" />
+              <span className="block w-4 h-0.5 bg-purple-600 rounded-full" />
+              <span className="block w-5 h-0.5 bg-purple-900 rounded-full" />
             </button>
           </div>
         </div>
-      </header>
+      </motion.header>
 
+      {/* ── Mobile Drawer Menu ── */}
       <AnimatePresence>
         {isMenuOpen && (
           <>
@@ -115,65 +178,80 @@ const TopNav = ({ cartItemCount }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMenuOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] md:hidden"
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] md:hidden"
             />
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-4/5 max-w-sm bg-white z-[70] md:hidden shadow-2xl flex flex-col p-8"
+              transition={{ type: 'spring', damping: 28, stiffness: 220 }}
+              className="fixed top-0 right-0 h-full w-[85%] max-w-sm z-[70] md:hidden flex flex-col overflow-hidden"
+              style={{
+                background: 'linear-gradient(160deg, #2d0e3d 0%, #3e1d4a 60%, #5A2A6C 100%)',
+              }}
             >
-              <div className="flex justify-between items-center mb-10">
-                <span className="font-serif text-xl font-bold text-purple-900">Evans Luxe</span>
-                <button 
-                  onClick={() => setIsMenuOpen(false)}
-                  className="w-10 h-10 flex items-center justify-center text-gray-400 min-h-[48px] min-w-[48px] active:scale-90 transition-transform"
-                >
-                  <X size={28} />
-                </button>
-              </div>
-              <nav className="flex flex-col space-y-1">
-                {navLinks.map((link) => {
-                  const isActive = pathname === link.path || (link.path !== '/' && pathname.startsWith(link.path));
-                  return (
-                    <Link
-                      key={link.name}
-                      href={link.path}
-                      onClick={() => setIsMenuOpen(false)}
-                      className={`flex items-center justify-between px-3 py-3.5 rounded-xl min-h-[48px] transition-colors ${
-                        isActive ? 'bg-purple-50 text-purple-900' : 'text-gray-700 hover:bg-gray-50 hover:text-purple-900'
-                      }`}
-                    >
-                      <span className="font-semibold text-base">{link.name}</span>
-                      <ChevronRight size={16} className={isActive ? 'text-purple-400' : 'text-gray-300'} />
-                    </Link>
-                  );
-                })}
-                <Link
-                  href="/profile"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center justify-between px-3 py-3.5 rounded-xl min-h-[48px] text-gray-700 hover:bg-gray-50 hover:text-purple-900 transition-colors"
-                >
-                  <div className="flex items-center space-x-2">
-                    <User size={16} className="text-gray-400" />
-                    <span className="font-semibold text-base">My Account</span>
-                  </div>
-                  <ChevronRight size={16} className="text-gray-300" />
-                </Link>
-              </nav>
+              {/* Orb decorations */}
+              <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-20 pointer-events-none"
+                style={{ background: 'radial-gradient(circle, #D4AF37 0%, transparent 70%)', filter: 'blur(40px)' }} />
+              <div className="absolute bottom-20 left-0 w-40 h-40 rounded-full opacity-15 pointer-events-none"
+                style={{ background: 'radial-gradient(circle, #8540b0 0%, transparent 70%)', filter: 'blur(50px)' }} />
 
-              <div className="mt-auto pt-6 space-y-3">
-                {user && (
+              <div className="relative z-10 p-8 flex flex-col h-full">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-12">
+                  <div className="flex items-center space-x-3">
+                    <div className="relative w-10 h-10 overflow-hidden rounded-full border border-gold-400/40 shadow-gold">
+                      <Image src="/images/logo.jpg" alt="Logo" fill sizes="40px" className="object-cover" />
+                    </div>
+                    <div>
+                      <span className="font-serif text-lg font-bold text-white block leading-none">Evans Luxe</span>
+                      <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-gold-400">Beauty</span>
+                    </div>
+                  </div>
                   <button
-                    onClick={() => { logout(); setIsMenuOpen(false); }}
-                    className="w-full flex items-center justify-center space-x-2 bg-red-50 text-red-600 border border-red-100 py-3 rounded-xl font-bold text-sm hover:bg-red-100 transition-colors min-h-[48px]"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all min-h-[48px] min-w-[48px]"
                   >
-                    <LogOut size={16} />
-                    <span>Sign Out</span>
+                    <X size={24} />
                   </button>
-                )}
-                <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold text-center">Evans Luxe · Pure Botanicals</p>
+                </div>
+
+                {/* Nav Links */}
+                <nav className="flex flex-col space-y-1">
+                  {[...navLinks, { name: 'My Account', path: '/profile' }].map((link, i) => {
+                    const isActive = pathname === link.path || (link.path !== '/' && pathname.startsWith(link.path));
+                    return (
+                      <motion.div
+                        key={link.name}
+                        initial={{ opacity: 0, x: 30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.05 * i, duration: 0.4 }}
+                      >
+                        <Link
+                          href={link.path}
+                          onClick={() => setIsMenuOpen(false)}
+                          className={`flex items-center justify-between py-4 px-4 rounded-2xl font-semibold text-base transition-all min-h-[56px] ${
+                            isActive
+                              ? 'bg-white/10 text-gold-300 border border-white/10'
+                              : 'text-white/80 hover:text-white hover:bg-white/8'
+                          }`}
+                        >
+                          <span>{link.name}</span>
+                          <ChevronRight size={18} className={isActive ? 'text-gold-300' : 'text-white/30'} />
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                </nav>
+
+                {/* Footer tagline */}
+                <div className="mt-auto pt-8 border-t border-white/10">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Sparkles size={14} className="text-gold-400" />
+                    <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Evans Luxe Beauty</p>
+                  </div>
+                  <p className="text-xs text-white/40 leading-relaxed italic">"Inspired by nature, perfected by science."</p>
+                </div>
               </div>
             </motion.div>
           </>
@@ -183,117 +261,168 @@ const TopNav = ({ cartItemCount }) => {
   );
 };
 
-const BottomNav = ({ cartItemCount }) => {
+/* ─────────────────────────────────────────
+   BOTTOM NAV — Floating pill design
+───────────────────────────────────────── */
+const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'Shop', path: '/products', icon: Grid },
+    { name: 'Wishlist', path: '/profile/wishlist', icon: Heart, badge: wishlistCount, badgeColor: '#ef4444' },
     { name: 'Cart', path: '/cart', icon: ShoppingBag, badge: cartItemCount },
     { name: 'Profile', path: '/profile', icon: User },
   ];
-  
-  // Logout is only available in the menu bar and profile section
-  return (
-    <div className="md:hidden fixed bottom-0 w-full bg-white border-t border-beige-200 px-2 sm:px-6 py-3 pb-8 z-50 rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-      <nav className="flex justify-between items-center">
-        {navItems.map((item) => {
-          const isActive = item.path ? (pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path))) : false;
-          const Icon = item.icon;
-          
-          if (item.action) {
-            return (
-              <button
-                key={item.name}
-                onClick={item.action}
-                className="relative flex flex-col items-center p-2 transition-colors duration-300 text-gray-400 hover:text-red-500"
-              >
-                <div className="relative">
-                  <Icon size={24} strokeWidth={2} />
-                </div>
-                <span className="text-[10px] mt-1 font-medium opacity-100 transition-opacity">
-                  {item.name}
-                </span>
-              </button>
-            );
-          }
 
-          return (
-            <Link
-              key={item.name}
-              href={item.path}
-              className={`relative flex flex-col items-center p-2 transition-colors duration-300 ${
-                isActive ? 'text-purple-700' : 'text-gray-400 hover:text-purple-400'
-              }`}
-            >
-              <div className="relative">
-                <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
-                {item.badge > 0 && (
-                  <span className="absolute -top-1 -right-2 bg-gold-400 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                    {item.badge}
-                  </span>
-                )}
-              </div>
-              <span className={`text-[10px] mt-1 font-medium ${isActive ? 'opacity-100' : 'opacity-100'} transition-opacity`}>
-                {item.name}
-              </span>
-              {isActive && (
+  return (
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4 pointer-events-none">
+      <motion.div
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.2 }}
+        className="pointer-events-auto"
+        style={{
+          background: 'rgba(255,255,255,0.88)',
+          backdropFilter: 'blur(28px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(28px) saturate(200%)',
+          borderRadius: '9999px',
+          border: '1px solid rgba(255,255,255,0.9)',
+          boxShadow: '0 8px 32px rgba(62,29,74,0.18), 0 2px 8px rgba(62,29,74,0.1)',
+          padding: '8px 12px',
+        }}
+      >
+        <nav className="flex items-center space-x-1">
+          {navItems.map((item) => {
+            const isActive = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                href={item.path}
+                className="relative flex flex-col items-center"
+              >
                 <motion.div
-                  layoutId="bottom-nav-indicator"
-                  className="absolute -top-3 w-12 h-1 bg-purple-700 rounded-full"
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
-            </Link>
-          );
-        })}
-      </nav>
+                  whileTap={{ scale: 0.85 }}
+                  className={`relative flex items-center justify-center transition-all duration-300 ${
+                    isActive
+                      ? 'w-12 h-10 rounded-full'
+                      : 'w-10 h-10 rounded-full'
+                  }`}
+                  style={isActive ? {
+                    background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)',
+                    boxShadow: '0 4px 16px rgba(90,42,108,0.4)',
+                  } : {}}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-active-glow"
+                      className="absolute inset-0 rounded-full opacity-40"
+                      style={{
+                        background: 'radial-gradient(circle, rgba(212,175,55,0.6) 0%, transparent 70%)',
+                        filter: 'blur(6px)',
+                      }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <Icon
+                    size={18}
+                    strokeWidth={isActive ? 2.5 : 2}
+                    className={isActive ? 'text-gold-300 relative z-10' : 'text-gray-400'}
+                    fill={item.name === 'Wishlist' && item.badge > 0 && !isActive ? 'rgba(239,68,68,0.25)' : 'transparent'}
+                  />
+                  {/* Badge */}
+                  {item.badge > 0 && (
+                    <motion.span
+                      key={item.badge}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                      className="absolute -top-1 -right-1 text-white text-[8px] font-black rounded-full flex items-center justify-center z-20"
+                      style={{
+                        background: item.badgeColor || 'linear-gradient(135deg, #D4AF37, #edc757)',
+                        width: '15px',
+                        height: '15px',
+                      }}
+                    >
+                      {item.badge > 9 ? '9+' : item.badge}
+                    </motion.span>
+                  )}
+                </motion.div>
+                {/* Label */}
+                <AnimatePresence>
+                  {isActive && (
+                    <motion.span
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      className="text-[8px] font-bold uppercase tracking-widest text-purple-800 mt-0.5 whitespace-nowrap"
+                    >
+                      {item.name}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </Link>
+            );
+          })}
+        </nav>
+      </motion.div>
     </div>
   );
 };
 
+
+
+
+/* ─────────────────────────────────────────
+   CLIENT LAYOUT — Root wrapper
+───────────────────────────────────────── */
 const ClientLayout = ({ children }) => {
   const pathname = usePathname();
-  const isCheckout = pathname === '/checkout';
   const cart = useStore((state) => state.cart);
+  const localWishlist = useStore((state) => state.localWishlist);
   const cartItemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-
-  // The admin module has been moved to a separate application.
+  const wishlistCount = localWishlist.length;
 
   return (
     <div className="flex flex-col min-h-screen bg-beige-50 relative selection:bg-purple-200 selection:text-purple-900">
-      <Toaster 
-        position="top-right" 
+      <Toaster
+        position="top-right"
         toastOptions={{
           duration: 3000,
           style: {
-            background: '#5A2A6C',
+            background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)',
             color: '#fff',
             borderRadius: '16px',
-            marginTop: '60px',
+            marginTop: '64px',
+            boxShadow: '0 8px 32px rgba(62,29,74,0.3)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            fontWeight: '600',
+            fontSize: '13px',
           },
-        }} 
+        }}
       />
 
       <TopNav cartItemCount={cartItemCount} />
 
-      {/* On home page: no top padding (home has its own full-screen header) */}
-      {/* On other pages: add top padding to clear the fixed navbar */}
-      <main className={`flex-1 w-full max-w-7xl mx-auto pb-24 md:pb-8 relative ${
+      {/* Background orbs — ambient decoration */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        <div className="orb absolute w-[600px] h-[600px] bg-purple-100 top-[-10%] left-[-10%] opacity-40" />
+        <div className="orb absolute w-[400px] h-[400px] bg-gold-100 top-[40%] right-[-8%] opacity-30"
+          style={{ animationDelay: '3s' }} />
+      </div>
+
+      {/* Main content */}
+      <main className={`flex-1 w-full max-w-7xl mx-auto pb-28 md:pb-10 relative ${
         pathname === '/' ? '' : 'pt-16 md:pt-28'
       }`}>
-        <div className="hidden md:block absolute top-[10%] left-[5%] w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 pointer-events-none -z-10"></div>
-        <div className="hidden md:block absolute top-[40%] right-[10%] w-80 h-80 bg-gold-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 pointer-events-none -z-10"></div>
-        
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             className="w-full h-full"
           >
             {children}
@@ -301,7 +430,7 @@ const ClientLayout = ({ children }) => {
         </AnimatePresence>
       </main>
 
-      <BottomNav cartItemCount={cartItemCount} />
+      <BottomNav cartItemCount={cartItemCount} wishlistCount={wishlistCount} />
     </div>
   );
 };

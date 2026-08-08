@@ -230,10 +230,21 @@ const Profile = () => {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row gap-4 lg:gap-8">
           
-          {/* Left Sidebar (Desktop Only for Menu, Mobile shows differently) */}
+          {/* Left Sidebar */}
           <div className="w-full md:w-72 flex-shrink-0 space-y-4">
-            {/* Navigation Menu */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-4 md:mt-0">
+            {/* User Info Card */}
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-3 md:space-x-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-900 font-serif text-lg md:text-xl font-bold">
+                {user.username[0]}
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <p className="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Hello,</p>
+                <h2 className="font-bold text-gray-900 text-sm md:text-base truncate">{user.username}</h2>
+              </div>
+            </div>
+
+            {/* Navigation Menu (Grid on Mobile / Sidebar on Desktop) */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               <nav className="grid grid-cols-2 md:flex md:flex-col">
                 {tabs.map((tab) => {
                   const isActive = activeTab === tab.id;
@@ -271,20 +282,8 @@ const Profile = () => {
               {activeTab === 'profile' && (
                 <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}} className="space-y-4 md:space-y-6">
                   
-                  {/* Professional User Info Header */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-8 flex items-center space-x-4 md:space-x-5">
-                    <div className="w-14 h-14 md:w-16 md:h-16 bg-purple-100 rounded-full flex items-center justify-center text-purple-900 font-serif text-2xl md:text-3xl font-bold">
-                      {user.username[0].toUpperCase()}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs md:text-sm text-gray-500 mb-0.5">Hello,</p>
-                      <h2 className="text-xl md:text-2xl font-bold text-gray-900 truncate">{user.username}</h2>
-                      <p className="text-xs md:text-sm text-gray-500 mt-0.5">{user.email || user.mobile}</p>
-                    </div>
-                  </div>
-
                   {/* Personal Information section */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-8">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-8">
                     <div className="flex justify-between items-center mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-100">
                       <h3 className="text-lg md:text-xl font-bold text-gray-900">Profile Details</h3>
                       {!isEditingProfile && (
@@ -363,19 +362,23 @@ const Profile = () => {
                         </div>
                       </form>
                     ) : (
-                      <div className="max-w-2xl">
-                        <div className="flex flex-col space-y-4 md:space-y-6">
-                          <div className="flex flex-col sm:flex-row sm:items-center py-3 border-b border-gray-50">
-                            <span className="w-40 text-[11px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-0">Full Name</span>
-                            <span className="text-sm md:text-base font-semibold text-gray-900 flex-1">{user.username}</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-6 max-w-2xl">
+                        <div className="space-y-1 md:space-y-2">
+                          <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Full Name</label>
+                          <div className="p-2 md:p-3 bg-gray-50/50 rounded-lg border border-gray-100">
+                            <p className="text-xs md:text-sm font-semibold text-gray-900 truncate">{user.username}</p>
                           </div>
-                          <div className="flex flex-col sm:flex-row sm:items-center py-3 border-b border-gray-50">
-                            <span className="w-40 text-[11px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-0">Email Address</span>
-                            <span className="text-sm md:text-base font-semibold text-gray-900 flex-1">{user.email || 'Not provided'}</span>
+                        </div>
+                        <div className="space-y-1 md:space-y-2">
+                          <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Email Address</label>
+                          <div className="p-2 md:p-3 bg-gray-50/50 rounded-lg border border-gray-100">
+                            <p className="text-xs md:text-sm font-semibold text-gray-900 truncate">{user.email || 'Not provided'}</p>
                           </div>
-                          <div className="flex flex-col sm:flex-row sm:items-center py-3">
-                            <span className="w-40 text-[11px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-0">Mobile Number</span>
-                            <span className="text-sm md:text-base font-semibold text-gray-900 flex-1">{user.mobile || '+91 - Not provided'}</span>
+                        </div>
+                        <div className="space-y-1 md:space-y-2">
+                          <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Mobile Number</label>
+                          <div className="p-2 md:p-3 bg-gray-50/50 rounded-lg border border-gray-100">
+                            <p className="text-xs md:text-sm font-semibold text-gray-900 truncate">{user.mobile || '+91 - Not provided'}</p>
                           </div>
                         </div>
                       </div>
@@ -383,7 +386,7 @@ const Profile = () => {
                   </div>
 
                   {/* Address Section */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-8">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-8">
                     <div className="flex flex-row justify-between items-center mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-100">
                       <h3 className="text-lg md:text-xl font-bold text-gray-900">Manage Addresses</h3>
                       {!isAddingAddress && (
@@ -433,8 +436,8 @@ const Profile = () => {
                             </form>
                           </div>
                         ) : (
-                          <div key={addr._id || idx} className="border border-gray-200 rounded-xl p-4 md:p-5 hover:border-purple-300 hover:shadow-md transition-all group relative bg-white">
-                            <div className="absolute top-3 right-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center space-x-1">
+                          <div key={addr._id || idx} className="border border-gray-200 rounded-xl p-4 md:p-5 hover:border-purple-300 hover:shadow-sm transition-all group relative bg-gray-50/50">
+                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-1">
                               <button onClick={() => { setEditingAddressId(addr._id); setEditAddressData(addr); }} className="p-1 text-gray-400 hover:text-purple-600"><Edit2 size={14}/></button>
                               <button onClick={() => handleDeleteAddress(addr._id)} className="p-1 text-gray-400 hover:text-red-500"><Trash2 size={14}/></button>
                             </div>
@@ -472,102 +475,95 @@ const Profile = () => {
               )}
 
               {activeTab === 'orders' && (
-                <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}} className="space-y-3">
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 flex items-center justify-between">
-                    <h3 className="text-base font-bold text-gray-900">My Orders</h3>
-                    <span className="text-xs text-gray-400 font-medium">{myOrders.length} order{myOrders.length !== 1 ? 's' : ''}</span>
+                <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="p-4 md:p-6 border-b border-gray-100 bg-white">
+                    <h3 className="text-lg md:text-xl font-bold text-gray-900">My Orders</h3>
                   </div>
-
-                  {myOrders.length > 0 ? myOrders.map((order) => {
-                    const statusMap = {
-                      placed:            { label: 'Order Confirmed',    color: 'bg-blue-100 text-blue-700',   dot: 'bg-blue-500' },
-                      processing:        { label: 'Processing',         color: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-500' },
-                      shipped:           { label: 'Shipped',            color: 'bg-purple-100 text-purple-700', dot: 'bg-purple-500' },
-                      'out-for-delivery':{ label: 'Out for Delivery',   color: 'bg-cyan-100 text-cyan-700',   dot: 'bg-cyan-500' },
-                      delivered:         { label: 'Delivered',          color: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
-                      cancelled:         { label: 'Cancelled',          color: 'bg-red-100 text-red-600',     dot: 'bg-red-500' },
-                    };
-                    const s = statusMap[order.orderStatus] || statusMap.placed;
-                    return (
-                      <div key={order._id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        {/* Order Header */}
-                        <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <span className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${s.color}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-                              <span>{s.label}</span>
-                            </span>
+                  
+                  <div className="p-0">
+                    {myOrders.length > 0 ? myOrders.map((order) => (
+                      <div key={order._id} className="border-b border-gray-100 last:border-b-0 p-4 md:p-6 hover:bg-gray-50 transition-colors flex flex-col md:flex-row gap-4 md:gap-6">
+                        
+                        <div className="flex-1 space-y-3 md:space-y-4">
+                          <div className="flex items-center space-x-2 md:space-x-3 mb-1">
+                            <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${order.orderStatus === 'delivered' ? 'bg-green-500' : order.orderStatus === 'cancelled' ? 'bg-red-500' : 'bg-yellow-500'}`}></div>
+                            <span className="text-xs md:text-sm font-bold text-gray-900 uppercase tracking-wide">{order.orderStatus}</span>
+                            <span className="text-gray-300">•</span>
+                            <span className="text-[10px] md:text-xs font-semibold text-gray-500">ID: {order._id.slice(-8)}</span>
                           </div>
-                          <div className="text-right">
-                            <p className="text-[10px] text-gray-400 font-medium">Order #{order._id.slice(-8).toUpperCase()}</p>
-                            <p className="text-[10px] text-gray-400">{new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                          
+                          <div className="space-y-2 md:space-y-3">
+                            {order.items.map((item, idx) => (
+                              <div key={idx} className="flex space-x-3 md:space-x-4">
+                                <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
+                                  <img src={item.image || '/images/placeholder.png'} className="w-full h-full object-cover"/>
+                                </div>
+                                <div className="flex-1 flex flex-col justify-center">
+                                  <h5 className="text-xs md:text-sm font-semibold text-gray-900 line-clamp-2">{item.name}</h5>
+                                  <p className="text-[10px] md:text-xs text-gray-500 mt-1">Qty: {item.quantity}</p>
+                                  {order.orderStatus === 'delivered' && (
+                                    <button 
+                                      onClick={() => setReviewingItem({ productId: item.product, name: item.name })}
+                                      className="text-[10px] text-purple-700 font-black uppercase tracking-widest mt-2 flex items-center space-x-1 hover:text-purple-900 transition-colors"
+                                    >
+                                      <Star size={10} fill="currentColor" />
+                                      <span>Rate & Review Product</span>
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         </div>
 
-                        {/* Items */}
-                        <div className="divide-y divide-gray-50">
-                          {order.items.map((item, idx) => (
-                            <div key={idx} className="flex items-center space-x-3 px-4 py-3">
-                              <div className="w-14 h-14 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 border border-gray-200">
-                                <img src={item.image || '/images/placeholder.png'} alt={item.name} className="w-full h-full object-cover" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-semibold text-gray-900 line-clamp-2 leading-snug">{item.name}</p>
-                                <p className="text-[11px] text-gray-500 mt-0.5">Qty: {item.quantity} · ₹{item.price?.toLocaleString()}</p>
-                                {order.orderStatus === 'delivered' && (
-                                  <button
-                                    onClick={() => setReviewingItem({ productId: item.product, name: item.name })}
-                                    className="mt-1.5 inline-flex items-center space-x-1 text-[11px] font-bold text-purple-700 hover:text-purple-900 transition-colors"
-                                  >
-                                    <Star size={11} fill="currentColor" />
-                                    <span>Rate &amp; Review</span>
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Order Footer */}
-                        <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
-                          <div>
-                            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Total Paid</p>
-                            <p className="text-sm font-black text-purple-900">₹{order.totalAmount.toLocaleString()}</p>
+                        <div className="md:w-48 md:border-l md:border-gray-100 md:pl-6 flex flex-col justify-center space-y-3 pt-3 border-t border-gray-100 md:border-t-0 md:pt-0">
+                          <div className="flex justify-between md:block items-center">
+                            <p className="text-[10px] uppercase tracking-wider font-bold text-gray-400 md:mb-1">Total Paid</p>
+                            <p className="text-sm md:text-lg font-black text-purple-900 whitespace-nowrap">₹{order.totalAmount.toLocaleString()}</p>
                           </div>
-                          <button
-                            onClick={() => setTrackingOrder(order)}
+                          <button 
                             disabled={order.orderStatus === 'cancelled'}
-                            className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                              order.orderStatus === 'cancelled'
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            onClick={() => setTrackingOrder(order)}
+                            className={`flex w-full justify-center items-center space-x-1.5 py-1.5 md:py-2 rounded-lg transition-colors text-xs md:text-sm font-bold shadow-sm border ${
+                              order.orderStatus === 'cancelled' 
+                                ? 'bg-red-50 text-red-500 border-red-100 cursor-not-allowed'
                                 : order.orderStatus === 'delivered'
-                                ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
-                                : 'bg-purple-900 text-white hover:bg-purple-800'
+                                ? 'bg-white text-green-600 border-green-200 hover:bg-green-50'
+                                : order.orderStatus === 'shipped' || order.orderStatus === 'out-for-delivery'
+                                ? 'bg-purple-900 text-white border-purple-900 hover:bg-purple-800'
+                                : 'bg-white text-gray-700 border-gray-200 hover:border-purple-300 hover:text-purple-800'
                             }`}
                           >
-                            {order.orderStatus === 'cancelled' ? (
-                              <><XCircle size={13} /><span>Cancelled</span></>
-                            ) : order.orderStatus === 'delivered' ? (
-                              <><CheckCircle2 size={13} /><span>View Details</span></>
-                            ) : (
-                              <><Truck size={13} /><span>Track Order</span></>
+                            <span>
+                              {order.orderStatus === 'cancelled' ? 'Cancelled' 
+                              : order.orderStatus === 'delivered' ? 'Delivered' 
+                              : order.orderStatus === 'shipped' ? 'Track Order'
+                              : order.orderStatus === 'out-for-delivery' ? 'Track Order'
+                              : 'Processing'}
+                            </span>
+                            {order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && (
+                              <ChevronRight size={14}/>
+                            )}
+                            {order.orderStatus === 'delivered' && (
+                              <CheckCircle2 size={14}/>
+                            )}
+                            {order.orderStatus === 'cancelled' && (
+                              <XCircle size={14}/>
                             )}
                           </button>
                         </div>
                       </div>
-                    );
-                  }) : (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 py-16 flex flex-col items-center justify-center text-center">
-                      <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-300 mb-4 border border-gray-100">
-                        <Package size={26} />
+                    )) : (
+                      <div className="py-12 md:py-20 flex flex-col items-center justify-center text-center">
+                        <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 mb-3 md:mb-4 border border-gray-100">
+                          <ShoppingBag size={20}/>
+                        </div>
+                        <h4 className="text-base md:text-lg font-bold text-gray-900 mb-1">No Orders Found</h4>
+                        <p className="text-xs md:text-sm text-gray-500 mb-4 md:mb-6">Looks like you haven't made your first purchase yet.</p>
+                        <button onClick={() => router.push('/products')} className="bg-purple-900 text-white px-5 py-2 md:px-6 md:py-2.5 rounded-lg font-bold text-xs md:text-sm hover:bg-purple-800 transition-colors shadow-sm">Start Shopping</button>
                       </div>
-                      <h4 className="text-base font-bold text-gray-800 mb-1">No Orders Yet</h4>
-                      <p className="text-xs text-gray-500 mb-5 max-w-xs">Looks like you haven't placed any orders. Explore our pure botanical collection!</p>
-                      <button onClick={() => router.push('/products')} className="bg-purple-900 text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-purple-800 transition-colors">
-                        Explore Collection
-                      </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -578,92 +574,71 @@ const Profile = () => {
       {/* Review Modal */}
       <AnimatePresence>
         {reviewingItem && (
-          <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-4">
-            <motion.div
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setReviewingItem(null)}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-purple-950/40 backdrop-blur-sm"
             />
-            <motion.div
-              drag="y"
-              dragConstraints={{ top: 0, bottom: 0 }}
-              dragElastic={0.2}
-              onDragEnd={(e, info) => {
-                if (info.offset.y > 100 && info.velocity.y >= 0) {
-                  setReviewingItem(null);
-                }
-              }}
-              initial={{ opacity: 0, y: "100%" }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: "100%" }}
-              className="w-full md:max-w-md bg-white rounded-t-3xl md:rounded-2xl shadow-2xl relative z-10 overflow-hidden mt-auto md:mt-0"
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden"
             >
-              {/* Handle bar */}
-              <div className="flex justify-center pt-3 pb-1 md:hidden">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
-              </div>
-
-              <div className="px-5 pt-3 pb-6 md:p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-base font-bold text-gray-900">Rate &amp; Review</h3>
-                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{reviewingItem.name}</p>
+              <div className="p-8 md:p-10">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="w-10 h-10 bg-gold-50 rounded-xl flex items-center justify-center text-gold-600">
+                    <Sparkles size={20} />
                   </div>
-                  <button onClick={() => setReviewingItem(null)} className="text-gray-400 hover:text-gray-600 p-1">
-                    <XCircle size={20} />
-                  </button>
+                  <div>
+                    <h3 className="font-serif text-xl font-bold text-purple-900">Share Your Experience</h3>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Reviewing: {reviewingItem.name}</p>
+                  </div>
                 </div>
 
-                <form onSubmit={submitReview} className="space-y-4">
-                  {/* Star Rating */}
+                <form onSubmit={submitReview} className="space-y-6">
                   <div>
-                    <p className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Your Rating</p>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-3 block">Your Rating</label>
                     <div className="flex space-x-2">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}
                           type="button"
                           onClick={() => setReviewData({ ...reviewData, rating: star })}
-                          className="transition-transform hover:scale-110 active:scale-95"
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${reviewData.rating >= star ? 'bg-gold-50 text-gold-600' : 'bg-gray-50 text-gray-300'}`}
                         >
-                          <Star
-                            size={32}
-                            className={reviewData.rating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}
-                          />
+                          <Star size={20} fill={reviewData.rating >= star ? 'currentColor' : 'none'} />
                         </button>
                       ))}
                     </div>
-                    <p className="text-[11px] text-gray-400 mt-1">
-                      {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][reviewData.rating]} · {reviewData.rating}/5
-                    </p>
                   </div>
 
-                  {/* Comment */}
                   <div>
-                    <p className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Your Review</p>
-                    <textarea
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-3 block">Review Comment</label>
+                    <textarea 
                       required
                       value={reviewData.comment}
                       onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
-                      rows={3}
-                      placeholder="Share your experience — how did this product transform your routine?"
-                      className="w-full px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none resize-none"
+                      rows={4}
+                      placeholder="What did you love about this item? Was the quality as expected? Our botanical experts appreciate your feedback."
+                      className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-2 focus:ring-purple-500 outline-none resize-none"
                     />
                   </div>
 
-                  <div className="flex gap-3">
-                    <button
+                  <div className="flex gap-3 pt-2">
+                    <button 
                       type="submit"
-                      className="flex-1 bg-purple-900 text-white font-bold py-3 rounded-xl hover:bg-purple-800 transition-colors text-sm"
+                      className="flex-1 bg-purple-900 text-white font-bold py-4 rounded-2xl hover:bg-purple-800 shadow-luxury transition-all"
                     >
                       Submit Review
                     </button>
-                    <button
+                    <button 
                       type="button"
                       onClick={() => setReviewingItem(null)}
-                      className="px-4 py-3 rounded-xl border border-gray-200 text-gray-500 font-bold hover:bg-gray-50 transition-all text-sm"
+                      className="px-6 py-4 rounded-2xl border border-gray-100 text-gray-500 font-bold hover:bg-gray-50 transition-all text-sm"
                     >
-                      Cancel
+                      Skip
                     </button>
                   </div>
                 </form>
@@ -672,125 +647,104 @@ const Profile = () => {
           </div>
         )}
       </AnimatePresence>
-      {/* Order Tracking Modal — Vertical Stepper */}
+      {/* Tracking Modal */}
       <AnimatePresence>
         {trackingOrder && (
-          <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-4">
-            <motion.div
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setTrackingOrder(null)}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-purple-950/40 backdrop-blur-sm"
             />
-            <motion.div
-              drag="y"
-              dragConstraints={{ top: 0, bottom: 0 }}
-              dragElastic={0.2}
-              onDragEnd={(e, info) => {
-                if (info.offset.y > 100 && info.velocity.y >= 0) {
-                  setTrackingOrder(null);
-                }
-              }}
-              initial={{ opacity: 0, y: "100%" }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: "100%" }}
-              className="w-full md:max-w-lg bg-white rounded-t-3xl md:rounded-2xl shadow-2xl relative z-10 overflow-hidden flex flex-col h-[65vh] md:h-auto mt-auto md:mt-0 pb-20 md:pb-0"
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden"
             >
-              {/* Drag Handle (Mobile) */}
-              <div className="flex justify-center pt-3 pb-1 md:hidden">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
-              </div>
-
-              <div className="px-5 pt-3 pb-6 md:p-6 overflow-y-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-base font-bold text-gray-900">Order Tracking</h3>
-                    <p className="text-[11px] text-purple-600 font-bold">#{trackingOrder._id.slice(-8).toUpperCase()}</p>
+              <div className="p-6 md:p-10">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-purple-900">
+                      <ShoppingBag size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">Order Tracking</h3>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-purple-600">ID: #{trackingOrder._id.slice(-8).toUpperCase()}</p>
+                    </div>
                   </div>
-                  <button onClick={() => setTrackingOrder(null)} className="text-gray-400 hover:text-gray-600 p-1">
-                    <XCircle size={20} />
+                  <div className="flex flex-col md:items-end gap-2">
+                     <div className="flex items-center space-x-2">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Expected Arrival</span>
+                        <span className="bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-full">
+                          {new Date(new Date(trackingOrder.createdAt).getTime() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                        </span>
+                     </div>
+                     <div className="flex items-center space-x-2">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tracking ID</span>
+                        <span className="bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full">
+                          {trackingOrder._id.split('').reverse().join('').slice(0, 8).toUpperCase()}
+                        </span>
+                     </div>
+                  </div>
+                </div>
+
+                <div className="relative pt-12 pb-20">
+                  {/* Progress Line */}
+                  <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -translate-y-1/2 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ 
+                        width: trackingOrder.orderStatus === 'delivered' ? '100%' 
+                               : trackingOrder.orderStatus === 'out-for-delivery' ? '66%' 
+                               : trackingOrder.orderStatus === 'shipped' ? '33%' 
+                               : '0%' 
+                      }}
+                      className="h-full bg-green-500 transition-all duration-1000"
+                    />
+                  </div>
+
+                  {/* Points */}
+                  <div className="relative flex justify-between">
+                    {[
+                      { id: 'placed', label: 'Order Confirmed', icon: CheckCircle2, color: 'text-blue-500', iconBg: 'bg-blue-50' },
+                      { id: 'shipped', label: 'Order Shipped', icon: Package, color: 'text-yellow-500', iconBg: 'bg-yellow-50' },
+                      { id: 'out-for-delivery', label: 'Out for Delivery', icon: Truck, color: 'text-cyan-500', iconBg: 'bg-cyan-50' },
+                      { id: 'delivered', label: 'Order Delivered', icon: CheckCircle2, color: 'text-green-500', iconBg: 'bg-green-50' }
+                    ].map((step, index) => {
+                      const statuses = ['placed', 'shipped', 'out-for-delivery', 'delivered'];
+                      const currentIdx = statuses.indexOf(trackingOrder.orderStatus);
+                      const isCompleted = index <= currentIdx;
+                      const isActive = index === currentIdx;
+
+                      return (
+                        <div key={step.id} className="flex flex-col items-center relative z-10 w-1/4">
+                          <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all duration-500 ${isCompleted ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                            <CheckCircle2 size={16} className={isCompleted ? 'opacity-100' : 'opacity-0'} />
+                          </div>
+                          
+                          <div className="mt-6 flex flex-col items-center text-center">
+                            <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center mb-3 transition-colors ${isCompleted ? step.iconBg : 'bg-gray-50'}`}>
+                              <step.icon size={20} className={isCompleted ? step.color : 'text-gray-300'} />
+                            </div>
+                            <span className={`text-[9px] md:text-[11px] font-bold uppercase tracking-widest leading-tight px-1 ${isCompleted ? 'text-gray-900' : 'text-gray-400'}`}>
+                              {step.label}
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex justify-center pt-4">
+                  <button 
+                    onClick={() => setTrackingOrder(null)}
+                    className="bg-purple-900 text-white font-bold px-10 py-4 rounded-2xl hover:bg-purple-800 transition-all text-sm shadow-luxury"
+                  >
+                    Close Tracking
                   </button>
                 </div>
-
-                {/* Info pills */}
-                <div className="flex flex-wrap gap-2 mb-5">
-                  <span className="bg-purple-50 text-purple-700 text-[10px] font-bold px-3 py-1.5 rounded-full">
-                    📅 Ordered: {new Date(trackingOrder.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-                  </span>
-                  <span className="bg-blue-50 text-blue-700 text-[10px] font-bold px-3 py-1.5 rounded-full">
-                    🚚 ETA: {new Date(new Date(trackingOrder.createdAt).getTime() + 5 * 86400000).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-                  </span>
-                  <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-full">
-                    ₹{trackingOrder.totalAmount?.toLocaleString()}
-                  </span>
-                </div>
-
-                {/* Vertical Stepper */}
-                {(() => {
-                  const steps = [
-                    { id: 'placed',            label: 'Order Confirmed',    desc: 'Your order has been placed & confirmed.',       Icon: CheckCircle2, activeColor: 'text-blue-600',   activeBg: 'bg-blue-100',   line: 'bg-blue-200' },
-                    { id: 'shipped',           label: 'Shipped',            desc: 'Your package is on its way to the hub.',        Icon: Package,      activeColor: 'text-yellow-600', activeBg: 'bg-yellow-100', line: 'bg-yellow-200' },
-                    { id: 'out-for-delivery',  label: 'Out for Delivery',   desc: 'Delivery partner is heading to your address.',  Icon: Truck,        activeColor: 'text-cyan-600',  activeBg: 'bg-cyan-100',   line: 'bg-cyan-200' },
-                    { id: 'delivered',         label: 'Delivered',          desc: 'Package delivered. Enjoy your botanicals! 🌿',  Icon: CheckCircle2, activeColor: 'text-green-600', activeBg: 'bg-green-100',  line: 'bg-green-200' },
-                  ];
-                  const statuses = ['placed', 'shipped', 'out-for-delivery', 'delivered'];
-                  const currentIdx = statuses.indexOf(trackingOrder.orderStatus);
-
-                  return (
-                    <div className="space-y-0">
-                      {steps.map((step, i) => {
-                        const done = i <= currentIdx;
-                        const active = i === currentIdx;
-                        const Icon = step.Icon;
-                        const isLast = i === steps.length - 1;
-
-                        return (
-                          <div key={step.id} className="flex items-start">
-                            {/* Icon column */}
-                            <div className="flex flex-col items-center mr-4">
-                              <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
-                                done ? step.activeBg : 'bg-gray-100'
-                              } ${active ? 'ring-2 ring-offset-1 ring-purple-400' : ''}`}>
-                                <Icon size={16} className={done ? step.activeColor : 'text-gray-300'} />
-                              </div>
-                              {!isLast && (
-                                <div className={`w-0.5 h-10 mt-1 rounded-full ${done ? step.line : 'bg-gray-100'}`} />
-                              )}
-                            </div>
-
-                            {/* Content */}
-                            <div className={`flex-1 pb-6 ${isLast ? '' : ''}`}>
-                              <div className="flex items-center space-x-2">
-                                <p className={`text-sm font-bold ${done ? 'text-gray-900' : 'text-gray-400'}`}>{step.label}</p>
-                                {active && (
-                                  <span className="text-[9px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full uppercase tracking-wide">Current</span>
-                                )}
-                              </div>
-                              <p className={`text-xs mt-0.5 ${done ? 'text-gray-500' : 'text-gray-300'}`}>{step.desc}</p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-
-                {trackingOrder.orderStatus === 'cancelled' && (
-                  <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-4">
-                    <p className="text-sm font-bold text-red-600 flex items-center space-x-2">
-                      <XCircle size={16} />
-                      <span>Order Cancelled</span>
-                    </p>
-                    <p className="text-xs text-red-500 mt-1">This order was cancelled. Refund (if applicable) will be processed within 5-7 business days.</p>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => setTrackingOrder(null)}
-                  className="w-full bg-purple-900 text-white font-bold py-3 rounded-xl hover:bg-purple-800 transition-colors text-sm mt-2"
-                >
-                  Close
-                </button>
               </div>
             </motion.div>
           </div>

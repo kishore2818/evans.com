@@ -2,7 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════
+   EVANS LUXE — Premium Design System Variables
+═══════════════════════════════════════════════ */
+:root {
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px rgba(62, 29, 74, 0.12);
+  
+  /* Luxury Gradients */
+  --gradient-royal: linear-gradient(135deg, #3e1d4a 0%, #5A2A6C 50%, #8540b0 100%);
+  --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #edc757 50%, #D4AF37 100%);
+  --gradient-hero: linear-gradient(160deg, #1a0a22 0%, #3e1d4a 40%, #6e2f95 100%);
+  --gradient-card: linear-gradient(145deg, #ffffff 0%, #fdfcfb 100%);
+  
+  /* Shadows */
+  --shadow-luxury: 0 4px 24px rgba(90, 42, 108, 0.18), 0 1px 4px rgba(90, 42, 108, 0.08);
+  --shadow-gold: 0 4px 20px rgba(212, 175, 55, 0.35);
+  --shadow-float: 0 20px 60px rgba(62, 29, 74, 0.20), 0 4px 16px rgba(62, 29, 74, 0.10);
+  --shadow-glass: 0 8px 32px rgba(62, 29, 74, 0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+  
+  /* Transitions */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   html, body {
     @apply bg-beige-100 text-purple-900 font-sans antialiased overflow-x-hidden max-w-full;
     width: 100vw;
@@ -22,7 +55,7 @@
   }
 
   input, select, textarea {
-    font-size: 16px !important; /* Prevent iPhone auto-zoom */
+    font-size: 16px !important;
   }
 
   button, a, .tap-target {
@@ -30,32 +63,151 @@
     min-width: 48px;
     @apply transition-all active:opacity-70 active:scale-95;
   }
+
+  ::selection {
+    background: rgba(90, 42, 108, 0.2);
+    color: #3e1d4a;
+  }
 }
 
 @layer components {
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
+  /* ── Scrollbar ── */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ── Glass Effect ── */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-glass);
   }
 
-  /* Hide scrollbar for IE, Edge and Firefox */
-  .no-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+  .glass-dark {
+    background: rgba(30, 12, 40, 0.55);
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
   }
 
-  @keyframes shimmer {
-    0% {
-      background-position: -468px 0;
-    }
-    100% {
-      background-position: 468px 0;
-    }
+  .glass-white {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.90);
+    box-shadow: var(--shadow-luxury);
   }
 
+  /* ── Shimmer Skeleton ── */
   .animate-shimmer {
-    animation: shimmer 1.5s linear infinite forwards;
-    background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
-    background-size: 800px 104px;
+    animation: shimmer 1.8s ease-in-out infinite;
+    background: linear-gradient(90deg, #f0eaf5 0%, #e8ddf0 30%, #f0eaf5 60%, #e8ddf0 100%);
+    background-size: 400% 100%;
+  }
+
+  /* ── Shine Sweep (product card hover) ── */
+  .shine-sweep::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%);
+    transform: translateX(-100%);
+    transition: transform 0.55s ease;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  .shine-sweep:hover::after {
+    transform: translateX(100%);
+  }
+
+  /* ── Luxury Button ── */
+  .btn-luxury {
+    @apply relative overflow-hidden font-black uppercase tracking-widest text-xs rounded-2xl py-4 px-8 transition-all duration-300;
+    background: var(--gradient-royal);
+    color: #D4AF37;
+    box-shadow: var(--shadow-luxury);
+  }
+  .btn-luxury:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-float);
+  }
+  .btn-luxury:active {
+    transform: translateY(0) scale(0.97);
+  }
+
+  /* ── Gold Underline ── */
+  .gold-underline {
+    position: relative;
+    display: inline-block;
+  }
+  .gold-underline::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: -6px;
+    height: 3px;
+    width: 100%;
+    background: var(--gradient-gold);
+    border-radius: 9999px;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s var(--ease-spring);
+  }
+  .gold-underline:hover::after,
+  .gold-underline.active::after {
+    transform: scaleX(1);
+  }
+
+  /* ── Floating Orb ── */
+  .orb {
+    border-radius: 50%;
+    filter: blur(72px);
+    pointer-events: none;
+    animation: orb-drift 8s ease-in-out infinite alternate;
   }
 }
+
+/* ═══════════════ KEYFRAMES ═══════════════ */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-14px) rotate(3deg); }
+  66%       { transform: translateY(-7px) rotate(-2deg); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.0); }
+  50%       { box-shadow: 0 0 24px 6px rgba(212, 175, 55, 0.35); }
+}
+
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes orb-drift {
+  0%   { transform: translate(0%, 0%) scale(1); }
+  100% { transform: translate(8%, 12%) scale(1.15); }
+}
+
+@keyframes hero-text {
+  from { opacity: 0; transform: translateY(40px) skewY(3deg); }
+  to   { opacity: 1; transform: translateY(0) skewY(0); }
+}
+
+@keyframes badge-pop {
+  0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+  70%  { transform: scale(1.15) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+

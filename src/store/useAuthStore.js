@@ -57,7 +57,7 @@ export const useAuthStore = create(
       },
 
       fetchProfile: async () => {
-        const { token, logout } = useAuthStore.getState();
+        const { token } = useAuthStore.getState();
         if (!token) return;
 
         try {
@@ -69,9 +69,6 @@ export const useAuthStore = create(
           const data = await response.json();
           if (response.ok) {
             set((state) => ({ user: { ...state.user, ...data } }));
-          } else if (response.status === 401) {
-            // Token is expired or invalid — clear it so user re-logs in
-            logout();
           }
         } catch (error) {
           console.error('Failed to fetch profile:', error);

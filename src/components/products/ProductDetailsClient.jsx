@@ -37,7 +37,10 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('Description');
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const localWishlist = useStore((state) => state.localWishlist);
+  const toggleLocalWishlist = useStore((state) => state.toggleLocalWishlist);
+  const productId = product._id || product.id;
+  const isWishlisted = localWishlist.some((p) => (p._id || p.id) === productId);
   const [addedToCart, setAddedToCart] = useState(false);
   const [imageZoomed, setImageZoomed] = useState(false);
 
@@ -66,6 +69,46 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
     toast.success(`${quantity} × ${product.name} added!`);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: `Check out ${product.name} on Evans Luxe`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing', error);
+        }
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copied to clipboard!');
+    }
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (reviewData.comment.length < 5) {
+      toast.error('Please write a more detailed review.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await addReview(product.id, reviewData);
+      toast.success('Review published successfully!');
+      setShowReviewForm(false);
+      router.refresh();
+    } catch (error) {
+      toast.error(error.message || 'Failed to submit review');
+    } finally {
+      setIsSubmitting(false);
+    }
+>>>>>>> 374c7490883085863ee2dfb76cf89d3988f8bb0d
   };
 
   const handleBuyNow = () => {
@@ -133,7 +176,7 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
         <div className="flex space-x-2.5">
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => setIsWishlisted(v => !v)}
+            onClick={() => { toggleLocalWishlist(product); toast.success(isWishlisted ? 'Removed from wishlist' : 'Saved to wishlist ♥'); }}
             className="w-10 h-10 rounded-full flex items-center justify-center shadow-md min-h-0 min-w-0"
             style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)' }}
           >
@@ -183,7 +226,7 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
             {/* Desktop share + wishlist */}
             <div className="hidden lg:flex absolute top-5 right-5 space-x-2.5 z-10">
               <button
-                onClick={(e) => { e.stopPropagation(); setIsWishlisted(v => !v); }}
+                onClick={(e) => { e.stopPropagation(); toggleLocalWishlist(product); toast.success(isWishlisted ? 'Removed from wishlist' : 'Saved to wishlist ♥'); }}
                 className="w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all min-h-0 min-w-0"
                 style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)' }}
               >

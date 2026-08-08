@@ -121,18 +121,7 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
     router.push('/cart');
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: product.name, text: `Check out ${product.name} on Evans Luxe`, url: window.location.href });
-      } catch (error) {
-        if (error.name !== 'AbortError') console.error(error);
-      }
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success('Link copied!');
-    }
-  };
+
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();

@@ -413,6 +413,81 @@ const HomeClient = ({ initialProducts = [] }) => {
       </motion.div>
 
       {/* ══════════════════════════════════════════
+          REAL RESULTS — Before & After Transformation
+      ══════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.7 }}
+        className="px-5 sm:px-8 md:px-16 mt-20 md:mt-28"
+      >
+        <div className="bg-white rounded-[2.5rem] md:rounded-[3rem] p-6 sm:p-8 md:p-12 border border-beige-200/80 shadow-luxury relative overflow-hidden">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+            
+            {/* Image Box */}
+            <div className="w-full lg:w-1/2 relative rounded-[2rem] overflow-hidden aspect-square shadow-luxury group">
+              <Image
+                src="/images/transformation.png"
+                alt="Evans Luxe Beauty Skin Transformation Before and After"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                priority
+              />
+              <div className="absolute top-4 left-4 bg-purple-950/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-gold-400/30">
+                <span className="text-[10px] font-black uppercase tracking-widest text-gold-300">
+                  ✦ Clinical Transformation
+                </span>
+              </div>
+            </div>
+
+            {/* Text & Stats Content */}
+            <div className="w-full lg:w-1/2 text-center lg:text-left">
+              <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-gold-100/60 border border-gold-300/40 mb-3">
+                <Sparkles size={12} className="text-gold-600" />
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-purple-900">
+                  Real Skin Results
+                </span>
+              </div>
+              <h3 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-purple-900 mb-4 leading-tight">
+                Visible Radiance in 14 Days
+              </h3>
+              <p className="text-gray-600 text-xs sm:text-sm md:text-base leading-relaxed mb-8">
+                Formulated with pure cold-pressed botanicals and bio-active plant nutrients, our signature elixirs nourish deep dermal layers to restore natural glow, smooth skin texture, and diminish tiredness.
+              </p>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-3 mb-8">
+                <div className="p-3.5 rounded-2xl bg-purple-50/80 border border-purple-100/60 text-center">
+                  <p className="font-serif font-black text-2xl sm:text-3xl text-purple-900">98%</p>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-purple-700/70 mt-1">Luminous Glow</p>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-purple-50/80 border border-purple-100/60 text-center">
+                  <p className="font-serif font-black text-2xl sm:text-3xl text-purple-900">2x</p>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-purple-700/70 mt-1">Hydration Lock</p>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-purple-50/80 border border-purple-100/60 text-center">
+                  <p className="font-serif font-black text-2xl sm:text-3xl text-purple-900">100%</p>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-purple-700/70 mt-1">Botanical</p>
+                </div>
+              </div>
+
+              <Link
+                href="/products"
+                className="inline-flex items-center space-x-2.5 px-8 py-3.5 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider text-gold-300 shadow-luxury hover:-translate-y-1 transition-all min-h-0"
+                style={{ background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)' }}
+              >
+                <span>Discover Elixirs</span>
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ══════════════════════════════════════════
           BEST SELLERS
       ══════════════════════════════════════════ */}
       <motion.div

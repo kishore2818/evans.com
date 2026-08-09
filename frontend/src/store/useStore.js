@@ -5,6 +5,7 @@ import { useAuthStore } from './useAuthStore';
 export const useStore = create((set, get) => ({
   cart: [],
   wishlist: [],
+  localWishlist: [], // full product objects — local only, no backend
   myOrders: [],
   storeSettings: { shippingFee: 150, freeShippingThreshold: 2000 },
   
@@ -39,6 +40,28 @@ export const useStore = create((set, get) => ({
 
   
   clearCart: () => set({ cart: [] }),
+
+  // ── Local Wishlist (client-side, full product objects) ──
+  toggleLocalWishlist: (product) => set((state) => {
+    const id = product._id || product.id;
+    const exists = state.localWishlist.some(p => (p._id || p.id) === id);
+    return {
+      localWishlist: exists
+        ? state.localWishlist.filter(p => (p._id || p.id) !== id)
+        : [...state.localWishlist, product],
+    };
+  }),
+
+  removeFromLocalWishlist: (productId) => set((state) => ({
+    localWishlist: state.localWishlist.filter(p => (p._id || p.id) !== productId),
+  })),
+
+  addAllWishlistToCart: () => {
+    const { localWishlist, addToCart } = get();
+    localWishlist.forEach(product => {
+      if ((product.stock ?? 1) > 0) addToCart(product, 1);
+    });
+  },
 
   // Settings Logic
   fetchStoreSettings: async () => {

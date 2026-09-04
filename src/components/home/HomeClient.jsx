@@ -136,36 +136,49 @@ const HomeClient = ({ initialProducts = [] }) => {
           style={{ y: heroTextY, opacity: heroOpacity }}
           className="relative z-10 flex flex-col justify-center flex-1 px-6 md:px-16 py-12 md:py-0"
         >
-          {/* Mobile logo row */}
-          <div className="flex justify-between items-center mb-12 md:hidden">
-            <div className="flex items-center space-x-3">
-              <div className="relative w-12 h-12 rounded-full overflow-hidden shadow-gold"
-                style={{ border: '2px solid rgba(212,175,55,0.4)' }}>
-                <Image src="/images/logo.jpg" alt="Logo" fill sizes="48px" className="object-cover" priority />
-              </div>
-              <div>
-                <h1 className="font-serif text-xl font-bold text-white leading-none">Evans Luxe</h1>
-                <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-gold-400">Beauty</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Desktop centered logo */}
+          {/* 👑 CENTERED TOP LOGO & BRAND TITLE (Before Scrolling View) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="hidden md:flex flex-col items-center mb-10"
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col items-center text-center mb-8 pt-2"
           >
-            <div className="relative w-20 h-20 rounded-full overflow-hidden mb-4 shadow-gold"
-              style={{ border: '2px solid rgba(212,175,55,0.45)' }}>
-              <Image src="/images/logo.jpg" alt="Logo" fill sizes="80px" className="object-cover" priority />
-            </div>
-            {/* Decorative line */}
-            <div className="flex items-center space-x-4">
-              <div className="h-px w-20" style={{ background: 'linear-gradient(to right, transparent, rgba(212,175,55,0.4))' }} />
-              <Sparkles size={12} className="text-gold-400/60" />
-              <div className="h-px w-20" style={{ background: 'linear-gradient(to left, transparent, rgba(212,175,55,0.4))' }} />
+            {/* Glowing Circular Logo */}
+            <motion.div
+              whileHover={{ scale: 1.08, rotate: 2 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+              className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full p-1 shadow-gold mb-3 group cursor-pointer"
+              style={{ background: 'linear-gradient(135deg, #D4AF37, #edc757, #D4AF37)' }}
+            >
+              <div className="w-full h-full rounded-full overflow-hidden border-2 border-purple-950 bg-purple-950 relative">
+                <Image
+                  src="/images/logo.jpg"
+                  alt="Evans Luxe Beauty Logo"
+                  fill
+                  sizes="112px"
+                  className="object-cover group-hover:scale-110 transition-transform duration-700"
+                  priority
+                />
+              </div>
+              <div className="absolute -bottom-1 -right-1 bg-gold-400 text-purple-950 p-1.5 rounded-full shadow-md">
+                <Sparkles size={12} strokeWidth={2.5} />
+              </div>
+            </motion.div>
+
+            {/* Brand Title directly below logo */}
+            <h1 className="font-serif text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-gold-200 drop-shadow-md leading-tight">
+              Evans Luxe Beauty
+            </h1>
+            
+            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.35em] text-gold-300/90 mt-1">
+              Organic Botanical Skincare
+            </p>
+
+            {/* Decorative Symmetrical Line */}
+            <div className="flex items-center space-x-3 mt-3">
+              <div className="h-px w-16 sm:w-24" style={{ background: 'linear-gradient(to right, transparent, rgba(212,175,55,0.7))' }} />
+              <Sparkles size={13} className="text-gold-400 animate-pulse" />
+              <div className="h-px w-16 sm:w-24" style={{ background: 'linear-gradient(to left, transparent, rgba(212,175,55,0.7))' }} />
             </div>
           </motion.div>
 

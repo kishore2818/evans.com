@@ -262,10 +262,22 @@ const TopNav = ({ cartItemCount }) => {
 };
 
 /* ─────────────────────────────────────────
-   BOTTOM NAV — Floating pill design
+   BOTTOM NAV — Floating pill design (Appears on Scroll)
 ───────────────────────────────────────── */
 const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
   const pathname = usePathname();
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // On ALL pages: disappear on entry (top of page), appear smoothly when scrolling down
+      setIsVisible(window.scrollY > 30);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [pathname]);
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -276,98 +288,103 @@ const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4 pointer-events-none">
-      <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.2 }}
-        className="pointer-events-auto"
-        style={{
-          background: 'rgba(255,255,255,0.88)',
-          backdropFilter: 'blur(28px) saturate(200%)',
-          WebkitBackdropFilter: 'blur(28px) saturate(200%)',
-          borderRadius: '9999px',
-          border: '1px solid rgba(255,255,255,0.9)',
-          boxShadow: '0 8px 32px rgba(62,29,74,0.18), 0 2px 8px rgba(62,29,74,0.1)',
-          padding: '8px 12px',
-        }}
-      >
-        <nav className="flex items-center space-x-1">
-          {navItems.map((item) => {
-            const isActive = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.name}
-                href={item.path}
-                className="relative flex flex-col items-center"
-              >
-                <motion.div
-                  whileTap={{ scale: 0.85 }}
-                  className={`relative flex items-center justify-center transition-all duration-300 ${
-                    isActive
-                      ? 'w-12 h-10 rounded-full'
-                      : 'w-10 h-10 rounded-full'
-                  }`}
-                  style={isActive ? {
-                    background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)',
-                    boxShadow: '0 4px 16px rgba(90,42,108,0.4)',
-                  } : {}}
-                >
-                  {isActive && (
+    <AnimatePresence>
+      {isVisible && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4 pointer-events-none">
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+            className="pointer-events-auto"
+            style={{
+              background: 'rgba(255,255,255,0.88)',
+              backdropFilter: 'blur(28px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(28px) saturate(200%)',
+              borderRadius: '9999px',
+              border: '1px solid rgba(255,255,255,0.9)',
+              boxShadow: '0 8px 32px rgba(62,29,74,0.18), 0 2px 8px rgba(62,29,74,0.1)',
+              padding: '8px 12px',
+            }}
+          >
+            <nav className="flex items-center space-x-1">
+              {navItems.map((item) => {
+                const isActive = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.path}
+                    className="relative flex flex-col items-center"
+                  >
                     <motion.div
-                      layoutId="nav-active-glow"
-                      className="absolute inset-0 rounded-full opacity-40"
-                      style={{
-                        background: 'radial-gradient(circle, rgba(212,175,55,0.6) 0%, transparent 70%)',
-                        filter: 'blur(6px)',
-                      }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <Icon
-                    size={18}
-                    strokeWidth={isActive ? 2.5 : 2}
-                    className={isActive ? 'text-gold-300 relative z-10' : 'text-gray-400'}
-                    fill={item.name === 'Wishlist' && item.badge > 0 && !isActive ? 'rgba(239,68,68,0.25)' : 'transparent'}
-                  />
-                  {/* Badge */}
-                  {item.badge > 0 && (
-                    <motion.span
-                      key={item.badge}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-                      className="absolute -top-1 -right-1 text-white text-[8px] font-black rounded-full flex items-center justify-center z-20"
-                      style={{
-                        background: item.badgeColor || 'linear-gradient(135deg, #D4AF37, #edc757)',
-                        width: '15px',
-                        height: '15px',
-                      }}
+                      whileTap={{ scale: 0.85 }}
+                      className={`relative flex items-center justify-center transition-all duration-300 ${
+                        isActive
+                          ? 'w-12 h-10 rounded-full'
+                          : 'w-10 h-10 rounded-full'
+                      }`}
+                      style={isActive ? {
+                        background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)',
+                        boxShadow: '0 4px 16px rgba(90,42,108,0.4)',
+                      } : {}}
                     >
-                      {item.badge > 9 ? '9+' : item.badge}
-                    </motion.span>
-                  )}
-                </motion.div>
-                {/* Label */}
-                <AnimatePresence>
-                  {isActive && (
-                    <motion.span
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      className="text-[8px] font-bold uppercase tracking-widest text-purple-800 mt-0.5 whitespace-nowrap"
-                    >
-                      {item.name}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </Link>
-            );
-          })}
-        </nav>
-      </motion.div>
-    </div>
+                      {isActive && (
+                        <motion.div
+                          layoutId="nav-active-glow"
+                          className="absolute inset-0 rounded-full opacity-40"
+                          style={{
+                            background: 'radial-gradient(circle, rgba(212,175,55,0.6) 0%, transparent 70%)',
+                            filter: 'blur(6px)',
+                          }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                      <Icon
+                        size={18}
+                        strokeWidth={isActive ? 2.5 : 2}
+                        className={isActive ? 'text-gold-300 relative z-10' : 'text-gray-400'}
+                        fill={item.name === 'Wishlist' && item.badge > 0 && !isActive ? 'rgba(239,68,68,0.25)' : 'transparent'}
+                      />
+                      {/* Badge */}
+                      {item.badge > 0 && (
+                        <motion.span
+                          key={item.badge}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                          className="absolute -top-1 -right-1 text-white text-[8px] font-black rounded-full flex items-center justify-center z-20"
+                          style={{
+                            background: item.badgeColor || 'linear-gradient(135deg, #D4AF37, #edc757)',
+                            width: '15px',
+                            height: '15px',
+                          }}
+                        >
+                          {item.badge > 9 ? '9+' : item.badge}
+                        </motion.span>
+                      )}
+                    </motion.div>
+                    {/* Label */}
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.span
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          className="text-[8px] font-bold uppercase tracking-widest text-purple-800 mt-0.5 whitespace-nowrap"
+                        >
+                          {item.name}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </Link>
+                );
+              })}
+            </nav>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };
 

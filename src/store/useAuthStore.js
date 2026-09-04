@@ -66,6 +66,13 @@ export const useAuthStore = create(
               'Authorization': `Bearer ${token}` 
             },
           });
+          
+          if (response.status === 401 || response.status === 403) {
+            // Token is invalid/expired - clear stale auth session
+            set({ user: null, token: null, error: null });
+            return;
+          }
+
           const data = await response.json();
           if (response.ok) {
             set((state) => ({ user: { ...state.user, ...data } }));
@@ -76,8 +83,8 @@ export const useAuthStore = create(
       },
 
       addAddress: async (addressData) => {
-        const { token } = useAuthStore.getState();
-        if (!token) return;
+        const { token, logout } = useAuthStore.getState();
+        if (!token) throw new Error('Please sign in to add an address');
 
         set({ loading: true });
         try {
@@ -89,6 +96,11 @@ export const useAuthStore = create(
             },
             body: JSON.stringify(addressData),
           });
+
+          if (response.status === 401 || response.status === 403) {
+            logout();
+            throw new Error('Your session has expired. Please sign in again.');
+          }
 
           const data = await response.json();
           if (!response.ok) throw new Error(data.message);
@@ -105,8 +117,8 @@ export const useAuthStore = create(
       },
 
       updateAddress: async (id, addressData) => {
-        const { token } = useAuthStore.getState();
-        if (!token) return;
+        const { token, logout } = useAuthStore.getState();
+        if (!token) throw new Error('Please sign in to update address');
 
         set({ loading: true });
         try {
@@ -118,6 +130,11 @@ export const useAuthStore = create(
             },
             body: JSON.stringify(addressData),
           });
+
+          if (response.status === 401 || response.status === 403) {
+            logout();
+            throw new Error('Your session has expired. Please sign in again.');
+          }
 
           const data = await response.json();
           if (!response.ok) throw new Error(data.message);
@@ -134,8 +151,8 @@ export const useAuthStore = create(
       },
 
       deleteAddress: async (id) => {
-        const { token } = useAuthStore.getState();
-        if (!token) return;
+        const { token, logout } = useAuthStore.getState();
+        if (!token) throw new Error('Please sign in to delete address');
 
         set({ loading: true });
         try {
@@ -145,6 +162,11 @@ export const useAuthStore = create(
               'Authorization': `Bearer ${token}` 
             },
           });
+
+          if (response.status === 401 || response.status === 403) {
+            logout();
+            throw new Error('Your session has expired. Please sign in again.');
+          }
 
           const data = await response.json();
           if (!response.ok) throw new Error(data.message);
@@ -161,8 +183,8 @@ export const useAuthStore = create(
       },
 
       updateProfile: async (profileData) => {
-        const { token } = useAuthStore.getState();
-        if (!token) return;
+        const { token, logout } = useAuthStore.getState();
+        if (!token) throw new Error('Please sign in to update profile');
 
         set({ loading: true });
         try {
@@ -174,6 +196,11 @@ export const useAuthStore = create(
             },
             body: JSON.stringify(profileData),
           });
+
+          if (response.status === 401 || response.status === 403) {
+            logout();
+            throw new Error('Your session has expired. Please sign in again.');
+          }
 
           const data = await response.json();
           if (!response.ok) throw new Error(data.message);
@@ -244,8 +271,8 @@ export const useAuthStore = create(
       },
 
       changePassword: async (passwords) => {
-        const { token } = useAuthStore.getState();
-        if (!token) return;
+        const { token, logout } = useAuthStore.getState();
+        if (!token) throw new Error('Please sign in to change password');
         set({ loading: true, error: null });
         try {
           const response = await fetch(`${API_BASE_URL}/api/users/change-password`, {
@@ -256,6 +283,10 @@ export const useAuthStore = create(
             },
             body: JSON.stringify(passwords),
           });
+          if (response.status === 401 || response.status === 403) {
+            logout();
+            throw new Error('Your session has expired. Please sign in again.');
+          }
           const data = await response.json();
           if (!response.ok) throw new Error(data.message);
           set({ loading: false });

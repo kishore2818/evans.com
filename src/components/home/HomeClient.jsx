@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ArrowRight, ShieldCheck, Leaf, Droplet, Star, ChevronDown, Package } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -32,13 +32,6 @@ const CATEGORY_GRADIENTS = [
 
 const HomeClient = ({ initialProducts = [] }) => {
   const products = initialProducts;
-  const heroRef = useRef(null);
-  const { scrollY } = useScroll();
-
-  /* ── Parallax transforms ── */
-  const heroBgY = useTransform(scrollY, [0, 700], [0, 200]);
-  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0.3]);
-  const heroTextY = useTransform(scrollY, [0, 400], [0, -60]);
 
   const bestSellers = [...products]
     .sort((a, b) => (b.ratings?.count || b.reviewsCount || 0) - (a.ratings?.count || a.reviewsCount || 0))
@@ -57,211 +50,19 @@ const HomeClient = ({ initialProducts = [] }) => {
     <div className="pb-8 overflow-x-hidden">
 
       {/* ══════════════════════════════════════════
-          HERO SECTION — Cinematic, full-height
+          HERO SECTION — Classic & Elegant Banner
       ══════════════════════════════════════════ */}
-      <div
-        ref={heroRef}
-        className="relative min-h-[88vh] md:min-h-[92vh] flex flex-col overflow-hidden"
-        style={{ background: 'linear-gradient(160deg, #1a0a22 0%, #3e1d4a 45%, #5A2A6C 100%)' }}
-      >
-        {/* Parallax background image */}
-        <motion.div
-          className="absolute inset-0"
-          style={{ y: heroBgY, scale: 1.12 }}
-        >
+      <div className="px-4 md:px-12 pt-4 md:pt-6">
+        <div className="relative min-h-[60vh] md:min-h-[75vh] rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-luxury border border-beige-100/40 flex items-center">
+          {/* Background image */}
           <Image
             src="/images/hero_background_1775973263788.png"
-            alt="Botanical background"
+            alt="Evans Luxe Beauty"
             fill
-            sizes="100vw"
-            className="object-cover opacity-20 mix-blend-luminosity"
+            sizes="(max-width: 768px) 100vw, 90vw"
+            className="object-cover"
             priority
           />
-          {/* Gradient overlays */}
-          <div className="absolute inset-0"
-            style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(90,42,108,0.6) 0%, transparent 70%)' }} />
-          <div className="absolute inset-0"
-            style={{ background: 'linear-gradient(to top, rgba(26,10,34,0.8) 0%, transparent 50%)' }} />
-        </motion.div>
-
-        {/* Floating ambient orbs */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <motion.div
-            animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-            transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute top-[10%] left-[5%] w-72 h-72 rounded-full opacity-20"
-            style={{ background: 'radial-gradient(circle, #D4AF37 0%, transparent 70%)', filter: 'blur(60px)' }}
-          />
-          <motion.div
-            animate={{ x: [0, -20, 0], y: [0, 25, 0] }}
-            transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
-            className="absolute top-[30%] right-[8%] w-56 h-56 rounded-full opacity-15"
-            style={{ background: 'radial-gradient(circle, #8540b0 0%, transparent 70%)', filter: 'blur(50px)' }}
-          />
-          <motion.div
-            animate={{ x: [0, 15, 0], y: [0, -30, 0] }}
-            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 6 }}
-            className="absolute bottom-[20%] left-[15%] w-40 h-40 rounded-full opacity-20"
-            style={{ background: 'radial-gradient(circle, #D4AF37 0%, transparent 70%)', filter: 'blur(40px)' }}
-          />
-        </div>
-
-        {/* Floating botanical elements */}
-        <div className="absolute inset-0 pointer-events-none hidden md:block">
-          <motion.div
-            animate={{ y: [0, -18, 0], rotate: [0, 8, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute top-[18%] left-[12%] text-gold-300/50"
-          >
-            <Sparkles size={44} />
-          </motion.div>
-          <motion.div
-            animate={{ y: [0, 14, 0], rotate: [0, -6, 0] }}
-            transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
-            className="absolute bottom-[28%] right-[12%] text-gold-400/40"
-          >
-            <Leaf size={52} />
-          </motion.div>
-          <motion.div
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
-            className="absolute top-[45%] right-[22%] text-white/20"
-          >
-            <Droplet size={34} />
-          </motion.div>
-        </div>
-
-        {/* ── Hero Content ── */}
-        <motion.div
-          style={{ y: heroTextY, opacity: heroOpacity }}
-          className="relative z-10 flex flex-col justify-center flex-1 px-6 md:px-16 py-12 md:py-0"
-        >
-          {/* 👑 CENTERED TOP LOGO & BRAND TITLE (Before Scrolling View) */}
-          <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col items-center text-center mb-8 pt-2"
-          >
-            {/* Glowing Circular Logo */}
-            <motion.div
-              whileHover={{ scale: 1.08, rotate: 2 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-              className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full p-1 shadow-gold mb-3 group cursor-pointer"
-              style={{ background: 'linear-gradient(135deg, #D4AF37, #edc757, #D4AF37)' }}
-            >
-              <div className="w-full h-full rounded-full overflow-hidden border-2 border-purple-950 bg-purple-950 relative">
-                <Image
-                  src="/images/logo.jpg"
-                  alt="Evans Luxe Beauty Logo"
-                  fill
-                  sizes="112px"
-                  className="object-cover group-hover:scale-110 transition-transform duration-700"
-                  priority
-                />
-              </div>
-              <div className="absolute -bottom-1 -right-1 bg-gold-400 text-purple-950 p-1.5 rounded-full shadow-md">
-                <Sparkles size={12} strokeWidth={2.5} />
-              </div>
-            </motion.div>
-
-            {/* Brand Title directly below logo */}
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-gold-200 drop-shadow-md leading-tight">
-              Evans Luxe Beauty
-            </h1>
-            
-            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.35em] text-gold-300/90 mt-1">
-              Organic Botanical Skincare
-            </p>
-
-            {/* Decorative Symmetrical Line */}
-            <div className="flex items-center space-x-3 mt-3">
-              <div className="h-px w-16 sm:w-24" style={{ background: 'linear-gradient(to right, transparent, rgba(212,175,55,0.7))' }} />
-              <Sparkles size={13} className="text-gold-400 animate-pulse" />
-              <div className="h-px w-16 sm:w-24" style={{ background: 'linear-gradient(to left, transparent, rgba(212,175,55,0.7))' }} />
-            </div>
-          </motion.div>
-
-          {/* Main headline */}
-          <motion.div
-            className="max-w-[320px] md:max-w-3xl md:text-center md:mx-auto"
-            variants={stagger}
-            initial="hidden"
-            animate="visible"
-          >
-            {/* Eyebrow */}
-            <motion.div variants={fadeUp} className="flex items-center space-x-2 mb-5 md:justify-center">
-              <div className="h-px w-8 bg-gold-400/60" />
-              <span className="text-gold-300 text-[10px] md:text-xs font-bold tracking-[0.35em] uppercase">
-                Botanical Manifesto
-              </span>
-              <div className="h-px w-8 bg-gold-400/60" />
-            </motion.div>
-
-            {/* Headline */}
-            <motion.h2
-              variants={fadeUp}
-              className="font-serif leading-[1.05] mb-8 text-white"
-              style={{ fontSize: 'clamp(38px, 9vw, 82px)' }}
-            >
-              Radiant Skin,
-              <br />
-              <span style={{
-                background: 'linear-gradient(135deg, #edc757, #D4AF37, #c49b1a)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}>
-                Naturally.
-              </span>
-            </motion.h2>
-
-            {/* Sub-copy */}
-            <motion.p
-              variants={fadeUp}
-              className="text-white/60 text-sm md:text-base mb-8 leading-relaxed max-w-xs md:max-w-sm md:mx-auto"
-            >
-              100% organic botanical care — cruelty-free, sustainably sourced, crafted for your most radiant self.
-            </motion.p>
-
-            {/* CTA Buttons */}
-            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 md:justify-center">
-              <Link
-                href="/products"
-                className="group inline-flex items-center justify-center space-x-2.5 px-8 py-4 rounded-full font-black text-sm uppercase tracking-wider shadow-gold-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-gold min-h-[52px]"
-                style={{ background: 'linear-gradient(135deg, #D4AF37, #edc757)', color: '#1a0a22' }}
-              >
-                <span>Shop Collection</span>
-                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center px-8 py-4 rounded-full font-bold text-sm uppercase tracking-wider text-white/80 hover:text-white transition-all min-h-[52px]"
-                style={{ border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)' }}
-              >
-                Explore Botanicals
-              </Link>
-            </motion.div>
-          </motion.div>
-
-          {/* ── Trust badges row ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="flex items-center space-x-6 mt-12 md:justify-center"
-          >
-            {[
-              { icon: ShieldCheck, label: 'Verified Organic' },
-              { icon: Leaf, label: 'Cruelty-Free' },
-              { icon: Package, label: 'Free Shipping ₹999+' },
-            ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center space-x-1.5 text-white/50">
-                <Icon size={13} />
-                <span className="text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">{label}</span>
-              </div>
-            ))}
-          </motion.div>
-        </motion.div>
 
         {/* Scroll indicator */}
         <motion.div

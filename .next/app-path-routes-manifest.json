@@ -9,7 +9,7 @@
   "/profile/account/page": "/profile/account",
   "/profile/orders/page": "/profile/orders",
   "/profile/page": "/profile",
-  "/profile/wishlist/page": "/profile/wishlist",
+  "/products/[id]/page": "/products/[id]",
   "/products/page": "/products",
-  "/products/[id]/page": "/products/[id]"
+  "/profile/wishlist/page": "/profile/wishlist"
 }

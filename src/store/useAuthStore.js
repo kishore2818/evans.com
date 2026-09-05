@@ -68,8 +68,13 @@ export const useAuthStore = create(
           });
           
           if (response.status === 401 || response.status === 403) {
-            // Token is invalid/expired - clear stale auth session
+            // Token is invalid/expired - reset to guest state cleanly
             set({ user: null, token: null, error: null });
+            if (typeof window !== 'undefined') {
+              try {
+                localStorage.removeItem('auth-storage');
+              } catch (e) {}
+            }
             return;
           }
 
@@ -78,7 +83,7 @@ export const useAuthStore = create(
             set((state) => ({ user: { ...state.user, ...data } }));
           }
         } catch (error) {
-          console.error('Failed to fetch profile:', error);
+          // Silent catch for network/offline errors during background profile sync
         }
       },
 

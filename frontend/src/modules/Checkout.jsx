@@ -82,17 +82,17 @@ const Checkout = () => {
       return;
     }
     fetchProfile();
-  }, [token, navigate, fetchProfile]);
+  }, [token, navigate]);
 
   useEffect(() => {
     if (cart.length === 0 && activeStep < 4) {
       navigate('/cart');
     }
-  }, [cart, navigate, activeStep]);
+  }, [cart.length, activeStep, navigate]);
 
   useEffect(() => {
     fetchStoreSettings();
-  }, [fetchStoreSettings]);
+  }, []);
 
   const subtotal = cart.reduce((acc, item) => acc + (item.price * (1 - (item.discountPercentage || 0) / 100)) * item.quantity, 0);
   const threshold = storeSettings?.freeShippingThreshold ?? 2000;

@@ -84,6 +84,10 @@ export const useStore = create((set, get) => ({
       const res = await fetch(`${API_BASE_URL}/api/wishlist`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (res.status === 401 || res.status === 403) {
+        useAuthStore.getState().logout();
+        return;
+      }
       const data = await res.json();
       if (res.ok) set({ wishlist: data.map(p => p._id) });
     } catch (err) {
@@ -103,6 +107,10 @@ export const useStore = create((set, get) => ({
         },
         body: JSON.stringify({ productId })
       });
+      if (res.status === 401 || res.status === 403) {
+        useAuthStore.getState().logout();
+        return;
+      }
       if (res.ok) {
         set((state) => ({
           wishlist: state.wishlist.includes(productId)
@@ -118,6 +126,9 @@ export const useStore = create((set, get) => ({
   // Order Logic
   placeOrder: async (orderData) => {
     const token = useAuthStore.getState().token;
+    if (!token) {
+      throw new Error('Please sign in to place an order');
+    }
     try {
       const res = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
@@ -127,9 +138,13 @@ export const useStore = create((set, get) => ({
         },
         body: JSON.stringify(orderData)
       });
+      if (res.status === 401 || res.status === 403) {
+        useAuthStore.getState().logout();
+        throw new Error('Your session has expired. Please sign in again.');
+      }
       const data = await res.json();
       if (!res.ok) {
-        const err = new Error(data.message);
+        const err = new Error(data.message || 'Failed to place order');
         err.productId = data.productId;
         err.availableStock = data.availableStock;
         throw err;
@@ -143,6 +158,9 @@ export const useStore = create((set, get) => ({
 
   createRazorpayOrder: async (amount) => {
     const token = useAuthStore.getState().token;
+    if (!token) {
+      throw new Error('Please sign in to complete payment');
+    }
     try {
       const res = await fetch(`${API_BASE_URL}/api/payment/checkout`, {
         method: 'POST',
@@ -152,6 +170,10 @@ export const useStore = create((set, get) => ({
         },
         body: JSON.stringify({ amount })
       });
+      if (res.status === 401 || res.status === 403) {
+        useAuthStore.getState().logout();
+        throw new Error('Your session has expired. Please sign in again to continue checkout.');
+      }
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to create payment order');
       return data;
@@ -162,6 +184,9 @@ export const useStore = create((set, get) => ({
 
   verifyPayment: async (paymentData) => {
     const token = useAuthStore.getState().token;
+    if (!token) {
+      throw new Error('Please sign in to verify payment');
+    }
     try {
       const res = await fetch(`${API_BASE_URL}/api/payment/verify`, {
         method: 'POST',
@@ -171,6 +196,10 @@ export const useStore = create((set, get) => ({
         },
         body: JSON.stringify(paymentData)
       });
+      if (res.status === 401 || res.status === 403) {
+        useAuthStore.getState().logout();
+        throw new Error('Your session has expired. Please sign in again.');
+      }
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Payment verification failed');
       return data;
@@ -186,6 +215,10 @@ export const useStore = create((set, get) => ({
       const res = await fetch(`${API_BASE_URL}/api/orders/myorders`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (res.status === 401 || res.status === 403) {
+        useAuthStore.getState().logout();
+        return;
+      }
       const data = await res.json();
       if (res.ok) set({ myOrders: data });
     } catch (err) {
@@ -196,6 +229,9 @@ export const useStore = create((set, get) => ({
   // Review Logic
   addReview: async (productId, reviewData) => {
     const token = useAuthStore.getState().token;
+    if (!token) {
+      throw new Error('Please sign in to submit a review');
+    }
     try {
       const res = await fetch(`${API_BASE_URL}/api/products/${productId}/reviews`, {
         method: 'POST',
@@ -205,8 +241,12 @@ export const useStore = create((set, get) => ({
         },
         body: JSON.stringify(reviewData)
       });
+      if (res.status === 401 || res.status === 403) {
+        useAuthStore.getState().logout();
+        throw new Error('Your session has expired. Please sign in again.');
+      }
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      if (!res.ok) throw new Error(data.message || 'Failed to submit review');
       return data;
     } catch (err) {
       throw err;

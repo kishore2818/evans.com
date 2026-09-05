@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Sparkles, ArrowRight, ShieldCheck, Leaf, Droplet, Star, ChevronDown, Package, Feather, Sun } from 'lucide-react';
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, ArrowRight, ShieldCheck, Leaf, Droplet, Star, ChevronDown, Package } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import ProductCard from '@/components/ProductCard';
+import CategoryIcon from '@/components/CategoryIcon';
 
 /* ── Stagger container helpers ── */
 const stagger = {
@@ -16,69 +17,28 @@ const fadeUp = {
   hidden: { opacity: 0, y: 36, skewY: 2 },
   visible: { opacity: 1, y: 0, skewY: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } },
 };
+const fadeIn = {
+  hidden: { opacity: 0, scale: 0.92 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+};
 
-/* ── Logo & Icon Based Featured Categories ── */
-const FEATURED_CATEGORIES = [
-  {
-    name: 'Face Wash',
-    query: 'Face Wash',
-    badge: 'Purify',
-    icon: Sparkles,
-    gradient: 'from-cyan-900 via-teal-800 to-purple-900',
-    borderColor: 'rgba(45, 212, 191, 0.4)',
-    glowColor: 'rgba(45, 212, 191, 0.25)',
-  },
-  {
-    name: 'Hair Oil',
-    query: 'Hair Oil',
-    badge: 'Elixir',
-    icon: Feather,
-    gradient: 'from-amber-800 via-amber-900 to-purple-950',
-    borderColor: 'rgba(245, 158, 11, 0.4)',
-    glowColor: 'rgba(245, 158, 11, 0.25)',
-  },
-  {
-    name: 'Face Cream',
-    query: 'Face Cream',
-    badge: 'Hydrate',
-    icon: Sun,
-    gradient: 'from-rose-800 via-purple-900 to-purple-950',
-    borderColor: 'rgba(244, 63, 94, 0.4)',
-    glowColor: 'rgba(244, 63, 94, 0.25)',
-  },
-  {
-    name: 'Soap',
-    query: 'Soap',
-    badge: 'Artisanal',
-    icon: Leaf,
-    gradient: 'from-emerald-800 via-teal-900 to-purple-950',
-    borderColor: 'rgba(16, 185, 129, 0.4)',
-    glowColor: 'rgba(16, 185, 129, 0.25)',
-  },
-  {
-    name: 'Serum',
-    query: 'Serum',
-    badge: 'Glow',
-    icon: Droplet,
-    gradient: 'from-gold-600 via-amber-700 to-purple-900',
-    borderColor: 'rgba(212, 175, 55, 0.5)',
-    glowColor: 'rgba(212, 175, 55, 0.3)',
-  },
+/* ── Category icon map ── */
+const CATEGORY_GRADIENTS = [
+  'from-purple-900 to-purple-600',
+  'from-gold-600 to-gold-400',
+  'from-rose-700 to-rose-500',
+  'from-emerald-700 to-emerald-500',
+  'from-blue-800 to-blue-600',
 ];
 
 const HomeClient = ({ initialProducts = [] }) => {
   const products = initialProducts;
-  const heroRef = useRef(null);
-  const { scrollY } = useScroll();
-
-  /* ── Parallax transforms ── */
-  const heroBgY = useTransform(scrollY, [0, 700], [0, 200]);
-  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0.3]);
-  const heroTextY = useTransform(scrollY, [0, 400], [0, -60]);
 
   const bestSellers = [...products]
     .sort((a, b) => (b.ratings?.count || b.reviewsCount || 0) - (a.ratings?.count || a.reviewsCount || 0))
-    .slice(0, 6);
+    .slice(0, 8);
+
+  const dynamicCategories = [...new Set(products.map(p => p.category))].filter(Boolean).slice(0, 5);
 
   /* Testimonials */
   const testimonials = [
@@ -91,164 +51,19 @@ const HomeClient = ({ initialProducts = [] }) => {
     <div className="pb-8 overflow-x-hidden">
 
       {/* ══════════════════════════════════════════
-          HERO SECTION — Cinematic, full-height
+          HERO SECTION — Classic & Elegant Banner
       ══════════════════════════════════════════ */}
-      <div
-        ref={heroRef}
-        className="relative min-h-[88vh] md:min-h-[92vh] flex flex-col overflow-hidden"
-        style={{ background: 'linear-gradient(160deg, #1a0a22 0%, #3e1d4a 45%, #5A2A6C 100%)' }}
-      >
-        {/* Parallax background image */}
-        <motion.div
-          className="absolute inset-0"
-          style={{ y: heroBgY, scale: 1.12 }}
-        >
+      <div className="px-4 md:px-12 pt-4 md:pt-6">
+        <div className="relative min-h-[60vh] md:min-h-[75vh] rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-luxury border border-beige-100/40 flex items-center">
+          {/* Background image */}
           <Image
             src="/images/hero_background_1775973263788.png"
-            alt="Botanical background"
+            alt="Evans Luxe Beauty"
             fill
-            sizes="100vw"
-            className="object-cover opacity-20 mix-blend-luminosity"
+            sizes="(max-width: 768px) 100vw, 90vw"
+            className="object-cover"
             priority
           />
-          {/* Gradient overlays */}
-          <div className="absolute inset-0"
-            style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(90,42,108,0.6) 0%, transparent 70%)' }} />
-          <div className="absolute inset-0"
-            style={{ background: 'linear-gradient(to top, rgba(26,10,34,0.8) 0%, transparent 50%)' }} />
-        </motion.div>
-
-        {/* Floating ambient orbs */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <motion.div
-            animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-            transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute top-[10%] left-[5%] w-72 h-72 rounded-full opacity-20"
-            style={{ background: 'radial-gradient(circle, #D4AF37 0%, transparent 70%)', filter: 'blur(60px)' }}
-          />
-          <motion.div
-            animate={{ x: [0, -20, 0], y: [0, 25, 0] }}
-            transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
-            className="absolute top-[30%] right-[8%] w-56 h-56 rounded-full opacity-15"
-            style={{ background: 'radial-gradient(circle, #8540b0 0%, transparent 70%)', filter: 'blur(50px)' }}
-          />
-          <motion.div
-            animate={{ x: [0, 15, 0], y: [0, -30, 0] }}
-            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 6 }}
-            className="absolute bottom-[20%] left-[15%] w-40 h-40 rounded-full opacity-20"
-            style={{ background: 'radial-gradient(circle, #D4AF37 0%, transparent 70%)', filter: 'blur(40px)' }}
-          />
-        </div>
-
-        {/* Floating botanical elements */}
-        <div className="absolute inset-0 pointer-events-none hidden md:block">
-          <motion.div
-            animate={{ y: [0, -18, 0], rotate: [0, 8, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute top-[18%] left-[12%] text-gold-300/50"
-          >
-            <Sparkles size={44} />
-          </motion.div>
-          <motion.div
-            animate={{ y: [0, 14, 0], rotate: [0, -6, 0] }}
-            transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
-            className="absolute bottom-[28%] right-[12%] text-gold-400/40"
-          >
-            <Leaf size={52} />
-          </motion.div>
-          <motion.div
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
-            className="absolute top-[45%] right-[22%] text-white/20"
-          >
-            <Droplet size={34} />
-          </motion.div>
-        </div>
-
-        {/* ── Hero Content ── */}
-        <motion.div
-          style={{ y: heroTextY, opacity: heroOpacity }}
-          className="relative z-10 flex flex-col justify-center flex-1 px-5 sm:px-8 md:px-16 pt-24 pb-12 md:py-0"
-        >
-          {/* Main headline */}
-          <motion.div
-            className="w-full max-w-[340px] sm:max-w-md md:max-w-3xl text-center mx-auto"
-            variants={stagger}
-            initial="hidden"
-            animate="visible"
-          >
-            {/* Eyebrow */}
-            <motion.div variants={fadeUp} className="flex items-center justify-center space-x-2 mb-4">
-              <div className="h-px w-6 md:w-8 bg-gold-400/60" />
-              <span className="text-gold-300 text-[10px] md:text-xs font-bold tracking-[0.35em] uppercase">
-                Botanical Manifesto
-              </span>
-              <div className="h-px w-6 md:w-8 bg-gold-400/60" />
-            </motion.div>
-
-            {/* Headline */}
-            <motion.h2
-              variants={fadeUp}
-              className="font-serif leading-[1.1] mb-6 text-white text-4xl sm:text-5xl md:text-7xl lg:text-8xl"
-            >
-              Radiant Skin,
-              <br />
-              <span style={{
-                background: 'linear-gradient(135deg, #edc757, #D4AF37, #c49b1a)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}>
-                Naturally.
-              </span>
-            </motion.h2>
-
-            {/* Sub-copy */}
-            <motion.p
-              variants={fadeUp}
-              className="text-white/70 text-xs sm:text-sm md:text-base mb-8 leading-relaxed max-w-xs sm:max-w-sm mx-auto"
-            >
-              100% organic botanical care — cruelty-free, sustainably sourced, crafted for your most radiant self.
-            </motion.p>
-
-            {/* CTA Buttons */}
-            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-              <Link
-                href="/products"
-                className="w-full sm:w-auto group inline-flex items-center justify-center space-x-2.5 px-8 py-3.5 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider shadow-gold-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-gold min-h-[48px]"
-                style={{ background: 'linear-gradient(135deg, #D4AF37, #edc757)', color: '#1a0a22' }}
-              >
-                <span>Shop Collection</span>
-                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="/products"
-                className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-full font-bold text-xs sm:text-sm uppercase tracking-wider text-white/80 hover:text-white transition-all min-h-[48px]"
-                style={{ border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)' }}
-              >
-                Explore Botanicals
-              </Link>
-            </motion.div>
-          </motion.div>
-
-          {/* ── Trust badges row ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-6 mt-10 md:mt-14"
-          >
-            {[
-              { icon: ShieldCheck, label: 'Verified Organic' },
-              { icon: Leaf, label: 'Cruelty-Free' },
-              { icon: Package, label: 'Free Shipping ₹999+' },
-            ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center space-x-1.5 text-white/70 bg-white/10 px-3 py-1.5 rounded-full border border-white/15 backdrop-blur-sm">
-                <Icon size={12} className="text-gold-300" />
-                <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">{label}</span>
-              </div>
-            ))}
-          </motion.div>
-        </motion.div>
 
         {/* Scroll indicator */}
         <motion.div
@@ -267,74 +82,48 @@ const HomeClient = ({ initialProducts = [] }) => {
       </div>
 
       {/* ══════════════════════════════════════════
-          CATEGORIES SECTION — Logo & Icon Based
+          CATEGORIES SECTION
       ══════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.7 }}
-        className="px-5 sm:px-8 md:px-16 mt-20 md:mt-28"
+        className="px-6 mt-16 md:mt-24"
       >
-        <div className="text-center mb-8 md:mb-12">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-purple-100/60 border border-purple-200/50 mb-2">
-            <Sparkles size={11} className="text-gold-500" />
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.3em] text-purple-900">
-              Botanical Collections
-            </span>
-          </div>
-          <h3 className="font-serif text-2xl sm:text-3xl md:text-5xl font-bold text-purple-900">
-            Curated Categories
-          </h3>
+        <div className="text-center mb-10">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold-500 mb-2">Browse</p>
+          <h3 className="font-serif text-2xl md:text-4xl font-bold text-purple-900">Shop by Category</h3>
         </div>
 
-        <div className="flex overflow-x-auto no-scrollbar gap-3.5 sm:gap-6 pb-4 -mx-5 px-5 md:mx-0 md:px-0 md:justify-center md:flex-wrap">
-          {FEATURED_CATEGORIES.map((cat, idx) => {
-            const IconComponent = cat.icon;
-            return (
-              <motion.div
-                key={cat.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.08, duration: 0.5 }}
-                whileHover={{ y: -8, scale: 1.05 }}
-                className="flex-shrink-0"
+        <div className="flex overflow-x-auto no-scrollbar space-x-5 sm:space-x-8 pt-6 pb-8 -mx-6 px-6 md:justify-center items-start snap-x touch-pan-x">
+          {dynamicCategories.map((catName, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, scale: 0.84, y: 14 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10px" }}
+              whileHover={{ y: -8, scale: 1.07 }}
+              whileTap={{ y: -8, scale: 1.08 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 18, delay: idx * 0.04 }}
+              className="flex-shrink-0 snap-center"
+            >
+              <Link
+                href={`/products?category=${encodeURIComponent(catName)}`}
+                className="flex flex-col items-center group cursor-pointer select-none"
               >
-                <Link
-                  href={`/products?category=${encodeURIComponent(cat.query)}`}
-                  className="flex flex-col items-center group w-[105px] sm:w-[125px] md:w-[135px]"
-                >
-                  <div
-                    className={`w-[80px] h-[80px] sm:w-[92px] sm:h-[92px] rounded-[1.8rem] bg-gradient-to-br ${cat.gradient} flex flex-col items-center justify-center shadow-luxury group-hover:shadow-float transition-all duration-500 mb-3 relative overflow-hidden`}
-                    style={{
-                      border: `1.5px solid ${cat.borderColor}`,
-                      boxShadow: `0 8px 24px ${cat.glowColor}`,
-                    }}
-                  >
-                    {/* Inner glowing radial ambient */}
-                    <div className="absolute inset-0 opacity-40 group-hover:opacity-80 transition-opacity duration-500"
-                      style={{ background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3) 0%, transparent 70%)' }} />
-
-                    {/* Logo Icon */}
-                    <div className="relative z-10 p-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 shadow-inner group-hover:scale-110 transition-transform duration-300">
-                      <IconComponent size={26} strokeWidth={1.8} className="text-gold-300" />
-                    </div>
-
-                    {/* Category mini badge tag */}
-                    <span className="relative z-10 text-[8px] font-black uppercase tracking-widest text-gold-300/90 mt-1">
-                      {cat.badge}
-                    </span>
+                <div className="relative w-20 h-20 sm:w-22 sm:h-22 md:w-24 md:h-24 p-[2.5px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_6px_20px_-4px_rgba(212,175,55,0.28)] group-hover:shadow-[0_12px_30px_-2px_rgba(212,175,55,0.55)] group-active:shadow-[0_12px_30px_-2px_rgba(212,175,55,0.55)] transition-all duration-300">
+                  <div className="w-full h-full rounded-full bg-gradient-to-b from-[#FFFDF9] via-[#FAF5EC] to-[#F3E8D7] border border-white/80 flex items-center justify-center p-3 relative overflow-hidden group-hover:bg-white group-active:bg-white transition-colors duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-gold-400/25 via-transparent to-white/40 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 rounded-full" />
+                    <CategoryIcon category={catName} className="w-12 h-12 sm:w-13 sm:h-13 md:w-14 md:h-14 relative z-10 transition-transform duration-300 group-hover:scale-110 group-active:scale-110 group-hover:-rotate-1 group-active:-rotate-1" />
                   </div>
-
-                  {/* Title Label */}
-                  <span className="text-[12px] font-black text-gray-800 group-hover:text-purple-900 transition-colors uppercase tracking-wider text-center leading-tight">
-                    {cat.name}
-                  </span>
-                </Link>
-              </motion.div>
-            );
-          })}
+                </div>
+                <span className="text-[10px] sm:text-[11px] md:text-xs font-bold text-purple-950 mt-3 group-hover:text-gold-600 group-active:text-gold-600 transition-colors uppercase tracking-wider text-center w-22 sm:w-26 md:w-28 leading-snug line-clamp-2 min-h-[2.4rem] flex items-center justify-center">
+                  {catName}
+                </span>
+              </Link>
+            </motion.div>
+          ))}
         </div>
       </motion.div>
 
@@ -346,10 +135,10 @@ const HomeClient = ({ initialProducts = [] }) => {
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.7 }}
-        className="px-5 sm:px-8 md:px-16 mt-20 md:mt-28"
+        className="px-6 md:px-16 mt-16 md:mt-24"
       >
         <div
-          className="relative rounded-[2.5rem] md:rounded-[3rem] overflow-hidden p-6 sm:p-8 md:p-14"
+          className="relative rounded-[2.5rem] md:rounded-[3rem] overflow-hidden p-8 md:p-14"
           style={{ background: 'linear-gradient(135deg, #3e1d4a 0%, #5A2A6C 60%, #8540b0 100%)' }}
         >
           {/* Ambient orbs */}
@@ -358,7 +147,7 @@ const HomeClient = ({ initialProducts = [] }) => {
           <div className="absolute bottom-0 left-0 w-56 h-56 rounded-full opacity-20 pointer-events-none"
             style={{ background: 'radial-gradient(circle, #8540b0 0%, transparent 70%)', filter: 'blur(50px)', transform: 'translate(-30%, 30%)' }} />
 
-          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start justify-between gap-6 md:gap-8">
+          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
             <div className="text-center md:text-left max-w-lg">
               <div className="inline-flex items-center space-x-2 mb-4 px-3 py-1.5 rounded-full"
                 style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)' }}>
@@ -368,12 +157,12 @@ const HomeClient = ({ initialProducts = [] }) => {
               <h4 className="font-serif font-bold text-white text-2xl md:text-4xl mb-3 leading-tight">
                 100% Organic<br />Botanical Care
               </h4>
-              <p className="text-white/60 text-xs sm:text-sm md:text-base leading-relaxed mb-6">
+              <p className="text-white/60 text-sm md:text-base leading-relaxed mb-6">
                 Cruelty-free, chemical-free, and sustainably sourced — for your most radiant, healthiest self.
               </p>
               <Link
                 href="/products"
-                className="inline-flex items-center space-x-2 px-6 py-3 rounded-full font-bold text-xs sm:text-sm uppercase tracking-wider text-purple-900 hover:-translate-y-1 transition-all shadow-gold min-h-0"
+                className="inline-flex items-center space-x-2 px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider text-purple-900 hover:-translate-y-1 transition-all shadow-gold min-h-0"
                 style={{ background: 'linear-gradient(135deg, #D4AF37, #edc757)' }}
               >
                 <span>Explore Range</span>
@@ -381,8 +170,8 @@ const HomeClient = ({ initialProducts = [] }) => {
               </Link>
             </div>
 
-            {/* Badges — Grid on mobile to prevent character wrapping */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 md:flex md:flex-col gap-3 w-full md:w-auto">
+            {/* Badges */}
+            <div className="flex flex-row md:flex-col gap-4 flex-shrink-0">
               {[
                 { icon: ShieldCheck, label: 'Verified', sub: 'Lab Tested' },
                 { icon: Leaf, label: 'Organic', sub: '100% Natural' },
@@ -394,95 +183,20 @@ const HomeClient = ({ initialProducts = [] }) => {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.2 + i * 0.1 }}
-                  className="flex items-center space-x-3 p-3 rounded-2xl w-full"
+                  className="flex items-center space-x-3 p-3 rounded-2xl"
                   style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}
                 >
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: 'rgba(212,175,55,0.2)' }}>
                     <Icon size={20} className="text-gold-300" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-white font-bold text-sm leading-none whitespace-nowrap">{label}</p>
-                    <p className="text-white/50 text-[10px] mt-0.5 whitespace-nowrap">{sub}</p>
+                  <div>
+                    <p className="text-white font-bold text-sm leading-none">{label}</p>
+                    <p className="text-white/50 text-[10px] mt-0.5">{sub}</p>
                   </div>
                 </motion.div>
               ))}
             </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* ══════════════════════════════════════════
-          REAL RESULTS — Before & After Transformation
-      ══════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.7 }}
-        className="px-5 sm:px-8 md:px-16 mt-20 md:mt-28"
-      >
-        <div className="bg-white rounded-[2.5rem] md:rounded-[3rem] p-6 sm:p-8 md:p-12 border border-beige-200/80 shadow-luxury relative overflow-hidden">
-          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-            
-            {/* Image Box */}
-            <div className="w-full lg:w-1/2 relative rounded-[2rem] overflow-hidden aspect-square shadow-luxury group">
-              <Image
-                src="/images/transformation.png"
-                alt="Evans Luxe Beauty Skin Transformation Before and After"
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                priority
-              />
-              <div className="absolute top-4 left-4 bg-purple-950/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-gold-400/30">
-                <span className="text-[10px] font-black uppercase tracking-widest text-gold-300">
-                  ✦ Clinical Transformation
-                </span>
-              </div>
-            </div>
-
-            {/* Text & Stats Content */}
-            <div className="w-full lg:w-1/2 text-center lg:text-left">
-              <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-gold-100/60 border border-gold-300/40 mb-3">
-                <Sparkles size={12} className="text-gold-600" />
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-purple-900">
-                  Real Skin Results
-                </span>
-              </div>
-              <h3 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-purple-900 mb-4 leading-tight">
-                Visible Radiance in 14 Days
-              </h3>
-              <p className="text-gray-600 text-xs sm:text-sm md:text-base leading-relaxed mb-8">
-                Formulated with pure cold-pressed botanicals and bio-active plant nutrients, our signature elixirs nourish deep dermal layers to restore natural glow, smooth skin texture, and diminish tiredness.
-              </p>
-
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-3 mb-8">
-                <div className="p-3.5 rounded-2xl bg-purple-50/80 border border-purple-100/60 text-center">
-                  <p className="font-serif font-black text-2xl sm:text-3xl text-purple-900">98%</p>
-                  <p className="text-[9px] font-bold uppercase tracking-wider text-purple-700/70 mt-1">Luminous Glow</p>
-                </div>
-                <div className="p-3.5 rounded-2xl bg-purple-50/80 border border-purple-100/60 text-center">
-                  <p className="font-serif font-black text-2xl sm:text-3xl text-purple-900">2x</p>
-                  <p className="text-[9px] font-bold uppercase tracking-wider text-purple-700/70 mt-1">Hydration Lock</p>
-                </div>
-                <div className="p-3.5 rounded-2xl bg-purple-50/80 border border-purple-100/60 text-center">
-                  <p className="font-serif font-black text-2xl sm:text-3xl text-purple-900">100%</p>
-                  <p className="text-[9px] font-bold uppercase tracking-wider text-purple-700/70 mt-1">Botanical</p>
-                </div>
-              </div>
-
-              <Link
-                href="/products"
-                className="inline-flex items-center space-x-2.5 px-8 py-3.5 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider text-gold-300 shadow-luxury hover:-translate-y-1 transition-all min-h-0"
-                style={{ background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)' }}
-              >
-                <span>Discover Elixirs</span>
-                <ArrowRight size={16} />
-              </Link>
-            </div>
-
           </div>
         </div>
       </motion.div>
@@ -495,7 +209,7 @@ const HomeClient = ({ initialProducts = [] }) => {
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="px-6 md:px-16 mt-28 md:mt-36 mb-12"
+        className="px-6 md:px-16 mt-20 mb-8"
       >
         <div className="flex justify-between items-end mb-10">
           <div>
@@ -515,7 +229,7 @@ const HomeClient = ({ initialProducts = [] }) => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-6">
           {bestSellers.length > 0 ? (
             bestSellers.map((product, idx) => (
               <motion.div
@@ -531,7 +245,7 @@ const HomeClient = ({ initialProducts = [] }) => {
             ))
           ) : (
             /* Empty state while loading */
-            [...Array(6)].map((_, i) => (
+            [...Array(8)].map((_, i) => (
               <div key={i} className={`${i >= 4 ? 'hidden md:block' : 'block'}`}>
                 <div className="rounded-[2rem] bg-beige-100 aspect-square animate-shimmer mb-3" />
                 <div className="h-3 w-3/4 bg-beige-100 rounded-full animate-shimmer mb-2" />
@@ -545,7 +259,7 @@ const HomeClient = ({ initialProducts = [] }) => {
       {/* ══════════════════════════════════════════
           TESTIMONIALS
       ══════════════════════════════════════════ */}
-      <div className="px-6 md:px-16 mt-28 md:mt-36 mb-12">
+      <div className="px-6 md:px-16 mt-20 mb-8">
         <div className="text-center mb-12">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold-500 mb-2">Community</p>
           <h3 className="font-serif text-3xl md:text-5xl font-bold text-purple-900 mb-3">Loved by You</h3>
@@ -554,7 +268,7 @@ const HomeClient = ({ initialProducts = [] }) => {
           </p>
         </div>
 
-        <div className="flex overflow-x-auto no-scrollbar gap-4 sm:gap-5 pb-4 -mx-5 px-5 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:gap-7 md:overflow-visible">
+        <div className="flex overflow-x-auto no-scrollbar gap-5 pb-4 md:grid md:grid-cols-3 md:gap-7 md:overflow-visible">
           {testimonials.map((item, idx) => (
             <motion.div
               key={idx}
@@ -618,7 +332,7 @@ const HomeClient = ({ initialProducts = [] }) => {
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="px-6 md:px-16 mt-20 mb-8"
+        className="px-6 md:px-16 mt-12 mb-4"
       >
         <div
           className="rounded-[2rem] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6"

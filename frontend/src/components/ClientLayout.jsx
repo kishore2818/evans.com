@@ -22,7 +22,8 @@ const TopNav = ({ cartItemCount }) => {
   const [cartBounce, setCartBounce] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 30);
+    const handleScroll = () => setScrolled(window.scrollY > 40);
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -41,32 +42,30 @@ const TopNav = ({ cartItemCount }) => {
     { name: 'Contact Us', path: '/contact' },
   ];
 
-  const isHome = pathname === '/';
-  const isDarkTheme = isHome && !scrolled;
+  const isHomePage = pathname === '/';
+  const isVisible = !isHomePage || scrolled;
 
   return (
     <>
       <motion.header
-        initial={{ y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed top-0 w-full z-50 transition-all duration-500 ${
+        initial={false}
+        animate={{
+          y: isVisible ? 0 : -100,
+          opacity: isVisible ? 1 : 0,
+        }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
           scrolled
             ? 'py-2 shadow-nav'
             : 'py-3'
         }`}
         style={{
+          pointerEvents: isVisible ? 'auto' : 'none',
           background: scrolled
-            ? 'rgba(255,255,255,0.88)'
-            : isHome
-            ? 'transparent'
-            : 'rgba(255,255,255,0.72)',
-          backdropFilter: scrolled || !isHome
-            ? 'blur(24px) saturate(180%)'
-            : 'none',
-          WebkitBackdropFilter: scrolled || !isHome
-            ? 'blur(24px) saturate(180%)'
-            : 'none',
+            ? 'rgba(255,255,255,0.92)'
+            : 'rgba(255,255,255,0.8)',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
           borderBottom: scrolled ? '1px solid rgba(90,42,108,0.08)' : '1px solid transparent',
         }}
       >
@@ -74,22 +73,19 @@ const TopNav = ({ cartItemCount }) => {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 md:space-x-3 group whitespace-nowrap min-h-[48px]">
             <motion.div
-              whileHover={{ scale: 1.08, rotate: 6 }}
+              whileHover={{ scale: 1.08, rotate: 4 }}
               transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-              className="relative w-8 h-8 md:w-10 md:h-10 overflow-hidden rounded-full shadow-luxury"
-              style={{ border: isDarkTheme ? '2px solid rgba(212,175,55,0.6)' : '2px solid rgba(212,175,55,0.3)' }}
+              className="relative w-9 h-9 md:w-11 md:h-11 p-[2.5px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_0_12px_rgba(212,175,55,0.45)] group-hover:shadow-[0_0_18px_rgba(212,175,55,0.75)] transition-all duration-300 shrink-0"
             >
-              <Image src="/images/logo.jpg" alt="Evans Luxe Logo" fill sizes="40px" className="object-cover" priority />
+              <div className="w-full h-full rounded-full overflow-hidden border border-purple-950/40 relative">
+                <Image src="/images/logo.jpg" alt="Evans Luxe Logo" fill sizes="44px" className="object-cover group-hover:scale-110 transition-transform duration-500" priority />
+              </div>
             </motion.div>
             <div className="flex flex-col leading-none">
-              <span className={`font-serif text-lg md:text-xl font-bold tracking-tight transition-colors ${
-                isDarkTheme ? 'text-white group-hover:text-gold-300' : 'text-purple-900 group-hover:text-purple-700'
-              }`}>
+              <span className="font-serif text-lg md:text-xl font-bold tracking-tight text-purple-900 group-hover:text-purple-700 transition-colors">
                 Evans Luxe
               </span>
-              <span className={`text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] transition-colors ${
-                isDarkTheme ? 'text-gold-300' : 'text-gold-500'
-              }`}>
+              <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-gold-500">
                 Beauty
               </span>
             </div>
@@ -104,9 +100,7 @@ const TopNav = ({ cartItemCount }) => {
                   key={link.name}
                   href={link.path}
                   className={`relative font-semibold text-sm transition-colors pb-1.5 group min-h-[48px] flex items-center ${
-                    isActive
-                      ? isDarkTheme ? 'text-gold-300' : 'text-purple-900'
-                      : isDarkTheme ? 'text-white/80 hover:text-white' : 'text-gray-500 hover:text-purple-800'
+                    isActive ? 'text-purple-900' : 'text-gray-500 hover:text-purple-800'
                   }`}
                 >
                   {link.name}
@@ -128,11 +122,7 @@ const TopNav = ({ cartItemCount }) => {
             {/* Profile */}
             <Link
               href="/profile"
-              className={`hidden md:flex items-center justify-center w-9 h-9 rounded-full transition-all group min-h-[48px] min-w-[36px] ${
-                isDarkTheme
-                  ? 'bg-white/10 text-white hover:bg-white/20 hover:text-gold-300'
-                  : 'bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-900'
-              }`}
+              className="hidden md:flex items-center justify-center w-9 h-9 rounded-full bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition-all group min-h-[48px] min-w-[36px]"
               title="My Account"
             >
               <motion.div whileHover={{ scale: 1.15 }} transition={{ type: 'spring', stiffness: 400, damping: 15 }}>
@@ -145,11 +135,7 @@ const TopNav = ({ cartItemCount }) => {
               <motion.div
                 animate={cartBounce ? { scale: [1, 1.3, 0.9, 1.1, 1] } : {}}
                 transition={{ duration: 0.5 }}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all relative ${
-                  isDarkTheme
-                    ? 'bg-white/10 text-white hover:bg-white/20 hover:text-gold-300'
-                    : 'bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-900'
-                }`}
+                className="w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition-all relative"
               >
                 <ShoppingBag size={19} strokeWidth={2} />
                 <AnimatePresence>
@@ -162,8 +148,7 @@ const TopNav = ({ cartItemCount }) => {
                       transition={{ type: 'spring', stiffness: 500, damping: 20 }}
                       className="absolute -top-1.5 -right-1.5 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-sm"
                       style={{
-                        background: isDarkTheme ? 'linear-gradient(135deg, #D4AF37, #edc757)' : 'linear-gradient(135deg, #5A2A6C, #8540b0)',
-                        color: isDarkTheme ? '#1a0a22' : '#ffffff',
+                        background: 'linear-gradient(135deg, #5A2A6C, #8540b0)',
                         width: '18px',
                         height: '18px',
                         fontSize: '9px',
@@ -179,14 +164,12 @@ const TopNav = ({ cartItemCount }) => {
             {/* Mobile hamburger – custom 3-line icon */}
             <button
               onClick={() => setIsMenuOpen(true)}
-              className={`md:hidden flex flex-col justify-center items-center w-10 h-10 min-h-[48px] min-w-[48px] space-y-1.5 transition-colors ${
-                isDarkTheme ? 'text-white' : 'text-purple-900'
-              }`}
+              className="md:hidden flex flex-col justify-center items-center w-10 h-10 min-h-[48px] min-w-[48px] space-y-1.5 text-purple-900"
               aria-label="Open menu"
             >
-              <span className={`block w-6 h-0.5 rounded-full transition-colors ${isDarkTheme ? 'bg-white' : 'bg-purple-900'}`} />
-              <span className={`block w-4 h-0.5 rounded-full transition-colors ${isDarkTheme ? 'bg-gold-300' : 'bg-purple-600'}`} />
-              <span className={`block w-5 h-0.5 rounded-full transition-colors ${isDarkTheme ? 'bg-white' : 'bg-purple-900'}`} />
+              <span className="block w-6 h-0.5 bg-purple-900 rounded-full" />
+              <span className="block w-4 h-0.5 bg-purple-600 rounded-full" />
+              <span className="block w-5 h-0.5 bg-purple-900 rounded-full" />
             </button>
           </div>
         </div>
@@ -223,8 +206,10 @@ const TopNav = ({ cartItemCount }) => {
                 {/* Header */}
                 <div className="flex justify-between items-center mb-12">
                   <div className="flex items-center space-x-3">
-                    <div className="relative w-10 h-10 overflow-hidden rounded-full border border-gold-400/40 shadow-gold">
-                      <Image src="/images/logo.jpg" alt="Logo" fill sizes="40px" className="object-cover" />
+                    <div className="relative w-11 h-11 p-[2.5px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_0_12px_rgba(212,175,55,0.45)] shrink-0">
+                      <div className="w-full h-full rounded-full overflow-hidden border border-purple-950/40 relative">
+                        <Image src="/images/logo.jpg" alt="Logo" fill sizes="44px" className="object-cover" />
+                      </div>
                     </div>
                     <div>
                       <span className="font-serif text-lg font-bold text-white block leading-none">Evans Luxe</span>
@@ -285,10 +270,22 @@ const TopNav = ({ cartItemCount }) => {
 };
 
 /* ─────────────────────────────────────────
-   BOTTOM NAV — Floating pill design
+   BOTTOM NAV — Floating pill design (Appears on Scroll)
 ───────────────────────────────────────── */
 const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
   const pathname = usePathname();
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // On ALL pages: disappear on entry (top of page), appear smoothly when scrolling down
+      setIsVisible(window.scrollY > 30);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [pathname]);
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -299,98 +296,103 @@ const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4 pointer-events-none">
-      <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.2 }}
-        className="pointer-events-auto"
-        style={{
-          background: 'rgba(255,255,255,0.88)',
-          backdropFilter: 'blur(28px) saturate(200%)',
-          WebkitBackdropFilter: 'blur(28px) saturate(200%)',
-          borderRadius: '9999px',
-          border: '1px solid rgba(255,255,255,0.9)',
-          boxShadow: '0 8px 32px rgba(62,29,74,0.18), 0 2px 8px rgba(62,29,74,0.1)',
-          padding: '8px 12px',
-        }}
-      >
-        <nav className="flex items-center space-x-1">
-          {navItems.map((item) => {
-            const isActive = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.name}
-                href={item.path}
-                className="relative flex flex-col items-center"
-              >
-                <motion.div
-                  whileTap={{ scale: 0.85 }}
-                  className={`relative flex items-center justify-center transition-all duration-300 ${
-                    isActive
-                      ? 'w-12 h-10 rounded-full'
-                      : 'w-10 h-10 rounded-full'
-                  }`}
-                  style={isActive ? {
-                    background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)',
-                    boxShadow: '0 4px 16px rgba(90,42,108,0.4)',
-                  } : {}}
-                >
-                  {isActive && (
+    <AnimatePresence>
+      {isVisible && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4 pointer-events-none">
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+            className="pointer-events-auto"
+            style={{
+              background: 'rgba(255,255,255,0.88)',
+              backdropFilter: 'blur(28px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(28px) saturate(200%)',
+              borderRadius: '9999px',
+              border: '1px solid rgba(255,255,255,0.9)',
+              boxShadow: '0 8px 32px rgba(62,29,74,0.18), 0 2px 8px rgba(62,29,74,0.1)',
+              padding: '8px 12px',
+            }}
+          >
+            <nav className="flex items-center space-x-1">
+              {navItems.map((item) => {
+                const isActive = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.path}
+                    className="relative flex flex-col items-center"
+                  >
                     <motion.div
-                      layoutId="nav-active-glow"
-                      className="absolute inset-0 rounded-full opacity-40"
-                      style={{
-                        background: 'radial-gradient(circle, rgba(212,175,55,0.6) 0%, transparent 70%)',
-                        filter: 'blur(6px)',
-                      }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <Icon
-                    size={18}
-                    strokeWidth={isActive ? 2.5 : 2}
-                    className={isActive ? 'text-gold-300 relative z-10' : 'text-gray-400'}
-                    fill={item.name === 'Wishlist' && item.badge > 0 && !isActive ? 'rgba(239,68,68,0.25)' : 'transparent'}
-                  />
-                  {/* Badge */}
-                  {item.badge > 0 && (
-                    <motion.span
-                      key={item.badge}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-                      className="absolute -top-1 -right-1 text-white text-[8px] font-black rounded-full flex items-center justify-center z-20"
-                      style={{
-                        background: item.badgeColor || 'linear-gradient(135deg, #D4AF37, #edc757)',
-                        width: '15px',
-                        height: '15px',
-                      }}
+                      whileTap={{ scale: 0.85 }}
+                      className={`relative flex items-center justify-center transition-all duration-300 ${
+                        isActive
+                          ? 'w-12 h-10 rounded-full'
+                          : 'w-10 h-10 rounded-full'
+                      }`}
+                      style={isActive ? {
+                        background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)',
+                        boxShadow: '0 4px 16px rgba(90,42,108,0.4)',
+                      } : {}}
                     >
-                      {item.badge > 9 ? '9+' : item.badge}
-                    </motion.span>
-                  )}
-                </motion.div>
-                {/* Label */}
-                <AnimatePresence>
-                  {isActive && (
-                    <motion.span
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      className="text-[8px] font-bold uppercase tracking-widest text-purple-800 mt-0.5 whitespace-nowrap"
-                    >
-                      {item.name}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </Link>
-            );
-          })}
-        </nav>
-      </motion.div>
-    </div>
+                      {isActive && (
+                        <motion.div
+                          layoutId="nav-active-glow"
+                          className="absolute inset-0 rounded-full opacity-40"
+                          style={{
+                            background: 'radial-gradient(circle, rgba(212,175,55,0.6) 0%, transparent 70%)',
+                            filter: 'blur(6px)',
+                          }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                      <Icon
+                        size={18}
+                        strokeWidth={isActive ? 2.5 : 2}
+                        className={isActive ? 'text-gold-300 relative z-10' : 'text-gray-400'}
+                        fill={item.name === 'Wishlist' && item.badge > 0 && !isActive ? 'rgba(239,68,68,0.25)' : 'transparent'}
+                      />
+                      {/* Badge */}
+                      {item.badge > 0 && (
+                        <motion.span
+                          key={item.badge}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                          className="absolute -top-1 -right-1 text-white text-[8px] font-black rounded-full flex items-center justify-center z-20"
+                          style={{
+                            background: item.badgeColor || 'linear-gradient(135deg, #D4AF37, #edc757)',
+                            width: '15px',
+                            height: '15px',
+                          }}
+                        >
+                          {item.badge > 9 ? '9+' : item.badge}
+                        </motion.span>
+                      )}
+                    </motion.div>
+                    {/* Label */}
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.span
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          className="text-[8px] font-bold uppercase tracking-widest text-purple-800 mt-0.5 whitespace-nowrap"
+                        >
+                          {item.name}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </Link>
+                );
+              })}
+            </nav>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };
 

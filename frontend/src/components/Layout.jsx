@@ -33,8 +33,10 @@ const TopNav = ({ cartItemCount }) => {
       <div className="max-w-7xl mx-auto px-8 w-full flex justify-between items-center">
         {/* Logo + Brand */}
         <Link to="/" className="flex items-center space-x-3 group whitespace-nowrap">
-          <div className="w-10 h-10 overflow-hidden rounded-full border-2 border-purple-100 shadow-md transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
-            <img src="/images/logo.jpg" alt="Evans Luxe Logo" className="w-full h-full object-cover" />
+          <div className="w-10 h-10 p-[2.5px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_0_10px_rgba(212,175,55,0.4)] group-hover:shadow-[0_0_16px_rgba(212,175,55,0.7)] transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shrink-0">
+            <div className="w-full h-full rounded-full overflow-hidden border border-purple-950/30">
+              <img src="/images/logo.jpg" alt="Evans Luxe Logo" className="w-full h-full object-cover" />
+            </div>
           </div>
           <div className="flex flex-col leading-none">
             <span className="font-serif text-xl font-bold tracking-tight text-purple-900 group-hover:text-purple-700 transition-colors">

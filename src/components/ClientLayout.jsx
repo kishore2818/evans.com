@@ -22,7 +22,8 @@ const TopNav = ({ cartItemCount }) => {
   const [cartBounce, setCartBounce] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 30);
+    const handleScroll = () => setScrolled(window.scrollY > 40);
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -41,24 +42,28 @@ const TopNav = ({ cartItemCount }) => {
     { name: 'Contact Us', path: '/contact' },
   ];
 
-  // Don't render on home page – it has its own header
-  if (pathname === '/') return null;
+  const isHomePage = pathname === '/';
+  const isVisible = !isHomePage || scrolled;
 
   return (
     <>
       <motion.header
-        initial={{ y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed top-0 w-full z-50 transition-all duration-500 ${
+        initial={false}
+        animate={{
+          y: isVisible ? 0 : -100,
+          opacity: isVisible ? 1 : 0,
+        }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
           scrolled
             ? 'py-2 shadow-nav'
             : 'py-3'
         }`}
         style={{
+          pointerEvents: isVisible ? 'auto' : 'none',
           background: scrolled
-            ? 'rgba(255,255,255,0.88)'
-            : 'rgba(255,255,255,0.72)',
+            ? 'rgba(255,255,255,0.92)'
+            : 'rgba(255,255,255,0.8)',
           backdropFilter: 'blur(24px) saturate(180%)',
           WebkitBackdropFilter: 'blur(24px) saturate(180%)',
           borderBottom: scrolled ? '1px solid rgba(90,42,108,0.08)' : '1px solid transparent',
@@ -68,12 +73,13 @@ const TopNav = ({ cartItemCount }) => {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 md:space-x-3 group whitespace-nowrap min-h-[48px]">
             <motion.div
-              whileHover={{ scale: 1.08, rotate: 6 }}
+              whileHover={{ scale: 1.08, rotate: 4 }}
               transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-              className="relative w-8 h-8 md:w-10 md:h-10 overflow-hidden rounded-full shadow-luxury"
-              style={{ border: '2px solid rgba(212,175,55,0.3)' }}
+              className="relative w-9 h-9 md:w-11 md:h-11 p-[2.5px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_0_12px_rgba(212,175,55,0.45)] group-hover:shadow-[0_0_18px_rgba(212,175,55,0.75)] transition-all duration-300 shrink-0"
             >
-              <Image src="/images/logo.jpg" alt="Evans Luxe Logo" fill sizes="40px" className="object-cover" priority />
+              <div className="w-full h-full rounded-full overflow-hidden border border-purple-950/40 relative">
+                <Image src="/images/logo.jpg" alt="Evans Luxe Logo" fill sizes="44px" className="object-cover group-hover:scale-110 transition-transform duration-500" priority />
+              </div>
             </motion.div>
             <div className="flex flex-col leading-none">
               <span className="font-serif text-lg md:text-xl font-bold tracking-tight text-purple-900 group-hover:text-purple-700 transition-colors">
@@ -200,8 +206,10 @@ const TopNav = ({ cartItemCount }) => {
                 {/* Header */}
                 <div className="flex justify-between items-center mb-12">
                   <div className="flex items-center space-x-3">
-                    <div className="relative w-10 h-10 overflow-hidden rounded-full border border-gold-400/40 shadow-gold">
-                      <Image src="/images/logo.jpg" alt="Logo" fill sizes="40px" className="object-cover" />
+                    <div className="relative w-11 h-11 p-[2.5px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_0_12px_rgba(212,175,55,0.45)] shrink-0">
+                      <div className="w-full h-full rounded-full overflow-hidden border border-purple-950/40 relative">
+                        <Image src="/images/logo.jpg" alt="Logo" fill sizes="44px" className="object-cover" />
+                      </div>
                     </div>
                     <div>
                       <span className="font-serif text-lg font-bold text-white block leading-none">Evans Luxe</span>

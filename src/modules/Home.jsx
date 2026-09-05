@@ -9,6 +9,7 @@ import { Link } from '@/router-shim';
 import ProductCard from '../components/ProductCard';
 import ProductSkeleton from '../components/skeletons/ProductSkeleton';
 import CategorySkeleton from '../components/skeletons/CategorySkeleton';
+import CategoryIcon from '../components/CategoryIcon';
 import * as Icons from 'lucide-react';
 
 /* ── Stagger container animation variants ── */
@@ -52,11 +53,12 @@ const Home = () => {
         
         // Compute best sellers (top rated/most reviewed)
         const sorted = [...formattedData].sort((a, b) => b.reviews - a.reviews);
-        setBestSellers(sorted.slice(0, 6));
+        setBestSellers(sorted.slice(0, 8));
 
-        // Compute unique categories
-        const unq = [...new Set(formattedData.map(p => p.category))].filter(Boolean);
-        setDynamicCategories(unq.slice(0, 5));
+        // Compute unique categories with fallback to standard categories
+        const defaultCats = ['Serum', 'Soaps', 'Face Wash', 'Sunscreen', 'Lip Balm', 'Cream', 'Hair Oil', 'Shampoo'];
+        const unq = [...new Set([...formattedData.map(p => p.category).filter(Boolean), ...defaultCats])];
+        setDynamicCategories(unq.slice(0, 8));
       } catch (error) {
         console.error("Failed to load products for home page", error);
       }
@@ -67,12 +69,12 @@ const Home = () => {
   return (
     <div className="pb-8 overflow-x-hidden">
       {/* ══════════════════════════════════════════
-          HERO SECTION — Luxury Centered Crown
+          HERO SECTION — Compact Luxury Golden Crown Banner
       ══════════════════════════════════════════ */}
-      <div className="relative py-12 md:py-20 px-6 md:px-16 bg-gradient-to-br from-[#1a0a22] via-[#3e1d4a] to-[#5A2A6C] text-white rounded-b-[2.5rem] md:rounded-[3.5rem] md:mx-6 overflow-hidden shadow-2xl">
+      <div className="relative py-8 md:py-12 px-6 md:px-16 bg-gradient-to-br from-[#1a0a22] via-[#3e1d4a] to-[#5A2A6C] text-white rounded-b-[2rem] md:rounded-[3rem] md:mx-6 overflow-hidden shadow-2xl">
         
         {/* Background Image Layer */}
-        <div className="absolute inset-0 opacity-25 mix-blend-overlay">
+        <div className="absolute inset-0 opacity-20 mix-blend-overlay">
           <img 
             src="/images/hero_background_1775973263788.png" 
             alt="Botanical Leaves" 
@@ -83,80 +85,80 @@ const Home = () => {
         {/* Ambient Glowing Orbs */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <motion.div
-            animate={{ x: [0, 25, 0], y: [0, -20, 0] }}
+            animate={{ x: [0, 20, 0], y: [0, -15, 0] }}
             transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute top-0 left-1/4 w-80 h-80 rounded-full opacity-20"
-            style={{ background: 'radial-gradient(circle, #D4AF37 0%, transparent 70%)', filter: 'blur(60px)' }}
+            className="absolute top-0 left-1/4 w-64 h-64 rounded-full opacity-20"
+            style={{ background: 'radial-gradient(circle, #D4AF37 0%, transparent 70%)', filter: 'blur(50px)' }}
           />
           <motion.div
-            animate={{ x: [0, -20, 0], y: [0, 25, 0] }}
+            animate={{ x: [0, -15, 0], y: [0, 20, 0] }}
             transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-            className="absolute bottom-0 right-1/4 w-72 h-72 rounded-full opacity-20"
-            style={{ background: 'radial-gradient(circle, #8540b0 0%, transparent 70%)', filter: 'blur(50px)' }}
+            className="absolute bottom-0 right-1/4 w-56 h-56 rounded-full opacity-20"
+            style={{ background: 'radial-gradient(circle, #8540b0 0%, transparent 70%)', filter: 'blur(40px)' }}
           />
         </div>
 
         {/* Floating Botanical Micro-Icons */}
         <div className="absolute inset-0 pointer-events-none hidden md:block">
           <motion.div
-            animate={{ y: [0, -14, 0], rotate: [0, 6, 0] }}
+            animate={{ y: [0, -10, 0], rotate: [0, 6, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute top-16 left-12 text-gold-300/40"
+            className="absolute top-10 left-12 text-gold-300/40"
           >
-            <Sparkles size={36} />
+            <Sparkles size={28} />
           </motion.div>
           <motion.div
-            animate={{ y: [0, 16, 0], rotate: [0, -8, 0] }}
+            animate={{ y: [0, 12, 0], rotate: [0, -8, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-            className="absolute bottom-20 right-16 text-gold-400/30"
+            className="absolute bottom-12 right-16 text-gold-400/30"
           >
-            <Leaf size={44} />
+            <Leaf size={34} />
           </motion.div>
         </div>
 
         {/* Hero Content Container */}
-        <div className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
+        <div className="relative z-10 flex flex-col items-center text-center max-w-3xl mx-auto">
           
-          {/* 👑 CENTERED TOP LOGO & BRAND TITLE (Before Scrolling View) */}
+          {/* 👑 CENTERED GOLDEN RING LOGO & BRAND TITLE */}
           <motion.div 
-            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            initial={{ opacity: 0, y: -15, scale: 0.92 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col items-center mb-8 pt-2"
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col items-center mb-5"
           >
-            {/* Glowing Circular Logo */}
+            {/* Glowing Golden Ring Circular Logo */}
             <motion.div 
               whileHover={{ scale: 1.08, rotate: 2 }}
               transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-              className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full p-1 shadow-gold mb-4 group cursor-pointer"
+              className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22 rounded-full p-1 shadow-gold mb-2.5 group cursor-pointer"
               style={{ background: 'linear-gradient(135deg, #D4AF37, #edc757, #D4AF37)' }}
             >
-              <div className="w-full h-full rounded-full overflow-hidden border-2 border-purple-900 bg-purple-900 relative">
+              <div className="w-full h-full rounded-full overflow-hidden border-2 border-purple-950 bg-purple-950 relative">
                 <img 
                   src="/images/logo.jpg" 
                   alt="Evans Luxe Beauty Logo" 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                 />
               </div>
-              <div className="absolute -bottom-1 -right-1 bg-gold-400 text-purple-950 p-1.5 rounded-full shadow-md">
-                <Sparkles size={12} strokeWidth={2.5} />
+              <div className="absolute -bottom-0.5 -right-0.5 bg-gold-400 text-purple-950 p-1 rounded-full shadow-md">
+                <Sparkles size={10} strokeWidth={2.5} />
               </div>
             </motion.div>
 
             {/* Brand Title directly below logo */}
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-gold-200 drop-shadow-md leading-tight">
+            <h1 className="font-serif text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-gold-200 drop-shadow-md leading-tight">
               Evans Luxe Beauty
             </h1>
             
-            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.35em] text-gold-300/90 mt-1.5">
+            <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-gold-300/90 mt-1">
               Organic Botanical Skincare
             </p>
 
             {/* Luxury Symmetrical Divider */}
-            <div className="flex items-center space-x-3 mt-4">
-              <div className="h-px w-16 sm:w-24 bg-gradient-to-r from-transparent via-gold-400/70 to-gold-300" />
-              <Sparkles size={14} className="text-gold-400 animate-pulse" />
-              <div className="h-px w-16 sm:w-24 bg-gradient-to-l from-transparent via-gold-400/70 to-gold-300" />
+            <div className="flex items-center space-x-3 mt-2.5">
+              <div className="h-px w-12 sm:w-20 bg-gradient-to-r from-transparent via-gold-400/70 to-gold-300" />
+              <Sparkles size={11} className="text-gold-400 animate-pulse" />
+              <div className="h-px w-12 sm:w-20 bg-gradient-to-l from-transparent via-gold-400/70 to-gold-300" />
             </div>
           </motion.div>
 
@@ -167,15 +169,9 @@ const Home = () => {
             animate="visible"
             className="flex flex-col items-center"
           >
-            <motion.div variants={fadeUp} className="mb-4">
-              <span className="inline-block px-4 py-1.5 rounded-full text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase bg-gold-400/15 text-gold-300 border border-gold-400/30">
-                Botanical Manifesto
-              </span>
-            </motion.div>
-
             <motion.h2 
               variants={fadeUp}
-              className="font-serif text-4xl sm:text-6xl md:text-7xl font-bold leading-[1.08] mb-6 text-white"
+              className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold leading-[1.08] mb-4 text-white"
             >
               Radiant Skin,<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-amber-200">
@@ -185,23 +181,23 @@ const Home = () => {
 
             <motion.p 
               variants={fadeUp}
-              className="text-white/80 text-sm sm:text-base md:text-lg mb-8 leading-relaxed max-w-xl italic font-light"
+              className="text-white/80 text-xs sm:text-sm md:text-base mb-6 leading-relaxed max-w-lg italic font-light"
             >
               100% organic botanical care — cruelty-free, chemical-free, and sustainably sourced for your most radiant self.
             </motion.p>
 
             {/* CTA Buttons */}
-            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center w-full sm:w-auto">
+            <motion.div variants={fadeUp} className="flex flex-row gap-3 justify-center">
               <Link 
                 to="/products" 
-                className="group inline-flex items-center justify-center space-x-3 bg-gradient-to-r from-gold-400 via-gold-300 to-gold-400 text-purple-950 px-8 py-4 rounded-full font-extrabold text-sm uppercase tracking-wider shadow-gold hover:-translate-y-1 transition-all duration-300"
+                className="group inline-flex items-center justify-center space-x-2.5 bg-gradient-to-r from-gold-400 via-gold-300 to-gold-400 text-purple-950 px-6 py-3 rounded-full font-extrabold text-xs uppercase tracking-wider shadow-gold hover:-translate-y-0.5 transition-all duration-300"
               >
                 <span>Shop Collection</span>
-                <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
+                <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link 
                 to="/products" 
-                className="inline-flex items-center justify-center px-8 py-4 rounded-full font-bold text-sm uppercase tracking-wider text-white/90 border border-white/20 hover:bg-white/10 hover:text-white transition-all duration-300"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-full font-bold text-xs uppercase tracking-wider text-white/90 border border-white/20 hover:bg-white/10 hover:text-white transition-all duration-300"
               >
                 Explore Range
               </Link>
@@ -210,18 +206,18 @@ const Home = () => {
             {/* Trust Badges */}
             <motion.div 
               variants={fadeUp}
-              className="flex items-center justify-center space-x-6 sm:space-x-10 mt-12 pt-8 border-t border-white/10 text-white/70"
+              className="flex items-center justify-center space-x-5 sm:space-x-8 mt-8 pt-5 border-t border-white/10 text-white/70"
             >
-              <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider">
-                <ShieldCheck size={16} className="text-gold-400" />
+              <div className="flex items-center space-x-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider">
+                <ShieldCheck size={14} className="text-gold-400" />
                 <span>100% Organic</span>
               </div>
-              <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider">
-                <Leaf size={16} className="text-gold-400" />
+              <div className="flex items-center space-x-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider">
+                <Leaf size={14} className="text-gold-400" />
                 <span>Cruelty-Free</span>
               </div>
-              <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider">
-                <Package size={16} className="text-gold-400" />
+              <div className="flex items-center space-x-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider">
+                <Package size={14} className="text-gold-400" />
                 <span>Free Shipping ₹999+</span>
               </div>
             </motion.div>
@@ -246,26 +242,37 @@ const Home = () => {
           <div className="h-1 w-16 bg-gradient-to-r from-gold-400 to-amber-300 rounded-full mx-auto mt-3" />
         </div>
 
-        <div className="flex overflow-x-auto no-scrollbar space-x-6 pb-6 -mx-6 px-6 md:justify-center">
+        <div className="flex overflow-x-auto no-scrollbar space-x-5 sm:space-x-8 pt-6 pb-8 -mx-6 px-6 md:justify-center items-start snap-x touch-pan-x">
           {dynamicCategories.length > 0 ? dynamicCategories.map((catName, idx) => {
             return (
               <motion.div
                 key={idx}
-                whileHover={{ y: -8, scale: 1.05 }}
-                transition={{ type: 'spring', stiffness: 350, damping: 20 }}
-                className="flex-shrink-0"
+                initial={{ opacity: 0, scale: 0.84, y: 14 }}
+                whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                viewport={{ once: true, margin: "-10px" }}
+                whileHover={{ y: -8, scale: 1.07 }}
+                whileTap={{ y: -8, scale: 1.08 }}
+                transition={{ type: 'spring', stiffness: 380, damping: 18, delay: idx * 0.04 }}
+                className="flex-shrink-0 snap-center"
               >
-                <Link to={`/products?category=${catName}`} className="flex flex-col items-center group">
-                  <div className={`w-20 h-20 md:w-24 md:h-24 rounded-[2.2rem] bg-gradient-to-br ${CATEGORY_GRADIENTS[idx % CATEGORY_GRADIENTS.length]} shadow-luxury flex items-center justify-center text-white group-hover:shadow-gold transition-all duration-500 relative overflow-hidden`}>
-                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <Leaf size={32} strokeWidth={1.4} className="relative z-10" />
+                <Link to={`/products?category=${encodeURIComponent(catName)}`} className="flex flex-col items-center group cursor-pointer select-none">
+                  {/* Modern Luxury Gold Aura Ring Badge */}
+                  <div className="relative w-20 h-20 sm:w-22 sm:h-22 md:w-24 md:h-24 p-[2.5px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_6px_20px_-4px_rgba(212,175,55,0.28)] group-hover:shadow-[0_12px_30px_-2px_rgba(212,175,55,0.55)] group-active:shadow-[0_12px_30px_-2px_rgba(212,175,55,0.55)] transition-all duration-300">
+                    <div className="w-full h-full rounded-full bg-gradient-to-b from-[#FFFDF9] via-[#FAF5EC] to-[#F3E8D7] border border-white/80 flex items-center justify-center p-3 relative overflow-hidden group-hover:bg-white group-active:bg-white transition-colors duration-300">
+                      {/* Subtle Ambient Gold Sheen on Hover & Mobile Tap */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-gold-400/25 via-transparent to-white/40 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 rounded-full" />
+                      <CategoryIcon category={catName} className="w-12 h-12 sm:w-13 sm:h-13 md:w-14 md:h-14 relative z-10 transition-transform duration-300 group-hover:scale-110 group-active:scale-110 group-hover:-rotate-1 group-active:-rotate-1" />
+                    </div>
                   </div>
-                  <span className="text-xs font-bold text-purple-900 mt-3 group-hover:text-purple-700 transition-colors uppercase tracking-wider text-center">{catName}</span>
+                  {/* Category Name: Clean 2-line Wrapping */}
+                  <span className="text-[10px] sm:text-[11px] md:text-xs font-bold text-purple-950 mt-3 group-hover:text-gold-600 group-active:text-gold-600 transition-colors uppercase tracking-wider text-center w-22 sm:w-26 md:w-28 leading-snug line-clamp-2 min-h-[2.4rem] flex items-center justify-center">
+                    {catName}
+                  </span>
                 </Link>
               </motion.div>
             )
           }) : (
-            [...Array(5)].map((_, i) => <CategorySkeleton key={i} />)
+            [...Array(6)].map((_, i) => <CategorySkeleton key={i} />)
           )}
         </div>
       </motion.div>
@@ -336,6 +343,7 @@ const Home = () => {
           {bestSellers.length > 0 ? bestSellers.map((product, idx) => (
             <motion.div
               key={product.id}
+              className={`${idx >= 4 ? 'hidden md:block' : 'block'}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -344,7 +352,11 @@ const Home = () => {
               <ProductCard product={product} />
             </motion.div>
           )) : (
-            [...Array(4)].map((_, i) => <ProductSkeleton key={i} />)
+            [...Array(8)].map((_, i) => (
+              <div key={i} className={`${i >= 4 ? 'hidden md:block' : 'block'}`}>
+                <ProductSkeleton />
+              </div>
+            ))
           )}
         </div>
       </motion.div>

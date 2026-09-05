@@ -6,6 +6,7 @@ import { Sparkles, ArrowRight, ShieldCheck, Leaf, Droplet, Star, ChevronDown, Pa
 import Link from 'next/link';
 import Image from 'next/image';
 import ProductCard from '@/components/ProductCard';
+import CategoryIcon from '@/components/CategoryIcon';
 
 /* ── Stagger container helpers ── */
 const stagger = {
@@ -35,7 +36,7 @@ const HomeClient = ({ initialProducts = [] }) => {
 
   const bestSellers = [...products]
     .sort((a, b) => (b.ratings?.count || b.reviewsCount || 0) - (a.ratings?.count || a.reviewsCount || 0))
-    .slice(0, 6);
+    .slice(0, 8);
 
   const dynamicCategories = [...new Set(products.map(p => p.category))].filter(Boolean).slice(0, 5);
 
@@ -95,30 +96,29 @@ const HomeClient = ({ initialProducts = [] }) => {
           <h3 className="font-serif text-2xl md:text-4xl font-bold text-purple-900">Shop by Category</h3>
         </div>
 
-        <div className="flex overflow-x-auto no-scrollbar gap-4 pb-4 md:justify-center md:flex-wrap">
+        <div className="flex overflow-x-auto no-scrollbar space-x-5 sm:space-x-8 pt-6 pb-8 -mx-6 px-6 md:justify-center items-start snap-x touch-pan-x">
           {dynamicCategories.map((catName, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.08, duration: 0.5 }}
-              whileHover={{ y: -8, scale: 1.04 }}
-              className="flex-shrink-0"
+              initial={{ opacity: 0, scale: 0.84, y: 14 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10px" }}
+              whileHover={{ y: -8, scale: 1.07 }}
+              whileTap={{ y: -8, scale: 1.08 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 18, delay: idx * 0.04 }}
+              className="flex-shrink-0 snap-center"
             >
               <Link
-                href={`/products?category=${catName}`}
-                className="flex flex-col items-center group w-[100px] md:w-[120px]"
+                href={`/products?category=${encodeURIComponent(catName)}`}
+                className="flex flex-col items-center group cursor-pointer select-none"
               >
-                <div
-                  className={`w-[76px] h-[76px] md:w-[88px] md:h-[88px] rounded-[1.6rem] bg-gradient-to-br ${CATEGORY_GRADIENTS[idx % CATEGORY_GRADIENTS.length]} flex items-center justify-center shadow-luxury group-hover:shadow-luxury-lg transition-all duration-500 mb-3 relative overflow-hidden`}
-                >
-                  {/* Shine on hover */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 60%)' }} />
-                  <Leaf size={30} strokeWidth={1.4} className="text-white/90 relative z-10" />
+                <div className="relative w-20 h-20 sm:w-22 sm:h-22 md:w-24 md:h-24 p-[2.5px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_6px_20px_-4px_rgba(212,175,55,0.28)] group-hover:shadow-[0_12px_30px_-2px_rgba(212,175,55,0.55)] group-active:shadow-[0_12px_30px_-2px_rgba(212,175,55,0.55)] transition-all duration-300">
+                  <div className="w-full h-full rounded-full bg-gradient-to-b from-[#FFFDF9] via-[#FAF5EC] to-[#F3E8D7] border border-white/80 flex items-center justify-center p-3 relative overflow-hidden group-hover:bg-white group-active:bg-white transition-colors duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-gold-400/25 via-transparent to-white/40 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 rounded-full" />
+                    <CategoryIcon category={catName} className="w-12 h-12 sm:w-13 sm:h-13 md:w-14 md:h-14 relative z-10 transition-transform duration-300 group-hover:scale-110 group-active:scale-110 group-hover:-rotate-1 group-active:-rotate-1" />
+                  </div>
                 </div>
-                <span className="text-[11px] font-bold text-gray-600 group-hover:text-purple-900 transition-colors uppercase tracking-wider text-center leading-tight">
+                <span className="text-[10px] sm:text-[11px] md:text-xs font-bold text-purple-950 mt-3 group-hover:text-gold-600 group-active:text-gold-600 transition-colors uppercase tracking-wider text-center w-22 sm:w-26 md:w-28 leading-snug line-clamp-2 min-h-[2.4rem] flex items-center justify-center">
                   {catName}
                 </span>
               </Link>
@@ -229,7 +229,7 @@ const HomeClient = ({ initialProducts = [] }) => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-6">
           {bestSellers.length > 0 ? (
             bestSellers.map((product, idx) => (
               <motion.div
@@ -245,7 +245,7 @@ const HomeClient = ({ initialProducts = [] }) => {
             ))
           ) : (
             /* Empty state while loading */
-            [...Array(6)].map((_, i) => (
+            [...Array(8)].map((_, i) => (
               <div key={i} className={`${i >= 4 ? 'hidden md:block' : 'block'}`}>
                 <div className="rounded-[2rem] bg-beige-100 aspect-square animate-shimmer mb-3" />
                 <div className="h-3 w-3/4 bg-beige-100 rounded-full animate-shimmer mb-2" />

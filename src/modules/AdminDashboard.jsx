@@ -27,6 +27,14 @@ const AdminDashboard = () => {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      if (response.status === 401) {
+        localStorage.removeItem('adminToken');
+        toast.error('Session expired. Please log in again.');
+        navigate('/admin/login');
+        return;
+      }
+
       const data = await response.json();
       if (response.ok) {
         setProducts(data);

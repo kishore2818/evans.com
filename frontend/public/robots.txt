@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://evanscom.vercel.app/sitemap.xml

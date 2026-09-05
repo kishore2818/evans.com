@@ -1,0 +1,15 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/robots.txt/route": "/robots.txt",
+  "/auth/page": "/auth",
+  "/cart/page": "/cart",
+  "/contact/page": "/contact",
+  "/page": "/",
+  "/checkout/page": "/checkout",
+  "/profile/account/page": "/profile/account",
+  "/profile/orders/page": "/profile/orders",
+  "/profile/page": "/profile",
+  "/profile/wishlist/page": "/profile/wishlist",
+  "/products/page": "/products",
+  "/products/[id]/page": "/products/[id]"
+}

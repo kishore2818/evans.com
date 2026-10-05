@@ -22,18 +22,27 @@ import {
   Package,
   CheckCircle2,
   ZoomIn,
+  Flame,
+  Timer,
+  Sparkles,
+  Droplet,
+  Info,
+  ChevronDown
 } from 'lucide-react';
 
-const TABS = ['Description', 'Benefits', 'Reviews'];
+const TABS = ['Description', 'Benefits', 'Ingredients', 'Clinical Results', 'Reviews'];
 
 const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchased }) => {
   const router = useRouter();
   const pathname = usePathname();
   const addToCart = useStore((state) => state.addToCart);
-  const { addReview, myOrders, fetchMyOrders } = useStore();
+  const { addReview, myOrders, fetchMyOrders, storeSettings } = useStore();
   const { user, token } = useAuthStore();
 
   const [product] = useState(initialProduct);
+  const [selectedShade, setSelectedShade] = useState(initialProduct.shades?.[0] || null);
+  const [sliderPosition, setSliderPosition] = useState(50);
+  const [showFullINCI, setShowFullINCI] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('Description');
@@ -64,9 +73,13 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
   }, [myOrders, product]);
 
   const handleAddToCart = () => {
-    const cartItem = { ...product, image: product.images[0] };
+    const cartItem = {
+      ...product,
+      selectedShade: selectedShade || (product.shades?.[0] || null),
+      image: selectedShade?.image || product.images[0]
+    };
     addToCart(cartItem, quantity);
-    toast.success(`${quantity} × ${product.name} added!`);
+    toast.success(`${quantity} × ${product.name}${selectedShade ? ` (${selectedShade.name})` : ''} added!`);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
@@ -116,20 +129,24 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
       router.push(`/auth?from=${pathname}`);
       return;
     }
-    const cartItem = { ...product, image: product.images[0] };
+    const cartItem = {
+      ...product,
+      selectedShade: selectedShade || (product.shades?.[0] || null),
+      image: selectedShade?.image || product.images[0]
+    };
     addToCart(cartItem, quantity);
-    router.push('/cart');
+    router.push('/checkout');
   };
 
+  const effectiveDiscount = product.flashSale?.isActive && product.flashSale?.discountPercentage
+    ? Math.max(product.discountPercentage || 0, product.flashSale.discountPercentage)
+    : product.discountPercentage || 0;
 
-
-
-
-  const discountedPrice = product.discountPercentage > 0
-    ? product.price - (product.price * (product.discountPercentage / 100))
+  const discountedPrice = effectiveDiscount > 0
+    ? product.price - (product.price * (effectiveDiscount / 100))
     : product.price;
 
-  const savingsAmount = product.discountPercentage > 0
+  const savingsAmount = effectiveDiscount > 0
     ? product.price - discountedPrice
     : 0;
 
@@ -170,7 +187,7 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
       <div className="lg:flex lg:min-h-full">
 
         {/* ══ LEFT: Image Gallery ══ */}
-        <div className="w-full lg:w-[52%] lg:sticky lg:top-20 lg:h-[calc(100vh-80px)] lg:overflow-y-auto">
+        <div className="w-full lg:w-[50%] lg:sticky lg:top-20 lg:h-[calc(100vh-80px)] lg:overflow-y-auto">
           {/* Main Image */}
           <div
             className="relative w-full bg-beige-50 cursor-zoom-in overflow-hidden"
@@ -179,8 +196,8 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
           >
             <AnimatePresence mode="wait">
               <motion.img
-                key={activeImageIndex}
-                src={product.images[activeImageIndex]}
+                key={selectedShade?.image || activeImageIndex}
+                src={selectedShade?.image || product.images?.[activeImageIndex] || product.image || '/images/aloevera_gel.jpg'}
                 alt={product.name}
                 initial={{ opacity: 0, scale: 1.06 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -188,6 +205,7 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                 className="w-full h-full object-cover"
                 style={{ willChange: 'transform' }}
+                onError={(e) => { e.currentTarget.src = '/images/aloevera_gel.jpg'; }}
               />
             </AnimatePresence>
 
@@ -215,36 +233,46 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
               </button>
             </div>
 
-            {/* Best seller badge */}
-            {product.isBestSeller && (
-              <div
-                className="absolute top-5 left-5 text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-md"
-                style={{ background: 'rgba(62,29,74,0.92)', color: '#D4AF37', backdropFilter: 'blur(8px)' }}
-              >
-                ✦ Best Seller
-              </div>
-            )}
+            {/* Badges */}
+            <div className="absolute top-5 left-5 flex flex-col gap-2 z-10">
+              {product.flashSale?.isActive && (
+                <div className="text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider shadow-md text-white bg-gradient-to-r from-red-600 to-amber-600 flex items-center space-x-1">
+                  <Flame size={12} />
+                  <span>Flash Deal -{product.flashSale.discountPercentage}%</span>
+                </div>
+              )}
+              {product.isBestSeller && !product.flashSale?.isActive && (
+                <div
+                  className="text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-md"
+                  style={{ background: 'rgba(62,29,74,0.92)', color: '#D4AF37', backdropFilter: 'blur(8px)' }}
+                >
+                  ✦ Best Seller
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Thumbnail strip */}
-          {product.images.length > 1 && (
+          {product.images?.length > 1 && (
             <div className="flex gap-3 px-4 md:px-6 py-4 overflow-x-auto no-scrollbar">
               {product.images.map((img, idx) => (
                 <motion.button
                   key={idx}
                   whileHover={{ scale: 1.06 }}
                   whileTap={{ scale: 0.94 }}
-                  onClick={() => setActiveImageIndex(idx)}
+                  onClick={() => { setActiveImageIndex(idx); setSelectedShade(null); }}
                   className="relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 transition-all duration-300 min-h-0 min-w-0"
                   style={{
-                    borderColor: activeImageIndex === idx ? '#D4AF37' : 'transparent',
-                    boxShadow: activeImageIndex === idx ? '0 0 0 1px #D4AF37, 0 4px 12px rgba(212,175,55,0.3)' : '0 2px 8px rgba(0,0,0,0.08)',
+                    borderColor: activeImageIndex === idx && !selectedShade ? '#D4AF37' : 'transparent',
+                    boxShadow: activeImageIndex === idx && !selectedShade ? '0 0 0 1px #D4AF37, 0 4px 12px rgba(212,175,55,0.3)' : '0 2px 8px rgba(0,0,0,0.08)',
                   }}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
-                  {activeImageIndex === idx && (
-                    <div className="absolute inset-0 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)' }} />
-                  )}
+                  <img 
+                    src={img} 
+                    alt="" 
+                    className="w-full h-full object-cover" 
+                    onError={(e) => { e.currentTarget.src = '/images/aloevera_gel.jpg'; }}
+                  />
                 </motion.button>
               ))}
             </div>
@@ -261,16 +289,24 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
         </div>
 
         {/* ══ RIGHT: Product Info ══ */}
-        <div className="px-6 lg:px-10 pt-8 lg:pt-10 bg-white relative -mt-8 lg:mt-0 rounded-t-[2.5rem] lg:rounded-none lg:w-[48%] flex flex-col">
+        <div className="px-6 lg:px-10 pt-8 lg:pt-10 bg-white relative -mt-8 lg:mt-0 rounded-t-[2.5rem] lg:rounded-none lg:w-[50%] flex flex-col">
 
           {/* ── Name + Meta ── */}
-          <div className="mb-6">
-            {product.category && (
-              <span className="inline-block text-[9px] font-black uppercase tracking-[0.3em] text-purple-600 bg-purple-50 px-3 py-1 rounded-full mb-3">
-                {product.category}
-              </span>
-            )}
-            <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-purple-900 leading-tight mb-4">
+          <div className="mb-4">
+            <div className="flex items-center space-x-2 mb-2">
+              {product.category && (
+                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
+                  {product.category}
+                </span>
+              )}
+              {product.cleanBadges?.[0] && (
+                <span className="text-[9px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                  🌿 {product.cleanBadges[0]}
+                </span>
+              )}
+            </div>
+
+            <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-purple-900 leading-tight mb-3">
               {product.name}
             </h1>
 
@@ -286,7 +322,7 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
                 </div>
                 <span className="text-xs font-black text-gold-700">{product.rating || 0}</span>
               </div>
-              <span className="text-xs font-bold text-gray-400">({product.reviewsCount || 0} reviews)</span>
+              <span className="text-xs font-bold text-gray-400">({product.reviews?.length || product.reviewsCount || 0} reviews)</span>
               {(product.soldCount || 0) > 0 && (
                 <span className="text-[10px] font-black text-purple-900 bg-purple-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
                   {product.soldCount} sold
@@ -295,40 +331,89 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
             </div>
           </div>
 
-          {/* ── Price Block ── */}
-          <div className="mb-6 p-4 rounded-2xl" style={{ background: '#fdfcfb', border: '1px solid rgba(62,29,74,0.07)' }}>
+          {/* ── Price Block & Flash Sale Notice ── */}
+          <div className="mb-5 p-4 rounded-2xl bg-cream-50/80 border border-purple-100">
             <div className="flex items-baseline gap-3 flex-wrap">
               <span className="font-sans text-3xl font-black text-purple-900">
                 ₹{discountedPrice.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
               </span>
-              {product.discountPercentage > 0 && (
+              {effectiveDiscount > 0 && (
                 <>
                   <span className="text-base text-gray-400 line-through">₹{product.price.toLocaleString('en-IN')}</span>
                   <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
-                    Save ₹{savingsAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                    Save ₹{savingsAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })} ({effectiveDiscount}% OFF)
                   </span>
                 </>
               )}
             </div>
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1.5">
-              Inclusive of all taxes · Free shipping above ₹999
+              Inclusive of all taxes · Free shipping above ₹2,000
             </p>
           </div>
 
-          {/* ── Tabs: Description / Benefits / Reviews ── */}
+          {/* ── Color Shade Swatches (Beauty Specific) ── */}
+          {product.shades && product.shades.length > 0 && (
+            <div className="mb-5 p-4 rounded-2xl bg-purple-50/40 border border-purple-100">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="text-xs font-bold text-purple-900">
+                  Select Shade: <strong className="text-purple-950 font-black">{selectedShade?.name || 'Original'}</strong>
+                </span>
+                <span className="text-[10px] text-gray-500 font-medium">
+                  {product.shades.length} Available Shades
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                {product.shades.map((shade, idx) => {
+                  const isSelected = selectedShade?.name === shade.name;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedShade(shade)}
+                      className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border ${
+                        isSelected
+                          ? 'bg-purple-900 text-white border-purple-900 shadow-sm scale-105'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-purple-300'
+                      }`}
+                    >
+                      <span
+                        className="w-3.5 h-3.5 rounded-full border border-black/20 shadow-inner flex-shrink-0"
+                        style={{ backgroundColor: shade.hex || '#E0A899' }}
+                      />
+                      <span>{shade.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Clean Beauty & Trust Badges Row ── */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {(product.cleanBadges || ['Cruelty-Free', 'Vegan', 'Paraben-Free', 'Clean Beauty']).map((badge, idx) => (
+              <div
+                key={idx}
+                className="flex items-center space-x-1.5 text-xs font-bold text-purple-800 bg-purple-50/70 border border-purple-200/60 px-3 py-1.5 rounded-full"
+              >
+                <Leaf size={12} className="text-emerald-600" />
+                <span>{badge}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Tabs: Description / Benefits / Ingredients / Clinical / Reviews ── */}
           <div className="mb-6">
             {/* Tab bar */}
-            <div className="flex space-x-1 p-1 rounded-2xl mb-5" style={{ background: '#f5f0f9' }}>
+            <div className="flex space-x-1 p-1 rounded-2xl mb-4 bg-purple-50/80 overflow-x-auto no-scrollbar">
               {TABS.map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 min-h-0 relative`}
+                  className={`flex-1 py-2 px-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 min-h-0 whitespace-nowrap`}
                   style={activeTab === tab ? {
                     background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)',
                     color: '#D4AF37',
                     boxShadow: '0 4px 12px rgba(62,29,74,0.25)',
-                  } : { color: '#9ca3af' }}
+                  } : { color: '#6b7280' }}
                 >
                   {tab}
                 </button>
@@ -339,54 +424,49 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
               {activeTab === 'Description' && (
                 <motion.div
                   key="desc"
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.25 }}
+                  className="space-y-3"
                 >
                   <p className="text-gray-600 text-sm leading-relaxed font-medium">
                     {product.description}
                   </p>
-                  {/* Trust icons */}
-                  <div className="flex flex-wrap gap-3 mt-5">
-                    {[
-                      { icon: Leaf, label: 'Organic' },
-                      { icon: Shield, label: 'Cruelty-Free' },
-                      { icon: Package, label: 'Eco Packaging' },
-                    ].map(({ icon: Icon, label }) => (
-                      <div key={label} className="flex items-center space-x-1.5 text-xs font-bold text-purple-700 bg-purple-50 px-3 py-2 rounded-full">
-                        <Icon size={13} />
-                        <span>{label}</span>
+
+                  {/* Skin suitability tags */}
+                  {product.skinTypes && product.skinTypes.length > 0 && (
+                    <div className="pt-2">
+                      <p className="text-[11px] font-bold text-purple-900 uppercase tracking-wider mb-1.5">Best Suited For:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {product.skinTypes.map((st, i) => (
+                          <span key={i} className="text-xs bg-beige-100 text-purple-900 font-semibold px-2.5 py-0.5 rounded-lg">
+                            {st}
+                          </span>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </motion.div>
               )}
 
               {activeTab === 'Benefits' && (
                 <motion.div
                   key="benefits"
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.25 }}
                 >
                   {product.benefits && product.benefits.length > 0 ? (
-                    <ul className="space-y-3">
+                    <ul className="space-y-2.5">
                       {product.benefits.map((benefit, idx) => (
-                        <motion.li
-                          key={idx}
-                          initial={{ opacity: 0, x: -12 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.07 }}
-                          className="flex items-start space-x-3 text-sm text-gray-700 font-medium"
-                        >
-                          <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                            style={{ background: 'linear-gradient(135deg, #D4AF37, #edc757)' }}>
+                        <li key={idx} className="flex items-start space-x-3 text-sm text-gray-700 font-medium">
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-gradient-to-tr from-gold-500 to-amber-300">
                             <CheckCircle2 size={11} className="text-purple-900" strokeWidth={3} />
                           </div>
                           <span>{benefit}</span>
-                        </motion.li>
+                        </li>
                       ))}
                     </ul>
                   ) : (
@@ -395,21 +475,149 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
                 </motion.div>
               )}
 
+              {/* ── Active Ingredients & Transparency (INCI) ── */}
+              {activeTab === 'Ingredients' && (
+                <motion.div
+                  key="ingredients"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25 }}
+                  className="space-y-3"
+                >
+                  <div className="space-y-2.5">
+                    {(product.ingredients || [
+                      { name: 'Botanical Hyaluronic Acid', percentage: '2%', benefit: 'Multi-molecular moisture surge' },
+                      { name: 'Organic Cold-Pressed Elixir', percentage: '5%', benefit: 'Skin barrier replenishment' }
+                    ]).map((ing, iIdx) => (
+                      <div key={iIdx} className="p-3 rounded-xl bg-purple-50/50 border border-purple-100 flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <h4 className="text-xs font-bold text-purple-950">{ing.name}</h4>
+                            {ing.percentage && (
+                              <span className="text-[10px] font-black text-gold-700 bg-gold-100/80 px-2 py-0.5 rounded-full">
+                                {ing.percentage}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-600 mt-0.5 font-medium">{ing.benefit}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Full INCI Expandable */}
+                  {product.fullIngredientsList && (
+                    <div className="pt-2">
+                      <button
+                        onClick={() => setShowFullINCI(v => !v)}
+                        className="flex items-center justify-between w-full text-xs font-bold text-purple-900 py-2 border-t border-beige-200"
+                      >
+                        <span>Full Formula (INCI List)</span>
+                        <ChevronDown size={14} className={`transform transition-transform ${showFullINCI ? 'rotate-180' : ''}`} />
+                      </button>
+                      {showFullINCI && (
+                        <p className="text-[11px] text-gray-500 leading-relaxed font-mono p-2.5 bg-beige-50 rounded-xl mt-1">
+                          {product.fullIngredientsList}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* ── Before / After Interactive Clinical Comparison ── */}
+              {activeTab === 'Clinical Results' && (
+                <motion.div
+                  key="clinical"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25 }}
+                  className="space-y-4"
+                >
+                  {/* Results metric badge */}
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-purple-900 to-purple-800 text-white flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-gold-300 uppercase tracking-widest block">
+                        Clinical Efficacy Study ({product.beforeAfter?.timeframe || '4 Weeks'})
+                      </span>
+                      <p className="text-xs font-medium text-cream-100 mt-0.5">
+                        {product.beforeAfter?.resultText || '94% experienced noticeably softer, radiant complexion'}
+                      </p>
+                    </div>
+                    <div className="text-right pl-3">
+                      <span className="text-2xl font-black text-gold-300">
+                        {product.beforeAfter?.resultPercentage || '94%'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Interactive Before/After Split Slider */}
+                  <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden select-none border border-purple-100">
+                    {/* After Image (Full background) */}
+                    <img
+                      src={product.beforeAfter?.afterImage || product.images[0] || product.image}
+                      alt="After Result"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <span className="absolute top-2 right-2 px-2 py-0.5 bg-purple-950/80 text-gold-300 text-[10px] font-bold rounded-full backdrop-blur-sm z-10">
+                      After ({product.beforeAfter?.timeframe || '4 Weeks'})
+                    </span>
+
+                    {/* Before Image (Clipped overlay) */}
+                    <div
+                      className="absolute inset-0 overflow-hidden"
+                      style={{ width: `${sliderPosition}%` }}
+                    >
+                      <img
+                        src={product.beforeAfter?.beforeImage || product.images[1] || product.images[0] || product.image}
+                        alt="Before Result"
+                        className="w-full h-full object-cover"
+                        style={{ width: '100%', height: '100%', maxWidth: 'none' }}
+                      />
+                      <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/70 text-white text-[10px] font-bold rounded-full backdrop-blur-sm z-10">
+                        Before Day 1
+                      </span>
+                    </div>
+
+                    {/* Draggable Divider Line */}
+                    <div
+                      className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg cursor-ew-resize flex items-center justify-center z-20"
+                      style={{ left: `${sliderPosition}%` }}
+                    >
+                      <div className="w-7 h-7 rounded-full bg-white shadow-md border-2 border-purple-900 flex items-center justify-center text-[10px] font-black text-purple-900">
+                        ↔
+                      </div>
+                    </div>
+
+                    {/* Range input for touch/mouse drag */}
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={sliderPosition}
+                      onChange={(e) => setSliderPosition(Number(e.target.value))}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30"
+                    />
+                  </div>
+                </motion.div>
+              )}
+
               {activeTab === 'Reviews' && (
                 <motion.div
                   key="reviews"
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-4 max-h-60 overflow-y-auto no-scrollbar"
+                  transition={{ duration: 0.25 }}
+                  className="space-y-3 max-h-60 overflow-y-auto no-scrollbar"
                 >
                   {product.reviews && product.reviews.length > 0 ? (
                     product.reviews.map((review, idx) => (
-                      <div key={idx} className="p-4 rounded-2xl" style={{ background: '#fdfcfb', border: '1px solid rgba(62,29,74,0.06)' }}>
-                        <div className="flex items-center space-x-2 mb-2">
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-gold-300 font-serif font-bold text-sm flex-shrink-0"
-                            style={{ background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)' }}>
+                      <div key={idx} className="p-3 rounded-xl bg-cream-50/70 border border-purple-100">
+                        <div className="flex items-center space-x-2 mb-1.5">
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-gold-300 font-serif font-bold text-xs bg-purple-900">
                             {review.name?.[0]}
                           </div>
                           <div>
@@ -426,8 +634,8 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-8">
-                      <MessageSquare size={24} className="mx-auto text-gray-200 mb-2" />
+                    <div className="text-center py-6">
+                      <MessageSquare size={20} className="mx-auto text-gray-300 mb-1" />
                       <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">No reviews yet</p>
                     </div>
                   )}

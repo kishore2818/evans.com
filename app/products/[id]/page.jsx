@@ -3,19 +3,19 @@ import ProductDetailsClient from '@/components/products/ProductDetailsClient';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
-
+export const revalidate = 0;
 
 async function getProduct(id) {
   try {
     const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-      cache: "no-store"
+      cache: 'no-store'
     });
     if (!response.ok) return null;
     const data = await response.json();
     return {
       ...data,
       id: data._id,
-      images: data.images && data.images.length > 0 ? data.images : ['/images/placeholder.png'],
+      images: data.images && data.images.length > 0 ? data.images : ['/images/aloevera_gel.jpg'],
       rating: data.ratings?.average || 0,
       reviewsCount: data.ratings?.count || 0
     };

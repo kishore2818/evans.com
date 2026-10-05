@@ -9,6 +9,8 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { Toaster } from 'react-hot-toast';
 import { useStore } from '@/store/useStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import FlashSaleBanner from './FlashSaleBanner';
+import CartDrawer from './CartDrawer';
 
 /* ─────────────────────────────────────────
    TOP NAV — Glassmorphism header
@@ -131,7 +133,11 @@ const TopNav = ({ cartItemCount }) => {
             </Link>
 
             {/* Cart */}
-            <Link href="/cart" className="relative flex items-center justify-center min-h-[48px] px-1">
+            <button
+              onClick={() => useStore.getState().openCart()}
+              className="relative flex items-center justify-center min-h-[48px] px-1 group cursor-pointer"
+              aria-label="Open Cart Drawer"
+            >
               <motion.div
                 animate={cartBounce ? { scale: [1, 1.3, 0.9, 1.1, 1] } : {}}
                 transition={{ duration: 0.5 }}
@@ -159,7 +165,7 @@ const TopNav = ({ cartItemCount }) => {
                   )}
                 </AnimatePresence>
               </motion.div>
-            </Link>
+            </button>
 
             {/* Mobile hamburger – custom 3-line icon */}
             <button
@@ -290,7 +296,7 @@ const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'Shop', path: '/products', icon: Grid },
-    { name: 'Wishlist', path: '/profile/wishlist', icon: Heart, badge: wishlistCount, badgeColor: '#ef4444' },
+    { name: 'Wishlist', path: '/profile', icon: Heart, badge: wishlistCount, badgeColor: '#ef4444' },
     { name: 'Cart', path: '/cart', icon: ShoppingBag, badge: cartItemCount },
     { name: 'Profile', path: '/profile', icon: User },
   ];
@@ -399,6 +405,9 @@ const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
 
 
 
+import API_BASE_URL from '@/config/api';
+import { io } from 'socket.io-client';
+
 /* ─────────────────────────────────────────
    CLIENT LAYOUT — Root wrapper
 ───────────────────────────────────────── */
@@ -406,8 +415,34 @@ const ClientLayout = ({ children }) => {
   const pathname = usePathname();
   const cart = useStore((state) => state.cart);
   const localWishlist = useStore((state) => state.localWishlist);
+  const fetchStoreSettings = useStore((state) => state.fetchStoreSettings);
   const cartItemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const wishlistCount = localWishlist.length;
+
+  useEffect(() => {
+    fetchStoreSettings();
+
+    try {
+      const socket = io(API_BASE_URL, {
+        transports: ['websocket', 'polling'],
+        reconnection: true
+      });
+
+      socket.on('settingsUpdated', () => {
+        fetchStoreSettings();
+      });
+
+      socket.on('store_settings_update', () => {
+        fetchStoreSettings();
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    } catch (e) {
+      // socket fallback
+    }
+  }, [fetchStoreSettings]);
 
   return (
     <div className="flex flex-col min-h-screen bg-beige-50 relative selection:bg-purple-200 selection:text-purple-900">
@@ -428,7 +463,9 @@ const ClientLayout = ({ children }) => {
         }}
       />
 
+      <FlashSaleBanner />
       <TopNav cartItemCount={cartItemCount} />
+      <CartDrawer />
 
       {/* Background orbs — ambient decoration */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">

@@ -4,35 +4,48 @@ import { useAuthStore } from './useAuthStore';
 
 export const useStore = create((set, get) => ({
   cart: [],
+  isCartOpen: false,
   wishlist: [],
   localWishlist: [], // full product objects — local only, no backend
   myOrders: [],
   storeSettings: { shippingFee: 150, freeShippingThreshold: 2000 },
   
+  openCart: () => set({ isCartOpen: true }),
+  closeCart: () => set({ isCartOpen: false }),
+  toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
+
   addToCart: (product, quantity = 1) => set((state) => {
     const maxStock = product.stock !== undefined ? product.stock : 9999;
-    const existing = state.cart.find((item) => item.id === (product.id || product._id));
+    const cartItemId = product.selectedShade ? `${product.id || product._id}-${product.selectedShade.name}` : (product.id || product._id);
+    const existing = state.cart.find((item) => (item.cartItemId || item.id) === cartItemId);
+    
+    let newCart;
     if (existing) {
       const newQty = Math.min(maxStock, existing.quantity + quantity);
-      return {
-        cart: state.cart.map((item) =>
-          item.id === (product.id || product._id)
-            ? { ...item, quantity: newQty }
-            : item
-        ),
-      };
+      newCart = state.cart.map((item) =>
+        (item.cartItemId || item.id) === cartItemId
+          ? { ...item, quantity: newQty }
+          : item
+      );
+    } else {
+      const cappedQty = Math.min(maxStock, quantity);
+      newCart = [...state.cart, { 
+        ...product, 
+        id: product.id || product._id, 
+        cartItemId,
+        quantity: cappedQty 
+      }];
     }
-    const cappedQty = Math.min(maxStock, quantity);
-    return { cart: [...state.cart, { ...product, id: product.id || product._id, quantity: cappedQty }] };
+    return { cart: newCart, isCartOpen: true };
   }),
   
-  removeFromCart: (productId) => set((state) => ({
-    cart: state.cart.filter((item) => item.id !== productId),
+  removeFromCart: (cartItemId) => set((state) => ({
+    cart: state.cart.filter((item) => (item.cartItemId || item.id) !== cartItemId),
   })),
   
-  updateQuantity: (productId, quantity) => set((state) => ({
+  updateQuantity: (cartItemId, quantity) => set((state) => ({
     cart: state.cart.map((item) =>
-      item.id === productId 
+      (item.cartItemId || item.id) === cartItemId 
         ? { ...item, quantity: Math.min(item.stock || 999, Math.max(1, quantity)) } 
         : item
     ),
@@ -66,7 +79,7 @@ export const useStore = create((set, get) => ({
   // Settings Logic
   fetchStoreSettings: async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/settings`);
+      const res = await fetch(`${API_BASE_URL}/api/settings`, { cache: 'no-store' });
       const data = await res.json();
       if (res.ok && data) {
         set({ storeSettings: data });

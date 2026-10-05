@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MapPin, 
   ShoppingBag, 
-  CreditCard, 
   CheckCircle2, 
   Plus, 
   Package, 
@@ -40,7 +39,6 @@ const Checkout = () => {
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
   const [showAddressList, setShowAddressList] = useState(false);
   const [isAddingAddress, setIsAddingAddress] = useState(false);
-  const [upiId, setUpiId] = useState('');
   const [newAddress, setNewAddress] = useState({
     name: '',
     phone: '',
@@ -175,25 +173,10 @@ const Checkout = () => {
         prefill: {
           name: user.name,
           email: user.email,
-          contact: user.addresses[selectedAddressIndex]?.phone,
-          ...(upiId ? { vpa: upiId } : {})
+          contact: user.addresses[selectedAddressIndex]?.phone
         },
         theme: {
           color: '#3e1d4a'
-        },
-        config: {
-          display: {
-            blocks: {
-              upi: {
-                name: 'UPI / Popular Apps',
-                instruments: [{ method: 'upi' }]
-              }
-            },
-            sequence: ['block.upi'],
-            preferences: {
-              show_default_blocks: true
-            }
-          }
         }
       };
 
@@ -492,64 +475,6 @@ const Checkout = () => {
                       })}
                     </div>
                   </div>
-
-                  {/* ════ SECTION 3: PAYMENT METHOD ════ */}
-                  <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-beige-100 p-5 md:p-8 shadow-sm">
-                    <div className="flex items-center space-x-2 md:space-x-3 mb-4 pb-3 border-b border-beige-100">
-                      <CreditCard size={16} className="text-purple-900" />
-                      <h3 className="font-serif text-base sm:text-lg font-bold text-purple-900">Payment details</h3>
-                    </div>
-
-                    <div className="bg-gradient-to-r from-purple-50/40 to-white border border-purple-100 p-4 md:p-6 rounded-2xl shadow-sm">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-900 flex-shrink-0">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="h-2.5" />
-                          </div>
-                          <div className="leading-tight">
-                            <h4 className="font-bold text-purple-900 text-xs sm:text-sm mb-0.5">UPI & Online checkout</h4>
-                            <p className="text-[8px] sm:text-[9px] text-gray-400 font-medium">Redirect to secure Razorpay screen</p>
-                          </div>
-                        </div>
-                        <div className="w-3.5 h-3.5 rounded-full border-4 border-purple-900 flex items-center justify-center flex-shrink-0" />
-                      </div>
-                      
-                      {/* Payment App Badges */}
-                      <div className="grid grid-cols-3 gap-2 bg-white/70 backdrop-blur-md rounded-xl p-2 border border-beige-100/60 shadow-sm mb-4">
-                        <div className="flex flex-col items-center py-2 hover:bg-beige-50/50 rounded-lg transition-all border border-transparent">
-                          <div className="h-4 flex items-center justify-center mb-0.5 w-8">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="max-h-full max-w-full" />
-                          </div>
-                          <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider">GPay</span>
-                        </div>
-                        <div className="flex flex-col items-center py-2 hover:bg-beige-50/50 rounded-lg transition-all border border-transparent">
-                          <div className="h-4 flex items-center justify-center mb-0.5 w-8">
-                            <img src="https://download.logo.wine/logo/PhonePe/PhonePe-Logo.wine.png" alt="PhonePe" className="max-h-full max-w-full object-contain" />
-                          </div>
-                          <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider">PhonePe</span>
-                        </div>
-                        <div className="flex flex-col items-center py-2 hover:bg-beige-50/50 rounded-lg transition-all border border-transparent">
-                          <div className="h-4 flex items-center justify-center mb-0.5 w-8">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="max-h-full max-w-full" />
-                          </div>
-                          <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider">Paytm</span>
-                        </div>
-                      </div>
-
-                      {/* VPA UPI Input */}
-                      <div className="pt-3 border-t border-purple-100/60">
-                        <label className="text-[8px] sm:text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Optional UPI ID (VPA)</label>
-                        <input 
-                          type="text" 
-                          placeholder="e.g. yourname@okaxis" 
-                          value={upiId}
-                          onChange={(e) => setUpiId(e.target.value)}
-                          className="w-full px-3.5 py-2.5 sm:py-3 rounded-lg border border-beige-200 focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400 bg-white text-[10px] sm:text-xs font-semibold shadow-sm transition-all text-purple-900"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
                 </div>
               )}
             </AnimatePresence>

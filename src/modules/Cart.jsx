@@ -11,7 +11,16 @@ const Cart = () => {
     fetchStoreSettings();
   }, [fetchStoreSettings]);
 
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const getItemPrice = (item) => {
+    const effectiveDiscount = item.flashSale?.isActive && item.flashSale?.discountPercentage
+      ? Math.max(item.discountPercentage || 0, item.flashSale.discountPercentage)
+      : (item.discountPercentage || 0);
+    return effectiveDiscount > 0
+      ? item.price * (1 - effectiveDiscount / 100)
+      : item.price;
+  };
+
+  const subtotal = cart.reduce((sum, item) => sum + (getItemPrice(item) * item.quantity), 0);
   const threshold = storeSettings?.freeShippingThreshold ?? 2000;
   const fee = storeSettings?.shippingFee ?? 150;
   const shipping = subtotal > threshold ? 0 : fee;
@@ -39,27 +48,39 @@ const Cart = () => {
       <div className="md:flex md:space-x-8 lg:space-x-12">
         {/* Cart Items */}
         <div className="md:w-2/3 space-y-4 mb-8 md:mb-0">
-          {cart.map((item) => (
-            <div key={item.id} className="bg-white p-4 rounded-3xl flex items-center space-x-4 shadow-card border border-beige-100">
-              <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-beige-100 flex-shrink-0">
-                <Image
-                  src={item.image || '/images/placeholder.png'}
-                  alt={item.name || 'Cart item'}
-                  fill
-                  sizes="96px"
-                  className="object-cover"
-                  unoptimized
-                />
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start mb-1">
-                  <h3 className="font-serif text-sm md:text-base font-bold text-purple-900 leading-tight line-clamp-2">{item.name}</h3>
-                  <button onClick={() => removeFromCart(item.id)} className="text-red-400 hover:text-red-500 p-2 -mr-2 active:scale-90 transition-transform">
-                    <Trash2 size={18} />
-                  </button>
+          {cart.map((item) => {
+            const itemPrice = getItemPrice(item);
+            const hasDiscount = itemPrice < item.price;
+            return (
+              <div key={item.cartItemId || item.id} className="bg-white p-4 rounded-3xl flex items-center space-x-4 shadow-card border border-beige-100">
+                <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-beige-100 flex-shrink-0">
+                  <Image
+                    src={item.image || '/images/aloevera_gel.jpg'}
+                    alt={item.name || 'Cart item'}
+                    fill
+                    sizes="96px"
+                    className="object-cover"
+                    unoptimized
+                  />
                 </div>
-                <span className="font-sans text-sm font-extrabold block mb-3 text-gray-900 whitespace-nowrap">₹{item.price.toLocaleString('en-IN')}</span>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className="font-serif text-sm md:text-base font-bold text-purple-900 leading-tight line-clamp-2">{item.name}</h3>
+                    <button onClick={() => removeFromCart(item.cartItemId || item.id)} className="text-red-400 hover:text-red-500 p-2 -mr-2 active:scale-90 transition-transform">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                  <div className="flex items-center space-x-2 mb-3">
+                    <span className="font-sans text-sm font-extrabold text-gray-900 whitespace-nowrap">
+                      ₹{(itemPrice * item.quantity).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                    </span>
+                    {hasDiscount && (
+                      <span className="font-sans text-xs text-gray-400 line-through whitespace-nowrap">
+                        ₹{(item.price * item.quantity).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      </span>
+                    )}
+                  </div>
                 
                 <div className="flex items-center">
                   <div className="flex items-center bg-beige-100 rounded-full p-1 border border-beige-200">

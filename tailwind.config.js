@@ -42,10 +42,16 @@ export default {
           400: '#cfbd9d',
           500: '#bea37e',
         },
+        cream: {
+          50: '#fdf8f0',
+          100: '#faf0e0',
+          200: '#f5e3c7',
+        },
       },
       fontFamily: {
         serif: ['var(--font-playfair)', 'Georgia', 'serif'],
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-outfit)', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         '3xl': '1.5rem',

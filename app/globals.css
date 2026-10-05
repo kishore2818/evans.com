@@ -58,9 +58,13 @@
     font-size: 16px !important;
   }
 
-  button, a, .tap-target {
+  /* Only apply 48px tap target to explicitly marked interactive elements */
+  .tap-target {
     min-height: 48px;
     min-width: 48px;
+  }
+
+  button, a {
     @apply transition-all active:opacity-70 active:scale-95;
   }
 

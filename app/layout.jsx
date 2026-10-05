@@ -63,7 +63,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} ${outfit.variable}`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${inter.variable} ${playfair.variable} ${outfit.variable}`}>
       <head>
         <meta name="theme-color" content="#5A2A6C" />
         <meta name="mobile-web-app-capable" content="yes" />

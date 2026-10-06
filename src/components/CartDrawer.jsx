@@ -1,11 +1,12 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import {
   X,
   Plus,
@@ -15,26 +16,111 @@ import {
   Sparkles,
   Truck,
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  Tag,
+  Check
 } from 'lucide-react';
+
+import { products as fallbackCatalog } from '@/data/products';
+import API_BASE_URL from '@/config/api';
 
 export default function CartDrawer() {
   const router = useRouter();
-  const { cart, isCartOpen, closeCart, updateQuantity, removeFromCart, storeSettings } = useStore();
+  const { cart, isCartOpen, closeCart, updateQuantity, removeFromCart, addToCart, storeSettings } = useStore();
+  const [suggestedProducts, setSuggestedProducts] = useState([]);
+  const [addingId, setAddingId] = useState(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+
+  useEffect(() => {
+    const loadSuggestions = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/products`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setSuggestedProducts(data);
+            return;
+          }
+        }
+      } catch (e) {
+        // fallback
+      }
+      setSuggestedProducts(fallbackCatalog);
+    };
+    loadSuggestions();
+  }, []);
 
   const threshold = storeSettings?.freeShippingThreshold || 2000;
   
-  const subtotal = cart.reduce((acc, item) => {
-    const price = item.discountPercentage > 0
-      ? item.price - (item.price * (item.discountPercentage / 100))
+  const getItemPrice = (item) => {
+    const effectiveDiscount = item.flashSale?.isActive && item.flashSale?.discountPercentage
+      ? Math.max(item.discountPercentage || 0, item.flashSale.discountPercentage)
+      : (item.discountPercentage || 0);
+    return effectiveDiscount > 0
+      ? item.price * (1 - effectiveDiscount / 100)
       : item.price;
-    return acc + price * item.quantity;
+  };
+
+  const subtotal = cart.reduce((acc, item) => {
+    return acc + getItemPrice(item) * item.quantity;
   }, 0);
 
-  const amountToFreeShipping = Math.max(0, threshold - subtotal);
-  const freeShippingProgress = Math.min(100, Math.round((subtotal / threshold) * 100));
+  const rawTotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  
+  // Coupon logic
+  let couponDiscount = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.type === 'percent') {
+      couponDiscount = (subtotal * appliedCoupon.value) / 100;
+    } else if (appliedCoupon.type === 'fixed') {
+      couponDiscount = appliedCoupon.value;
+    }
+  }
+
+  const totalSavings = Math.max(0, (rawTotal - subtotal) + couponDiscount);
+  const finalSubtotal = Math.max(0, subtotal - couponDiscount);
+
+  const amountToFreeShipping = Math.max(0, threshold - finalSubtotal);
+  const freeShippingProgress = Math.min(100, Math.round((finalSubtotal / threshold) * 100));
 
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+
+  // Filter cross-sells to items NOT currently in cart
+  const cartIds = new Set(cart.map(c => String(c.id || c._id)));
+  const crossSells = suggestedProducts.filter(p => !cartIds.has(String(p.id || p._id))).slice(0, 6);
+
+  const handleQuickAdd = async (product) => {
+    const pId = product.id || product._id;
+    setAddingId(pId);
+    addToCart(product, 1);
+    toast.success(`Added ${product.name} to your bag!`);
+    setTimeout(() => setAddingId(null), 400);
+  };
+
+  const handleApplyCoupon = (codeToApply) => {
+    const targetCode = (codeToApply || couponCode).trim().toUpperCase();
+    if (!targetCode) return;
+    
+    if (targetCode === 'LUXE25') {
+      setAppliedCoupon({ code: 'LUXE25', value: 25, type: 'percent', label: '25% OFF Luxe Festival Deal' });
+      toast.success('Coupon LUXE25 applied! 25% OFF');
+    } else if (targetCode === 'WELCOME10') {
+      setAppliedCoupon({ code: 'WELCOME10', value: 10, type: 'percent', label: '10% OFF First Order' });
+      toast.success('Coupon WELCOME10 applied!');
+    } else if (targetCode === 'BEAUTY500') {
+      setAppliedCoupon({ code: 'BEAUTY500', value: 500, type: 'fixed', label: '₹500 Flat Savings' });
+      toast.success('Coupon BEAUTY500 applied!');
+    } else {
+      toast.error('Invalid Coupon Code');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    toast.success('Coupon removed');
+  };
 
   const handleCheckout = () => {
     closeCart();
@@ -61,23 +147,23 @@ export default function CartDrawer() {
           />
 
           {/* Slide-out Drawer */}
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-4 sm:pl-10">
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="w-screen max-w-md bg-white shadow-2xl flex flex-col h-full rounded-l-[2rem] border-l border-beige-200 overflow-hidden"
+              className="w-screen max-w-md bg-white shadow-2xl flex flex-col h-full sm:rounded-l-[2rem] border-l border-beige-200 overflow-hidden"
             >
               {/* Header */}
-              <div className="px-6 py-5 border-b border-beige-100 flex items-center justify-between bg-cream-50/70">
+              <div className="px-5 sm:px-6 py-4 border-b border-beige-100 flex items-center justify-between bg-cream-50/70">
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-full bg-purple-900 text-gold-400 flex items-center justify-center font-bold text-xs shadow-sm">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-900 text-gold-400 flex items-center justify-center font-bold text-xs shadow-sm">
                     {totalItems}
                   </div>
                   <div>
-                    <h2 className="font-serif text-lg font-bold text-purple-900 tracking-tight">Your Beauty Bag</h2>
-                    <p className="text-[11px] text-gray-500 font-medium">Evans Botanical Apothecary</p>
+                    <h2 className="font-serif text-base sm:text-lg font-bold text-purple-900 tracking-tight">Your Beauty Bag</h2>
+                    <p className="text-[10px] sm:text-[11px] text-gray-500 font-medium">Evans Botanical Apothecary</p>
                   </div>
                 </div>
 
@@ -90,10 +176,10 @@ export default function CartDrawer() {
               </div>
 
               {/* Free Shipping Progress Bar */}
-              <div className="px-6 py-3.5 bg-purple-50/80 border-b border-purple-100">
+              <div className="px-5 sm:px-6 py-3 bg-purple-50/80 border-b border-purple-100">
                 <div className="flex items-center justify-between text-xs font-semibold text-purple-900 mb-1.5">
                   <div className="flex items-center space-x-1.5">
-                    <Truck size={14} className="text-purple-700" />
+                    <Truck size={14} className="text-purple-700 flex-shrink-0" />
                     <span>
                       {amountToFreeShipping === 0 ? (
                         <span className="text-emerald-700 font-bold flex items-center space-x-1">
@@ -119,7 +205,7 @@ export default function CartDrawer() {
               </div>
 
               {/* Cart Items List */}
-              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 divide-y divide-beige-100">
+              <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4 divide-y divide-beige-100">
                 {cart.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center py-12 space-y-4">
                     <div className="w-20 h-20 rounded-full bg-beige-100 flex items-center justify-center text-purple-900 shadow-inner">
@@ -137,107 +223,248 @@ export default function CartDrawer() {
                     </button>
                   </div>
                 ) : (
-                  cart.map((item) => {
-                    const cartId = item.cartItemId || item.id;
-                    const itemPrice = item.discountPercentage > 0
-                      ? item.price - (item.price * (item.discountPercentage / 100))
-                      : item.price;
-                    const originalPrice = item.price;
+                  <>
+                    {cart.map((item) => {
+                      const cartId = item.cartItemId || item.id;
+                      const itemPrice = getItemPrice(item);
+                      const originalPrice = item.price;
+                      const hasDiscount = itemPrice < originalPrice;
 
-                    return (
-                      <div key={cartId} className="pt-4 first:pt-0 flex space-x-3.5 group">
-                        {/* Image */}
-                        <div className="relative w-18 h-18 rounded-2xl bg-beige-50 border border-beige-100 overflow-hidden flex-shrink-0 w-[72px] h-[72px]">
-                          <Image
-                            src={item.image || item.images?.[0] || '/images/placeholder.png'}
-                            alt={item.name}
-                            fill
-                            className="object-cover"
-                            unoptimized
-                          />
+                      return (
+                        <div key={cartId} className="pt-4 first:pt-0 flex space-x-3.5 group">
+                          {/* Image */}
+                          <div className="relative w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-beige-50 border border-beige-100 overflow-hidden flex-shrink-0">
+                            <Image
+                              src={item.image || item.images?.[0] || '/images/aloevera_gel.jpg'}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                              unoptimized
+                              onError={(e) => { e.target.srcset = '/images/aloevera_gel.jpg'; }}
+                            />
+                          </div>
+
+                          {/* Details */}
+                          <div className="flex-1 min-w-0 flex flex-col justify-between">
+                            <div>
+                              <div className="flex items-start justify-between">
+                                <h4 className="font-serif text-xs font-bold text-purple-950 truncate max-w-[170px]">
+                                  {item.name}
+                                </h4>
+                                <button
+                                  onClick={() => removeFromCart(cartId)}
+                                  className="text-gray-300 hover:text-red-500 transition-colors p-0.5"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+
+                              {/* Shade pill if selected */}
+                              {item.selectedShade && (
+                                <div className="flex items-center space-x-1.5 mt-0.5">
+                                  <span
+                                    className="w-3 h-3 rounded-full border border-black/10 shadow-sm flex-shrink-0"
+                                    style={{ backgroundColor: item.selectedShade.hex || '#E0A899' }}
+                                  />
+                                  <span className="text-[10px] text-gray-500 font-medium truncate">
+                                    Shade: {item.selectedShade.name}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Price */}
+                              <div className="flex items-center space-x-1.5 mt-1">
+                                <span className="text-xs font-bold text-purple-900">
+                                  ₹{itemPrice.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                                </span>
+                                {hasDiscount && (
+                                  <span className="text-[10px] text-gray-400 line-through">
+                                    ₹{originalPrice.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Stepper */}
+                            <div className="flex items-center space-x-2 mt-2">
+                              <div className="flex items-center border border-gray-200 rounded-full bg-beige-50/80 px-2 py-0.5 space-x-2">
+                                <button
+                                  onClick={() => {
+                                    if (item.quantity > 1) updateQuantity(cartId, item.quantity - 1);
+                                    else removeFromCart(cartId);
+                                  }}
+                                  className="text-gray-500 hover:text-purple-900 p-0.5"
+                                >
+                                  <Minus size={11} />
+                                </button>
+                                <span className="text-xs font-bold text-purple-950 w-4 text-center">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  onClick={() => updateQuantity(cartId, item.quantity + 1)}
+                                  className="text-gray-500 hover:text-purple-900 p-0.5"
+                                >
+                                  <Plus size={11} />
+                                </button>
+                              </div>
+                              <span className="text-[10px] text-gray-400">
+                                Sub: ₹{(itemPrice * item.quantity).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* ══ Purplle-style Coupon Applicator ══ */}
+                    <div className="pt-4 mt-2 border-t border-purple-100">
+                      <div className="flex items-center space-x-1.5 mb-2">
+                        <Tag size={13} className="text-purple-700" />
+                        <span className="text-xs font-bold text-purple-950">Coupons & Offers</span>
+                      </div>
+
+                      {appliedCoupon ? (
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between text-xs">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center">
+                              <Check size={12} strokeWidth={3} />
+                            </div>
+                            <div>
+                              <p className="font-bold text-emerald-900">{appliedCoupon.code} Applied!</p>
+                              <p className="text-[10px] text-emerald-700 font-medium">{appliedCoupon.label}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={handleRemoveCoupon}
+                            className="text-[10px] font-bold text-red-600 hover:underline"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="flex space-x-2">
+                            <input
+                              type="text"
+                              placeholder="Enter coupon code (e.g. LUXE25)"
+                              value={couponCode}
+                              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                              className="flex-1 text-xs border border-gray-200 rounded-xl px-3 py-1.5 uppercase font-mono tracking-wider focus:outline-none focus:border-purple-600"
+                            />
+                            <button
+                              onClick={() => handleApplyCoupon()}
+                              className="px-4 py-1.5 bg-purple-900 hover:bg-purple-950 text-white font-bold text-xs rounded-xl transition-all"
+                            >
+                              Apply
+                            </button>
+                          </div>
+                          {/* Quick Coupon Chip */}
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => handleApplyCoupon('LUXE25')}
+                              className="bg-gold-50 border border-gold-300 text-purple-900 text-[10px] font-bold px-2.5 py-1 rounded-lg hover:bg-gold-100 flex items-center space-x-1"
+                            >
+                              <span>✨ LUXE25 (25% OFF)</span>
+                            </button>
+                            <button
+                              onClick={() => handleApplyCoupon('WELCOME10')}
+                              className="bg-purple-50 border border-purple-200 text-purple-900 text-[10px] font-bold px-2.5 py-1 rounded-lg hover:bg-purple-100"
+                            >
+                              WELCOME10
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* ══ Purplle-style Cross-Sell / Routine Builder Strip ══ */}
+                    {crossSells.length > 0 && (
+                      <div className="pt-5 mt-4 border-t border-purple-100">
+                        <div className="flex items-center justify-between mb-2.5">
+                          <div className="flex items-center space-x-1.5">
+                            <Sparkles size={13} className="text-gold-500" />
+                            <h4 className="font-serif text-xs font-bold text-purple-950">Complete Your Ritual</h4>
+                          </div>
+                          <span className="text-[9px] font-bold text-gold-600 uppercase tracking-wider">Top Add-ons</span>
                         </div>
 
-                        {/* Details */}
-                        <div className="flex-1 min-w-0 flex flex-col justify-between">
-                          <div>
-                            <div className="flex items-start justify-between">
-                              <h4 className="font-serif text-xs font-bold text-purple-950 truncate max-w-[170px]">
-                                {item.name}
-                              </h4>
-                              <button
-                                onClick={() => removeFromCart(cartId)}
-                                className="text-gray-300 hover:text-red-500 transition-colors p-0.5"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
+                        <div className="flex gap-2.5 overflow-x-auto pb-2 no-scrollbar">
+                          {crossSells.map((sug) => {
+                            const sugPrice = getItemPrice(sug);
+                            const sugId = sug.id || sug._id;
+                            const isAdding = addingId === sugId;
 
-                            {/* Shade pill if selected */}
-                            {item.selectedShade && (
-                              <div className="flex items-center space-x-1.5 mt-0.5">
-                                <span
-                                  className="w-3 h-3 rounded-full border border-black/10 shadow-sm flex-shrink-0"
-                                  style={{ backgroundColor: item.selectedShade.hex || '#E0A899' }}
-                                />
-                                <span className="text-[10px] text-gray-500 font-medium truncate">
-                                  Shade: {item.selectedShade.name}
-                                </span>
+                            return (
+                              <div
+                                key={sugId}
+                                className="flex-shrink-0 w-36 bg-purple-50/40 rounded-2xl p-2 border border-purple-100/70 flex flex-col justify-between"
+                              >
+                                <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-white mb-1.5">
+                                  <Image
+                                    src={sug.image || sug.images?.[0] || '/images/aloevera_gel.jpg'}
+                                    alt={sug.name}
+                                    fill
+                                    className="object-cover"
+                                    unoptimized
+                                    onError={(e) => { e.target.srcset = '/images/aloevera_gel.jpg'; }}
+                                  />
+                                  {sug.discountPercentage > 0 && (
+                                    <span className="absolute top-1 left-1 bg-red-500 text-white font-black text-[8px] px-1.5 py-0.2 rounded-full">
+                                      -{sug.discountPercentage}%
+                                    </span>
+                                  )}
+                                </div>
+
+                                <p className="text-[10px] font-bold text-purple-950 truncate mb-1" title={sug.name}>
+                                  {sug.name}
+                                </p>
+
+                                <div className="flex items-center justify-between mt-auto">
+                                  <span className="text-[11px] font-black text-purple-900">
+                                    ₹{sugPrice.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                                  </span>
+
+                                  <button
+                                    onClick={() => handleQuickAdd(sug)}
+                                    disabled={isAdding}
+                                    className="px-2.5 py-1 rounded-lg bg-purple-900 hover:bg-purple-950 text-gold-300 font-bold text-[9px] uppercase tracking-wider flex items-center space-x-0.5 shadow-sm active:scale-95 transition-all"
+                                  >
+                                    <Plus size={10} />
+                                    <span>{isAdding ? '✓' : 'Add'}</span>
+                                  </button>
+                                </div>
                               </div>
-                            )}
-
-                            {/* Price */}
-                            <div className="flex items-center space-x-1.5 mt-1">
-                              <span className="text-xs font-bold text-purple-900">
-                                ₹{itemPrice.toLocaleString('en-IN')}
-                              </span>
-                              {item.discountPercentage > 0 && (
-                                <span className="text-[10px] text-gray-400 line-through">
-                                  ₹{originalPrice.toLocaleString('en-IN')}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Stepper */}
-                          <div className="flex items-center space-x-2 mt-2">
-                            <div className="flex items-center border border-gray-200 rounded-full bg-beige-50/80 px-2 py-0.5 space-x-2">
-                              <button
-                                onClick={() => {
-                                  if (item.quantity > 1) updateQuantity(cartId, item.quantity - 1);
-                                  else removeFromCart(cartId);
-                                }}
-                                className="text-gray-500 hover:text-purple-900 p-0.5"
-                              >
-                                <Minus size={11} />
-                              </button>
-                              <span className="text-xs font-bold text-purple-950 w-4 text-center">
-                                {item.quantity}
-                              </span>
-                              <button
-                                onClick={() => updateQuantity(cartId, item.quantity + 1)}
-                                className="text-gray-500 hover:text-purple-900 p-0.5"
-                              >
-                                <Plus size={11} />
-                              </button>
-                            </div>
-                            <span className="text-[10px] text-gray-400">
-                              Sub: ₹{(itemPrice * item.quantity).toLocaleString('en-IN')}
-                            </span>
-                          </div>
+                            );
+                          })}
                         </div>
                       </div>
-                    );
-                  })
+                    )}
+                  </>
                 )}
               </div>
 
               {/* Footer / Summary */}
               {cart.length > 0 && (
-                <div className="px-6 py-5 bg-cream-50/80 border-t border-beige-200 space-y-3">
+                <div className="px-5 sm:px-6 py-4 bg-cream-50/80 border-t border-beige-200 space-y-2.5">
+                  {/* Savings callout pill */}
+                  {totalSavings > 0 && (
+                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl px-3 py-1.5 flex items-center justify-between text-[11px] font-bold">
+                      <span>🎉 Botanical Savings</span>
+                      <span className="text-emerald-700 font-black">-₹{totalSavings.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between text-xs text-gray-600">
                     <span>Subtotal</span>
-                    <span className="text-sm font-bold text-purple-950">₹{subtotal.toLocaleString('en-IN')}</span>
+                    <span className="text-sm font-bold text-purple-950">₹{subtotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                   </div>
+
+                  {couponDiscount > 0 && (
+                    <div className="flex items-center justify-between text-xs text-emerald-700 font-semibold">
+                      <span>Coupon Discount</span>
+                      <span>-₹{couponDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between text-xs text-gray-600">
                     <span>Shipping</span>
@@ -248,8 +475,8 @@ export default function CartDrawer() {
 
                   <div className="pt-2 border-t border-beige-200/80 flex items-center justify-between">
                     <span className="font-serif text-sm font-bold text-purple-950">Total Est.</span>
-                    <span className="font-serif text-base font-bold text-purple-900">
-                      ₹{(subtotal + (amountToFreeShipping === 0 ? 0 : (storeSettings?.shippingFee || 150))).toLocaleString('en-IN')}
+                    <span className="font-serif text-lg font-bold text-purple-900">
+                      ₹{(finalSubtotal + (amountToFreeShipping === 0 ? 0 : (storeSettings?.shippingFee || 150))).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                     </span>
                   </div>
 
@@ -257,7 +484,7 @@ export default function CartDrawer() {
                   <div className="space-y-2 pt-1">
                     <button
                       onClick={handleCheckout}
-                      className="w-full py-3.5 px-6 rounded-full bg-purple-900 hover:bg-purple-950 text-white font-bold text-xs uppercase tracking-widest flex items-center justify-center space-x-2 shadow-lg transition-all hover:scale-[1.01]"
+                      className="w-full py-3.5 px-6 rounded-full bg-purple-900 hover:bg-purple-950 text-white font-bold text-xs uppercase tracking-widest flex items-center justify-center space-x-2 shadow-lg transition-all hover:scale-[1.01] active:scale-95"
                     >
                       <span>Proceed to Checkout</span>
                       <ArrowRight size={14} />
@@ -265,14 +492,14 @@ export default function CartDrawer() {
 
                     <button
                       onClick={handleViewCart}
-                      className="w-full py-2.5 px-6 rounded-full bg-white border border-purple-200 text-purple-900 hover:bg-purple-50 font-bold text-xs uppercase tracking-wider transition-all"
+                      className="w-full py-2 px-6 rounded-full bg-white border border-purple-200 text-purple-900 hover:bg-purple-50 font-bold text-[11px] uppercase tracking-wider transition-all"
                     >
-                      View Full Bag & Coupons
+                      View Full Bag
                     </button>
                   </div>
 
-                  <div className="flex items-center justify-center space-x-1.5 text-[10px] text-gray-400 pt-1">
-                    <ShieldCheck size={12} className="text-emerald-600" />
+                  <div className="flex items-center justify-center space-x-1.5 text-[9px] text-gray-400 pt-0.5">
+                    <ShieldCheck size={12} className="text-emerald-600 flex-shrink-0" />
                     <span>100% Authentic Botanicals • Secure Checkout</span>
                   </div>
                 </div>
@@ -284,3 +511,5 @@ export default function CartDrawer() {
     </AnimatePresence>
   );
 }
+
+

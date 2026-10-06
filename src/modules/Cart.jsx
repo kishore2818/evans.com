@@ -103,7 +103,8 @@ const Cart = () => {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Order Summary */}

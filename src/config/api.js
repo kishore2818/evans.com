@@ -1,7 +1,15 @@
 const getApiBaseUrl = () => {
   if (typeof window !== 'undefined') {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      return 'http://localhost:5001';
+    const host = window.location.hostname;
+    if (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host.startsWith('10.') ||
+      host.startsWith('192.168.') ||
+      host.startsWith('172.') ||
+      host.endsWith('.local')
+    ) {
+      return `http://${host}:5001`;
     }
   }
   if (process.env.NODE_ENV === 'development' && !process.env.VERCEL) {
@@ -13,3 +21,4 @@ const getApiBaseUrl = () => {
 const API_BASE_URL = getApiBaseUrl();
 
 export default API_BASE_URL;
+

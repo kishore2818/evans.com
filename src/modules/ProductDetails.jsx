@@ -17,7 +17,8 @@ import {
   MessageSquare, 
   Send,
   Loader2,
-  Quote
+  Quote,
+  Truck
 } from 'lucide-react';
 
 // ─── Review Slider Component ───────────────────────────────────────────────────
@@ -442,12 +443,46 @@ const ProductDetails = () => {
               </div>
             </div>
 
+            {/* Purplle-style Pincode & Delivery Checker Widget */}
+            <div className="bg-purple-50/60 rounded-2xl p-4 border border-purple-100/80">
+              <div className="flex items-center space-x-2 mb-2">
+                <Truck size={16} className="text-purple-700" />
+                <span className="text-xs font-bold text-purple-950">Delivery & Services</span>
+              </div>
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  maxLength={6}
+                  placeholder="Enter 6-digit pincode"
+                  defaultValue="600001"
+                  className="flex-1 text-xs border border-gray-200 rounded-xl px-3 py-2 font-mono tracking-wider focus:outline-none focus:border-purple-600 bg-white"
+                />
+                <button
+                  onClick={() => toast.success('Standard Delivery: 2-3 Days | FREE COD Available 🎉')}
+                  className="px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white font-bold text-xs rounded-xl transition-all"
+                >
+                  Check
+                </button>
+              </div>
+              <div className="mt-3 space-y-1.5 text-[11px] font-medium text-gray-600">
+                <p className="flex items-center space-x-1.5 text-emerald-800 font-bold">
+                  <span>🚚 Express Delivery by <strong>Thu, Oct 8</strong></span>
+                </p>
+                <p className="flex items-center space-x-1.5">
+                  <span>💵 Cash on Delivery Available</span>
+                </p>
+                <p className="flex items-center space-x-1.5">
+                  <span>🔄 7 Days Easy Replacements • 100% Authentic Guarantee</span>
+                </p>
+              </div>
+            </div>
+
             {/* Buying Actions */}
             <div className="flex flex-col md:flex-row w-full space-y-3 md:space-y-0 md:space-x-4">
               <button 
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
-                className="flex-[1.2] border-2 border-purple-900 text-purple-900 font-black py-5 rounded-2xl flex justify-center items-center space-x-3 text-xs uppercase tracking-widest hover:bg-purple-900 hover:text-white transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-purple-900"
+                className="flex-[1.2] border-2 border-purple-900 text-purple-900 font-black py-4 rounded-2xl flex justify-center items-center space-x-3 text-xs uppercase tracking-widest hover:bg-purple-900 hover:text-white transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-purple-900"
               >
                 <ShoppingBag size={18} strokeWidth={2.5} />
                 <span>{product.stock === 0 ? 'Out of Stock' : 'Add to Bag'}</span>
@@ -455,12 +490,46 @@ const ProductDetails = () => {
               <button 
                 onClick={handleBuyNow}
                 disabled={product.stock === 0}
-                className="flex-1 bg-purple-900 text-gold-300 font-black py-5 rounded-2xl flex justify-center items-center shadow-luxury text-xs uppercase tracking-widest hover:bg-purple-800 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex-1 bg-purple-900 text-gold-300 font-black py-4 rounded-2xl flex justify-center items-center shadow-luxury text-xs uppercase tracking-widest hover:bg-purple-800 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Buy Now
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Sticky Mobile PDP Bottom Purchase Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-purple-100 p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] flex items-center justify-between gap-3">
+        <div className="flex flex-col min-w-0">
+          <span className="text-[10px] text-gray-400 font-bold truncate max-w-[120px]">{product.name}</span>
+          <div className="flex items-baseline space-x-1.5">
+            <span className="text-sm font-black text-purple-900">
+              ₹{(product.discountPercentage > 0 
+                ? product.price - (product.price * (product.discountPercentage / 100)) 
+                : product.price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+            </span>
+            {product.discountPercentage > 0 && (
+              <span className="text-[10px] text-gray-400 line-through">₹{product.price.toLocaleString('en-IN')}</span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={handleAddToCart}
+            disabled={product.stock === 0}
+            className="px-4 py-2.5 rounded-xl border border-purple-900 text-purple-900 font-bold text-[11px] uppercase tracking-wider disabled:opacity-40"
+          >
+            + Bag
+          </button>
+          <button
+            onClick={handleBuyNow}
+            disabled={product.stock === 0}
+            className="px-5 py-2.5 rounded-xl bg-purple-900 text-gold-300 font-bold text-[11px] uppercase tracking-wider shadow-md active:scale-95 disabled:opacity-40"
+          >
+            Buy Now
+          </button>
         </div>
       </div>
 

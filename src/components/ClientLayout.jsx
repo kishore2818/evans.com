@@ -280,18 +280,7 @@ const TopNav = ({ cartItemCount }) => {
 ───────────────────────────────────────── */
 const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
   const pathname = usePathname();
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      // On ALL pages: disappear on entry (top of page), appear smoothly when scrolling down
-      setIsVisible(window.scrollY > 30);
-    };
-
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [pathname]);
+  const isPDP = pathname.startsWith('/products/') && pathname !== '/products';
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -301,26 +290,27 @@ const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
     { name: 'Profile', path: '/profile', icon: User },
   ];
 
+  if (isPDP) return null;
+
   return (
     <AnimatePresence>
-      {isVisible && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4 pointer-events-none">
-          <motion.div
-            initial={{ y: 80, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 80, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-            className="pointer-events-auto"
-            style={{
-              background: 'rgba(255,255,255,0.88)',
-              backdropFilter: 'blur(28px) saturate(200%)',
-              WebkitBackdropFilter: 'blur(28px) saturate(200%)',
-              borderRadius: '9999px',
-              border: '1px solid rgba(255,255,255,0.9)',
-              boxShadow: '0 8px 32px rgba(62,29,74,0.18), 0 2px 8px rgba(62,29,74,0.1)',
-              padding: '8px 12px',
-            }}
-          >
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-3 px-4 pointer-events-none">
+        <motion.div
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 80, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+          className="pointer-events-auto"
+          style={{
+            background: 'rgba(255,255,255,0.92)',
+            backdropFilter: 'blur(28px) saturate(200%)',
+            WebkitBackdropFilter: 'blur(28px) saturate(200%)',
+            borderRadius: '9999px',
+            border: '1px solid rgba(255,255,255,0.9)',
+            boxShadow: '0 8px 32px rgba(62,29,74,0.18), 0 2px 8px rgba(62,29,74,0.1)',
+            padding: '6px 10px',
+          }}
+        >
             <nav className="flex items-center space-x-1">
               {navItems.map((item) => {
                 const isActive = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
@@ -397,7 +387,6 @@ const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
             </nav>
           </motion.div>
         </div>
-      )}
     </AnimatePresence>
   );
 };

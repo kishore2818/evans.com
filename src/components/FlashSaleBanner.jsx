@@ -56,9 +56,10 @@ export default function FlashSaleBanner() {
 
   const handleCopyCode = (e) => {
     e?.stopPropagation();
-    navigator.clipboard.writeText('LUXE25');
+    const code = flashSale?.couponCode || 'TIGER25';
+    navigator.clipboard.writeText(code);
     setCopied(true);
-    toast.success('Coupon LUXE25 copied! Apply at checkout ♥');
+    toast.success(`Coupon ${code} copied! Apply at checkout ♥`);
     setTimeout(() => setCopied(false), 2500);
   };
 
@@ -253,7 +254,7 @@ export default function FlashSaleBanner() {
                   </div>
                   <div>
                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Promo Coupon Code</span>
-                    <span className="font-mono text-sm font-black text-gold-300">LUXE25</span>
+                    <span className="font-mono text-sm font-black text-gold-300">{flashSale?.couponCode || 'TIGER25'}</span>
                   </div>
                 </div>
 

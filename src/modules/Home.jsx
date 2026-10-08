@@ -151,7 +151,7 @@ const Home = () => {
             </h1>
             
             <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-gold-300/90 mt-1">
-              Organic Botanical Skincare
+              evansluxebeauty • Organic Botanical Skincare
             </p>
 
             {/* Luxury Symmetrical Divider */}

@@ -89,7 +89,7 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
       try {
         await navigator.share({
           title: product.name,
-          text: `Check out ${product.name} on Evans Luxe`,
+          text: `Check out ${product.name} on Evans Luxe Beauty`,
           url: window.location.href,
         });
       } catch (error) {
@@ -154,7 +154,7 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
     <div className="bg-white min-h-[calc(100vh-80px)] pb-28 md:pb-12 md:mt-4 md:rounded-[2.5rem] md:overflow-hidden relative max-w-6xl lg:mx-auto md:shadow-luxury">
 
       {/* ── Mobile floating action bar ── */}
-      <div className="md:hidden absolute top-0 w-full z-20 flex justify-between items-center p-5 pt-8"
+      <div className="md:hidden absolute top-0 w-full z-20 flex justify-between items-center p-3 pt-3 sm:p-5 sm:pt-6"
         style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 100%)' }}>
         <motion.button
           whileTap={{ scale: 0.9 }}

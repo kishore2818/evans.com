@@ -93,9 +93,10 @@ const Checkout = () => {
   }, []);
 
   const subtotal = cart.reduce((acc, item) => acc + (item.price * (1 - (item.discountPercentage || 0) / 100)) * item.quantity, 0);
-  const threshold = storeSettings?.freeShippingThreshold ?? 2000;
-  const fee = storeSettings?.shippingFee ?? 150;
-  const shippingCost = subtotal > threshold ? 0 : fee;
+  const threshold = storeSettings?.freeShippingThreshold !== undefined ? Number(storeSettings.freeShippingThreshold) : 2000;
+  const fee = storeSettings?.shippingFee !== undefined ? Number(storeSettings.shippingFee) : 150;
+  const isFreeShipping = fee === 0 || threshold === 0 || (threshold > 0 && subtotal >= threshold);
+  const shippingCost = isFreeShipping ? 0 : fee;
   const totalAmount = subtotal > 0 ? subtotal + shippingCost : 0;
 
   const handleAddAddress = async (e) => {
@@ -135,7 +136,7 @@ const Checkout = () => {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
-        name: 'Evans Luxe',
+        name: 'Evans Luxe Beauty',
         description: 'Secure Payment for order',
         order_id: razorpayOrder.id,
         handler: async function (response) {
@@ -207,7 +208,7 @@ const Checkout = () => {
   const currentAddress = user.addresses?.[selectedAddressIndex];
 
   return (
-    <div className="min-h-screen bg-beige-50 pb-28 pt-6 relative overflow-hidden">
+    <div className="min-h-screen bg-beige-50 pb-24 pt-2 sm:pt-4 md:pt-6 relative overflow-hidden">
       
       {/* Background orbs */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
@@ -215,10 +216,10 @@ const Checkout = () => {
         <div className="orb absolute w-[400px] h-[400px] bg-gold-100/30 bottom-[-5%] right-[-5%] opacity-30" style={{ animationDelay: '3s' }} />
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 md:px-8">
+      <div className="max-w-6xl mx-auto px-3.5 sm:px-4 md:px-8">
 
         {/* Header Title */}
-        <div className="mb-6 md:mb-8 text-center sm:text-left">
+        <div className="mb-4 sm:mb-6 md:mb-8 text-center sm:text-left">
           <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-purple-900 mb-1 md:mb-2">Secure checkout</h1>
           <p className="text-gray-400 text-xs sm:text-sm font-medium">Verify your package and shipping details in one click</p>
         </div>
@@ -551,7 +552,7 @@ const Checkout = () => {
                 <div className="bg-beige-50/50 rounded-xl p-3 border border-beige-100/60 flex items-start space-x-2.5">
                   <ShieldCheck size={14} className="text-gold-500 flex-shrink-0 mt-0.5" />
                   <p className="text-[8px] sm:text-[9px] text-gray-400 font-bold uppercase tracking-wider leading-relaxed">
-                    Evans protocols guarantee complete secure processing & organic sourcing standards.
+                    Evans Luxe Beauty protocols guarantee complete secure processing & organic sourcing standards.
                   </p>
                 </div>
               </div>

@@ -40,10 +40,10 @@ const TopNav = ({ cartItemCount }) => {
           </div>
           <div className="flex flex-col leading-none">
             <span className="font-serif text-xl font-bold tracking-tight text-purple-900 group-hover:text-purple-700 transition-colors">
-              Evans Luxe
+              Evans Luxe Beauty
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-gold-500">
-              Beauty
+            <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-gold-600">
+              evansluxebeauty
             </span>
           </div>
         </Link>

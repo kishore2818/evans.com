@@ -235,7 +235,7 @@ const ProductDetails = () => {
       try {
         await navigator.share({
           title: product.name,
-          text: `Check out ${product.name} on Evans Luxe`,
+          text: `Check out ${product.name} on Evans Luxe Beauty`,
           url: window.location.href,
         });
       } catch (error) {
@@ -458,7 +458,7 @@ const ProductDetails = () => {
                   className="flex-1 text-xs border border-gray-200 rounded-xl px-3 py-2 font-mono tracking-wider focus:outline-none focus:border-purple-600 bg-white"
                 />
                 <button
-                  onClick={() => toast.success('Standard Delivery: 2-3 Days | FREE COD Available 🎉')}
+                  onClick={() => toast.success('Standard Delivery: 2-3 Days | Fast Pan-India Delivery 🚀')}
                   className="px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white font-bold text-xs rounded-xl transition-all"
                 >
                   Check
@@ -469,7 +469,7 @@ const ProductDetails = () => {
                   <span>🚚 Express Delivery by <strong>Thu, Oct 8</strong></span>
                 </p>
                 <p className="flex items-center space-x-1.5">
-                  <span>💵 Cash on Delivery Available</span>
+                  <span>🔒 100% Safe Online Prepaid Payments (UPI, Cards, NetBanking)</span>
                 </p>
                 <p className="flex items-center space-x-1.5">
                   <span>🔄 7 Days Easy Replacements • 100% Authentic Guarantee</span>

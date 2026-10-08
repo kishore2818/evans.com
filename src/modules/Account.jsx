@@ -29,10 +29,10 @@ const Account = () => {
   ];
 
   return (
-    <div className="px-6 md:px-12 pt-8 md:pt-16 pb-24 md:pb-12 max-w-4xl mx-auto">
+    <div className="px-3.5 sm:px-6 md:px-12 pt-2 sm:pt-6 md:pt-16 pb-24 md:pb-12 max-w-4xl mx-auto">
       <button 
         onClick={() => navigate(-1)} 
-        className="flex items-center space-x-2 text-purple-600 hover:text-purple-900 font-semibold mb-6 md:mb-10 transition-colors"
+        className="flex items-center space-x-1.5 text-purple-600 hover:text-purple-900 font-semibold mb-3 sm:mb-6 md:mb-10 transition-colors text-xs sm:text-sm"
       >
         <ChevronLeft size={20} />
         <span>Back</span>

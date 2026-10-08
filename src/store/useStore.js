@@ -82,7 +82,13 @@ export const useStore = create((set, get) => ({
       const res = await fetch(`${API_BASE_URL}/api/settings`, { cache: 'no-store' });
       const data = await res.json();
       if (res.ok && data) {
-        set({ storeSettings: data });
+        set({
+          storeSettings: {
+            ...data,
+            shippingFee: data.shippingFee !== undefined ? Number(data.shippingFee) : 150,
+            freeShippingThreshold: data.freeShippingThreshold !== undefined ? Number(data.freeShippingThreshold) : 2000,
+          }
+        });
       }
     } catch (err) {
       console.error('Settings fetch error', err);

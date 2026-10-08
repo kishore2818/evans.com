@@ -17,19 +17,19 @@ const Orders = () => {
   }, [user]);
 
   return (
-    <div className="bg-gray-50/50 min-h-screen pt-4 md:pt-12 pb-24">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+    <div className="bg-gray-50/50 min-h-screen pt-1 sm:pt-4 md:pt-12 pb-24">
+      <div className="max-w-4xl mx-auto px-3.5 sm:px-6">
         <button 
           onClick={() => navigate(-1)} 
-          className="flex items-center space-x-2 text-purple-600 hover:text-purple-900 font-semibold mb-6 transition-colors"
+          className="flex items-center space-x-1.5 text-purple-600 hover:text-purple-900 font-semibold mb-2 sm:mb-6 transition-colors text-xs sm:text-sm"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={16} />
           <span>Back</span>
         </button>
 
-        <div className="mb-10">
-          <h1 className="font-serif text-3xl md:text-4xl font-bold text-purple-900 mb-3">My Orders</h1>
-          <p className="text-gray-500 font-medium">Track and manage your past purchases.</p>
+        <div className="mb-4 sm:mb-10">
+          <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-purple-900 mb-1 sm:mb-3">My Orders</h1>
+          <p className="text-gray-500 text-xs sm:text-sm font-medium">Track and manage your past purchases.</p>
         </div>
 
         <div className="space-y-4">

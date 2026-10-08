@@ -1,359 +1,461 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ArrowRight, ShieldCheck, Leaf, Droplet, Star, ChevronDown, Package } from 'lucide-react';
+import { 
+  Sparkles, 
+  ArrowRight, 
+  ShieldCheck, 
+  Leaf, 
+  Droplet, 
+  Star, 
+  ChevronLeft, 
+  ChevronRight, 
+  Tag,
+  Percent,
+  Award,
+  CheckCircle2,
+  Clock
+} from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import ProductCard from '@/components/ProductCard';
 import CategoryIcon from '@/components/CategoryIcon';
+import toast from 'react-hot-toast';
 
-/* ── Stagger container helpers ── */
-const stagger = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
+/* ── Category Color Palettes for attractive colorful cards ── */
+const CATEGORY_STYLES = {
+  'Soaps': {
+    bg: 'bg-gradient-to-br from-purple-100 via-purple-50 to-white',
+    border: 'border-purple-200/80',
+    ring: 'ring-purple-300',
+    pill: 'bg-purple-100 text-purple-800',
+    shadow: 'shadow-[0_8px_20px_rgba(156,0,173,0.12)]'
+  },
+  'Face Wash': {
+    bg: 'bg-gradient-to-br from-rose-100 via-rose-50 to-white',
+    border: 'border-rose-200/80',
+    ring: 'ring-rose-300',
+    pill: 'bg-rose-100 text-rose-800',
+    shadow: 'shadow-[0_8px_20px_rgba(244,63,94,0.12)]'
+  },
+  'Serums': {
+    bg: 'bg-gradient-to-br from-amber-100 via-amber-50 to-white',
+    border: 'border-amber-200/80',
+    ring: 'ring-amber-300',
+    pill: 'bg-amber-100 text-amber-800',
+    shadow: 'shadow-[0_8px_20px_rgba(245,158,11,0.15)]'
+  },
+  'Creams': {
+    bg: 'bg-gradient-to-br from-yellow-100 via-amber-50/60 to-white',
+    border: 'border-yellow-200/80',
+    ring: 'ring-yellow-300',
+    pill: 'bg-yellow-100 text-yellow-800',
+    shadow: 'shadow-[0_8px_20px_rgba(202,138,4,0.12)]'
+  },
+  'Hair Care': {
+    bg: 'bg-gradient-to-br from-emerald-100 via-emerald-50 to-white',
+    border: 'border-emerald-200/80',
+    ring: 'ring-emerald-300',
+    pill: 'bg-emerald-100 text-emerald-800',
+    shadow: 'shadow-[0_8px_20px_rgba(16,185,129,0.12)]'
+  },
+  'Scrubs': {
+    bg: 'bg-gradient-to-br from-orange-100 via-orange-50 to-white',
+    border: 'border-orange-200/80',
+    ring: 'ring-orange-300',
+    pill: 'bg-orange-100 text-orange-800',
+    shadow: 'shadow-[0_8px_20px_rgba(249,115,22,0.12)]'
+  },
+  'Gels': {
+    bg: 'bg-gradient-to-br from-teal-100 via-teal-50 to-white',
+    border: 'border-teal-200/80',
+    ring: 'ring-teal-300',
+    pill: 'bg-teal-100 text-teal-800',
+    shadow: 'shadow-[0_8px_20px_rgba(20,184,166,0.12)]'
+  },
+  'default': {
+    bg: 'bg-gradient-to-br from-purple-100 via-purple-50 to-white',
+    border: 'border-purple-200',
+    ring: 'ring-purple-300',
+    pill: 'bg-purple-100 text-purple-900',
+    shadow: 'shadow-md'
+  }
 };
-const fadeUp = {
-  hidden: { opacity: 0, y: 36, skewY: 2 },
-  visible: { opacity: 1, y: 0, skewY: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } },
-};
-const fadeIn = {
-  hidden: { opacity: 0, scale: 0.92 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
-};
-
-/* ── Category icon map ── */
-const CATEGORY_GRADIENTS = [
-  'from-purple-900 to-purple-600',
-  'from-gold-600 to-gold-400',
-  'from-rose-700 to-rose-500',
-  'from-emerald-700 to-emerald-500',
-  'from-blue-800 to-blue-600',
-];
 
 const HomeClient = ({ initialProducts = [] }) => {
   const products = initialProducts;
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const heroSlides = [
+    {
+      id: 1,
+      image: '/images/evans_hero_banner.jpg',
+      tag: '✨ 100% ORGANIC BOTANICAL SKINCARE',
+      title: 'Evans Luxe Beauty',
+      subtitle: 'Pure Radiance Crafted with French Lavender, Raw Shea & Kashmiri Saffron.',
+      ctaText: 'Explore Collection',
+      ctaLink: '/products',
+      badge: 'Bestseller'
+    },
+    {
+      id: 2,
+      image: '/images/evans_deals_banner.jpg',
+      tag: '⚡ EVANSLUXEBEAUTY FESTIVAL GLOW • UP TO 40% OFF',
+      title: 'Evans Luxe Beauty',
+      subtitle: 'Indulge in Cold-Pressed Artisan Soaps, Serums & Luxurious Creams.',
+      ctaText: 'Shop Mega Offers',
+      ctaLink: '/products?sale=true',
+      badge: 'Code: LUXE25'
+    }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [heroSlides.length]);
 
   const bestSellers = [...products]
     .sort((a, b) => (b.ratings?.count || b.reviewsCount || 0) - (a.ratings?.count || a.reviewsCount || 0))
     .slice(0, 8);
 
-  const dynamicCategories = [...new Set(products.map(p => p.category))].filter(Boolean).slice(0, 5);
+  const flashSaleItems = products.filter(p => p.flashSale?.isActive).slice(0, 4);
 
-  /* Testimonials */
+  const dynamicCategories = [...new Set(products.map(p => p.category))].filter(Boolean);
+
+  /* Customer Testimonials */
   const testimonials = [
-    { name: "Sarah J.", role: "Verified Buyer", rating: 5, text: "The Lavender Serenity soap has completely transformed my evening routine. The scent is absolutely heavenly — I'm obsessed." },
-    { name: "Priya K.", role: "Verified Buyer", rating: 5, text: "This Vitamin C Serum is a game-changer! My skin has never looked more radiant and smooth. Worth every rupee." },
-    { name: "Michael R.", role: "Verified Buyer", rating: 5, text: "Finally, a sunscreen that doesn't leave a white cast. The Mineral Bloom SPF has become my non-negotiable daily staple." },
+    { 
+      name: "Sarah J.", 
+      role: "Verified Buyer", 
+      rating: 5, 
+      text: "The Lavender Serenity artisan soap completely calmed my skin. The pure botanical fragrance feels like a French spa in my bath.",
+      product: "Lavender Serenity Bar"
+    },
+    { 
+      name: "Priya K.", 
+      role: "Verified Buyer", 
+      rating: 5, 
+      text: "This 24kt Gold Radiance Serum is worth every rupee! My dark spots faded within 3 weeks and my complexion looks lit from within.",
+      product: "24kt Gold Radiance Serum"
+    },
+    { 
+      name: "Michael R.", 
+      role: "Verified Buyer", 
+      rating: 5, 
+      text: "Zero white cast, non-sticky and soothing. Evans Luxe Beauty has become our entire family's everyday skincare ritual.",
+      product: "Saffron Day Cream"
+    },
   ];
 
   return (
-    <div className="pb-8 overflow-x-hidden">
+    <div className="pb-12 overflow-x-hidden space-y-7 sm:space-y-12 md:space-y-16">
 
       {/* ══════════════════════════════════════════
-          HERO SECTION — Classic & Elegant Banner
+          1. PURPLLE-STYLE HERO CAROUSEL BANNER
       ══════════════════════════════════════════ */}
-      <div className="px-4 md:px-12 pt-4 md:pt-6">
-        <div className="relative min-h-[60vh] md:min-h-[75vh] rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-luxury border border-beige-100/40 flex items-center">
-          {/* Background image */}
-          <Image
-            src="/images/hero_background_1775973263788.png"
-            alt="Evans Luxe Beauty"
-            fill
-            sizes="(max-width: 768px) 100vw, 90vw"
-            className="object-cover"
-            priority
-          />
-
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center space-y-1"
-        >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <ChevronDown size={22} className="text-white/30" />
-          </motion.div>
-        </motion.div>
-      </div>
-
-      {/* ══════════════════════════════════════════
-          CATEGORIES SECTION
-      ══════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.7 }}
-        className="px-6 mt-16 md:mt-24"
-      >
-        <div className="text-center mb-10">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold-500 mb-2">Browse</p>
-          <h3 className="font-serif text-2xl md:text-4xl font-bold text-purple-900">Shop by Category</h3>
-        </div>
-
-        <div className="flex overflow-x-auto no-scrollbar space-x-5 sm:space-x-8 pt-6 pb-8 -mx-6 px-6 md:justify-center items-start snap-x touch-pan-x">
-          {dynamicCategories.map((catName, idx) => (
+      <section className="px-2.5 sm:px-6 lg:px-8">
+        <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9] min-h-[280px] sm:min-h-[420px] lg:min-h-[480px] rounded-2xl sm:rounded-[3rem] overflow-hidden shadow-2xl border border-purple-100/60 group">
+          
+          <AnimatePresence mode="wait">
             <motion.div
-              key={idx}
-              initial={{ opacity: 0, scale: 0.84, y: 14 }}
-              whileInView={{ opacity: 1, scale: 1, y: 0 }}
-              viewport={{ once: true, margin: "-10px" }}
-              whileHover={{ y: -8, scale: 1.07 }}
-              whileTap={{ y: -8, scale: 1.08 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 18, delay: idx * 0.04 }}
-              className="flex-shrink-0 snap-center"
+              key={currentSlide}
+              initial={{ opacity: 0, scale: 1.03 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              className="absolute inset-0"
             >
-              <Link
-                href={`/products?category=${encodeURIComponent(catName)}`}
-                className="flex flex-col items-center group cursor-pointer select-none"
-              >
-                <div className="relative w-20 h-20 sm:w-22 sm:h-22 md:w-24 md:h-24 p-[2.5px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_6px_20px_-4px_rgba(212,175,55,0.28)] group-hover:shadow-[0_12px_30px_-2px_rgba(212,175,55,0.55)] group-active:shadow-[0_12px_30px_-2px_rgba(212,175,55,0.55)] transition-all duration-300">
-                  <div className="w-full h-full rounded-full bg-gradient-to-b from-[#FFFDF9] via-[#FAF5EC] to-[#F3E8D7] border border-white/80 flex items-center justify-center p-3 relative overflow-hidden group-hover:bg-white group-active:bg-white transition-colors duration-300">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-gold-400/25 via-transparent to-white/40 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 rounded-full" />
-                    <CategoryIcon category={catName} className="w-12 h-12 sm:w-13 sm:h-13 md:w-14 md:h-14 relative z-10 transition-transform duration-300 group-hover:scale-110 group-active:scale-110 group-hover:-rotate-1 group-active:-rotate-1" />
-                  </div>
-                </div>
-                <span className="text-[10px] sm:text-[11px] md:text-xs font-bold text-purple-950 mt-3 group-hover:text-gold-600 group-active:text-gold-600 transition-colors uppercase tracking-wider text-center w-22 sm:w-26 md:w-28 leading-snug line-clamp-2 min-h-[2.4rem] flex items-center justify-center">
-                  {catName}
-                </span>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
+              {/* High-Resolution AI Beauty Background */}
+              <Image
+                src={heroSlides[currentSlide].image}
+                alt={heroSlides[currentSlide].title}
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 1200px"
+                className="object-cover object-center"
+              />
 
-      {/* ══════════════════════════════════════════
-          PROMO BANNER
-      ══════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.7 }}
-        className="px-6 md:px-16 mt-16 md:mt-24"
-      >
-        <div
-          className="relative rounded-[2.5rem] md:rounded-[3rem] overflow-hidden p-8 md:p-14"
-          style={{ background: 'linear-gradient(135deg, #3e1d4a 0%, #5A2A6C 60%, #8540b0 100%)' }}
-        >
-          {/* Ambient orbs */}
-          <div className="absolute top-0 right-0 w-72 h-72 rounded-full opacity-30 pointer-events-none"
-            style={{ background: 'radial-gradient(circle, #D4AF37 0%, transparent 70%)', filter: 'blur(60px)', transform: 'translate(30%, -30%)' }} />
-          <div className="absolute bottom-0 left-0 w-56 h-56 rounded-full opacity-20 pointer-events-none"
-            style={{ background: 'radial-gradient(circle, #8540b0 0%, transparent 70%)', filter: 'blur(50px)', transform: 'translate(-30%, 30%)' }} />
+              {/* Dark & Purple Gradient Vignette for Crisp Text Legibility */}
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-950/85 via-purple-950/45 to-transparent sm:from-purple-950/90 sm:via-purple-900/40" />
 
-          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
-            <div className="text-center md:text-left max-w-lg">
-              <div className="inline-flex items-center space-x-2 mb-4 px-3 py-1.5 rounded-full"
-                style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)' }}>
-                <Sparkles size={12} className="text-gold-400" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-gold-300">Our Promise</span>
-              </div>
-              <h4 className="font-serif font-bold text-white text-2xl md:text-4xl mb-3 leading-tight">
-                100% Organic<br />Botanical Care
-              </h4>
-              <p className="text-white/60 text-sm md:text-base leading-relaxed mb-6">
-                Cruelty-free, chemical-free, and sustainably sourced — for your most radiant, healthiest self.
-              </p>
-              <Link
-                href="/products"
-                className="inline-flex items-center space-x-2 px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider text-purple-900 hover:-translate-y-1 transition-all shadow-gold min-h-0"
-                style={{ background: 'linear-gradient(135deg, #D4AF37, #edc757)' }}
-              >
-                <span>Explore Range</span>
-                <ArrowRight size={15} />
-              </Link>
-            </div>
-
-            {/* Badges */}
-            <div className="flex flex-row md:flex-col gap-4 flex-shrink-0">
-              {[
-                { icon: ShieldCheck, label: 'Verified', sub: 'Lab Tested' },
-                { icon: Leaf, label: 'Organic', sub: '100% Natural' },
-                { icon: Droplet, label: 'Pure', sub: 'Chemical-Free' },
-              ].map(({ icon: Icon, label, sub }, i) => (
+              {/* Text Overlay (Strictly Evans Luxe Beauty) */}
+              <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-12 lg:px-16 max-w-xl sm:max-w-2xl text-white z-10">
+                
+                {/* Sale / Quality Tag */}
                 <motion.div
-                  key={label}
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.2 + i * 0.1 }}
-                  className="flex items-center space-x-3 p-3 rounded-2xl"
-                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-gold-400/20 border border-gold-300/40 backdrop-blur-md text-gold-300 text-[10px] sm:text-xs font-bold uppercase tracking-widest w-fit mb-3"
                 >
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: 'rgba(212,175,55,0.2)' }}>
-                    <Icon size={20} className="text-gold-300" />
-                  </div>
-                  <div>
-                    <p className="text-white font-bold text-sm leading-none">{label}</p>
-                    <p className="text-white/50 text-[10px] mt-0.5">{sub}</p>
-                  </div>
+                  <Sparkles size={12} className="text-gold-300" />
+                  <span>{heroSlides[currentSlide].tag}</span>
                 </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </motion.div>
 
-      {/* ══════════════════════════════════════════
-          BEST SELLERS
-      ══════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="px-6 md:px-16 mt-20 mb-8"
-      >
-        <div className="flex justify-between items-end mb-10">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold-500 mb-1">Top Picks</p>
-            <h3 className="font-serif text-2xl md:text-4xl font-bold text-purple-900">
-              Our Best Sellers
-            </h3>
-            <div className="mt-2 h-1 w-16 rounded-full"
-              style={{ background: 'linear-gradient(90deg, #D4AF37, #edc757)' }} />
-          </div>
-          <Link
-            href="/products?category=All"
-            className="group flex items-center space-x-1.5 text-purple-700 text-sm font-bold hover:text-purple-900 transition-colors min-h-0 min-w-0"
-          >
-            <span>View All</span>
-            <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </div>
+                {/* Hero Title */}
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1] mb-3"
+                >
+                  {heroSlides[currentSlide].title}
+                </motion.h1>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-6">
-          {bestSellers.length > 0 ? (
-            bestSellers.map((product, idx) => (
-              <motion.div
-                key={product._id || product.id}
-                className={`${idx >= 4 ? 'hidden md:block' : 'block'}`}
-                initial={{ opacity: 0, y: 30, scale: 0.92 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.06, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <ProductCard product={product} />
-              </motion.div>
-            ))
-          ) : (
-            /* Empty state while loading */
-            [...Array(8)].map((_, i) => (
-              <div key={i} className={`${i >= 4 ? 'hidden md:block' : 'block'}`}>
-                <div className="rounded-[2rem] bg-beige-100 aspect-square animate-shimmer mb-3" />
-                <div className="h-3 w-3/4 bg-beige-100 rounded-full animate-shimmer mb-2" />
-                <div className="h-3 w-1/2 bg-beige-100 rounded-full animate-shimmer" />
-              </div>
-            ))
-          )}
-        </div>
-      </motion.div>
+                {/* Subtitle */}
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-xs sm:text-sm lg:text-base text-purple-100/90 leading-relaxed max-w-lg mb-6 line-clamp-2 sm:line-clamp-none font-medium"
+                >
+                  {heroSlides[currentSlide].subtitle}
+                </motion.p>
 
-      {/* ══════════════════════════════════════════
-          TESTIMONIALS
-      ══════════════════════════════════════════ */}
-      <div className="px-6 md:px-16 mt-20 mb-8">
-        <div className="text-center mb-12">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold-500 mb-2">Community</p>
-          <h3 className="font-serif text-3xl md:text-5xl font-bold text-purple-900 mb-3">Loved by You</h3>
-          <p className="text-gray-400 text-sm md:text-base max-w-md mx-auto italic">
-            "Inspired by nature, perfected by science."
-          </p>
-        </div>
-
-        <div className="flex overflow-x-auto no-scrollbar gap-5 pb-4 md:grid md:grid-cols-3 md:gap-7 md:overflow-visible">
-          {testimonials.map((item, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              whileHover={{ y: -6, scale: 1.02 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.12, duration: 0.5 }}
-              className="flex-shrink-0 w-[300px] md:w-full relative group"
-            >
-              <div
-                className="h-full p-7 rounded-[2.5rem] flex flex-col justify-between"
-                style={{
-                  background: 'rgba(255,255,255,0.9)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(90,42,108,0.08)',
-                  boxShadow: '0 4px 24px rgba(90,42,108,0.10)',
-                  transition: 'box-shadow 0.3s ease',
-                }}
-              >
-                {/* Decorative quote mark */}
-                <span className="absolute top-5 right-7 font-serif text-7xl leading-none text-purple-100 pointer-events-none select-none">
-                  "
-                </span>
-
-                {/* Stars */}
-                <div className="flex space-x-0.5 mb-4">
-                  {[...Array(item.rating)].map((_, i) => (
-                    <Star key={i} size={14} fill="#D4AF37" className="text-gold-400" />
-                  ))}
-                </div>
-
-                {/* Review text */}
-                <p className="text-gray-700 text-sm leading-relaxed italic flex-1 mb-6 relative z-10">
-                  "{item.text}"
-                </p>
-
-                {/* Author */}
-                <div className="flex items-center space-x-3 pt-4 border-t border-beige-100">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-gold-300 font-serif text-lg font-bold flex-shrink-0 shadow-luxury"
-                    style={{ background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)' }}
+                {/* CTA Buttons */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="flex flex-wrap items-center gap-3"
+                >
+                  <Link
+                    href={heroSlides[currentSlide].ctaLink}
+                    className="px-6 sm:px-8 py-3 rounded-full bg-gradient-to-r from-gold-500 via-amber-400 to-gold-500 text-purple-950 font-black text-xs uppercase tracking-widest shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center space-x-2"
                   >
-                    {item.name[0]}
-                  </div>
-                  <div>
-                    <h5 className="text-sm font-bold text-gray-900 leading-none mb-0.5">{item.name}</h5>
-                    <p className="text-[9px] text-purple-600 uppercase tracking-widest font-bold">{item.role}</p>
-                  </div>
-                </div>
+                    <span>{heroSlides[currentSlide].ctaText}</span>
+                    <ArrowRight size={14} />
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText('LUXE25');
+                      toast.success('Coupon code LUXE25 copied! Apply at checkout.');
+                    }}
+                    className="px-4 py-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 font-bold text-xs uppercase tracking-wider transition-all"
+                  >
+                    Use Code: <span className="text-gold-300 font-black">LUXE25</span>
+                  </button>
+                </motion.div>
               </div>
             </motion.div>
-          ))}
+          </AnimatePresence>
+
+          {/* Slider Arrow Controls */}
+          <button
+            onClick={() => setCurrentSlide((prev) => (prev === 0 ? heroSlides.length - 1 : prev - 1))}
+            className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md text-white flex items-center justify-center transition-all z-20"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={20} />
+          </button>
+
+          <button
+            onClick={() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length)}
+            className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md text-white flex items-center justify-center transition-all z-20"
+            aria-label="Next slide"
+          >
+            <ChevronRight size={20} />
+          </button>
+
+          {/* Dots Indicator */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center space-x-2 z-20">
+            {heroSlides.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentSlide(idx)}
+                className={`transition-all rounded-full ${
+                  currentSlide === idx ? 'w-7 h-2 bg-gold-400' : 'w-2 h-2 bg-white/50 hover:bg-white'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* ══════════════════════════════════════════
-          BOTTOM CTA STRIP
+          2. PURPLLE-STYLE CATEGORIES BUBBLE SCROLLER
+          (Distinct colorful backgrounds for each card)
       ══════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="px-6 md:px-16 mt-12 mb-4"
-      >
-        <div
-          className="rounded-[2rem] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6"
-          style={{ background: 'linear-gradient(135deg, #fdf9ec 0%, #F5F1EA 100%)', border: '1px solid rgba(212,175,55,0.2)' }}
-        >
-          <div className="text-center md:text-left">
-            <h4 className="font-serif text-xl md:text-2xl font-bold text-purple-900 mb-1">
-              Free shipping on orders over ₹999
-            </h4>
-            <p className="text-gray-500 text-sm">Pan-India delivery, tracked and packed with love.</p>
+      <section className="px-3.5 sm:px-6 lg:px-8">
+        <div className="flex items-end justify-between mb-3 sm:mb-6">
+          <div>
+            <div className="flex items-center space-x-1.5 text-gold-600 font-bold text-[10px] uppercase tracking-[0.25em] mb-1">
+              <Sparkles size={12} />
+              <span>Curated Botanicals</span>
+            </div>
+            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-purple-950">
+              Shop by Category
+            </h2>
           </div>
           <Link
             href="/products"
-            className="flex-shrink-0 inline-flex items-center space-x-2 px-7 py-3.5 rounded-full font-black text-sm uppercase tracking-wider text-gold-300 shadow-luxury hover:-translate-y-1 transition-all min-h-0"
-            style={{ background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)' }}
+            className="text-xs sm:text-sm font-bold text-purple-700 hover:text-purple-950 flex items-center space-x-1 transition-colors"
           >
-            <span>Start Shopping</span>
-            <ArrowRight size={15} />
+            <span>All Categories</span>
+            <ChevronRight size={15} />
           </Link>
         </div>
-      </motion.div>
+
+        {/* Horizontal Category Cards with Distinct Pastel Colors */}
+        <div className="flex overflow-x-auto no-scrollbar space-x-4 sm:space-x-6 pb-4 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+          {dynamicCategories.map((catName, idx) => {
+            const style = CATEGORY_STYLES[catName] || CATEGORY_STYLES['default'];
+            return (
+              <motion.div
+                key={idx}
+                whileHover={{ y: -6, scale: 1.03 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 350, damping: 20 }}
+                className="flex-shrink-0"
+              >
+                <Link
+                  href={`/products?category=${encodeURIComponent(catName)}`}
+                  className={`flex flex-col items-center justify-between p-4 sm:p-5 w-28 sm:w-36 h-36 sm:h-44 rounded-3xl ${style.bg} border ${style.border} ${style.shadow} transition-all group`}
+                >
+                  {/* Category Circular Bubble */}
+                  <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-white/90 shadow-sm flex items-center justify-center p-2.5 border border-white group-hover:scale-110 transition-transform duration-300">
+                    <CategoryIcon category={catName} className="w-10 h-10 sm:w-14 sm:h-14 text-purple-800" />
+                  </div>
+
+                  {/* Name Pill */}
+                  <span className="font-bold text-xs sm:text-sm text-purple-950 text-center leading-tight line-clamp-1 group-hover:text-purple-700 transition-colors">
+                    {catName}
+                  </span>
+
+                  {/* Micro subtext */}
+                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${style.pill} uppercase tracking-wider`}>
+                    Explore
+                  </span>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          3. FLASH DEALS BANNER STRIP (Purplle-Style)
+      ══════════════════════════════════════════ */}
+      <section className="px-2.5 sm:px-6 lg:px-8">
+        <div className="relative rounded-2xl sm:rounded-[2.5rem] bg-gradient-to-r from-purple-900 via-purple-800 to-purple-950 p-4 sm:p-10 text-white overflow-hidden shadow-xl border border-purple-700/50">
+          
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="text-center md:text-left space-y-2 max-w-lg">
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-pink-500/20 border border-pink-400/40 text-pink-300 text-[10px] font-bold uppercase tracking-widest">
+                <Percent size={12} />
+                <span>Limited-Time Flash Deals</span>
+              </div>
+              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white">
+                Evans Luxe Beauty Mega Savings Day
+              </h3>
+              <p className="text-xs sm:text-sm text-purple-200">
+                Unlock an additional 25% instant discount across all organic serums & facial bars.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <div className="px-5 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-center">
+                <p className="text-[10px] text-gold-300 font-bold uppercase tracking-wider">Use Coupon Code</p>
+                <p className="font-mono text-base font-black text-white tracking-widest">LUXE25</p>
+              </div>
+              <Link
+                href="/products?sale=true"
+                className="px-6 py-3.5 rounded-2xl bg-gold-400 hover:bg-gold-500 text-purple-950 font-black text-xs uppercase tracking-widest shadow-lg transition-transform active:scale-95 whitespace-nowrap"
+              >
+                Shop Deals Now →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          4. BEST SELLERS PRODUCT GRID (Purplle-Style)
+      ══════════════════════════════════════════ */}
+      <section className="px-2.5 sm:px-6 lg:px-8">
+        <div className="flex items-end justify-between mb-3 sm:mb-8">
+          <div>
+            <div className="flex items-center space-x-1.5 text-gold-600 font-bold text-[10px] uppercase tracking-[0.25em] mb-1">
+              <Star size={12} fill="#D4AF37" />
+              <span>Customer Favorites</span>
+            </div>
+            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-purple-950">
+              Our Bestselling Formulas
+            </h2>
+          </div>
+          <Link
+            href="/products"
+            className="text-xs sm:text-sm font-bold text-purple-700 hover:text-purple-950 flex items-center space-x-1"
+          >
+            <span>View All</span>
+            <ChevronRight size={15} />
+          </Link>
+        </div>
+
+        {/* 2-Column Mobile, 4-Column Desktop Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          {bestSellers.length > 0 ? (
+            bestSellers.map((product) => (
+              <ProductCard key={product._id || product.id} product={product} />
+            ))
+          ) : (
+            [...Array(4)].map((_, i) => (
+              <div key={i} className="aspect-square rounded-3xl bg-purple-50 animate-pulse" />
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          5. TESTIMONIALS & REVIEWS SECTION
+      ══════════════════════════════════════════ */}
+      <section className="px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-10 max-w-xl mx-auto">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold-600 mb-1">Authentic Reflections</p>
+          <h2 className="font-serif text-2xl sm:text-4xl font-bold text-purple-950 mb-2">
+            Loved by 10,000+ Customers
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-500">
+            Real experiences from verified users of Evans Luxe Beauty.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {testimonials.map((item, idx) => (
+            <div
+              key={idx}
+              className="p-6 rounded-3xl bg-white border border-purple-100 shadow-[0_4px_20px_rgba(90,42,108,0.06)] flex flex-col justify-between space-y-4"
+            >
+              <div>
+                <div className="flex items-center space-x-1 text-gold-400 mb-3">
+                  {[...Array(item.rating)].map((_, i) => (
+                    <Star key={i} size={14} fill="#D4AF37" />
+                  ))}
+                </div>
+                <p className="text-xs sm:text-sm text-gray-700 italic leading-relaxed">
+                  "{item.text}"
+                </p>
+              </div>
+
+              <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-xs text-purple-950">{item.name}</h4>
+                  <p className="text-[10px] text-emerald-700 font-semibold">{item.role}</p>
+                </div>
+                <span className="text-[9px] font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full">
+                  {item.product}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
     </div>
   );

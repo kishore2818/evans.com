@@ -1,30 +1,54 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Home, Grid, ShoppingBag, User, X, ChevronRight, Sparkles, Heart } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { 
+  Home, 
+  Grid, 
+  ShoppingBag, 
+  User, 
+  X, 
+  ChevronRight, 
+  Sparkles, 
+  Heart, 
+  Search, 
+  Percent,
+  Truck,
+  ShieldCheck,
+  Phone,
+  FileText,
+  RotateCcw
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { useStore } from '@/store/useStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import FlashSaleBanner from './FlashSaleBanner';
 import CartDrawer from './CartDrawer';
+import Footer from './Footer';
+import PolicyModal from './PolicyModal';
+import OfferPopup from './OfferPopup';
+import API_BASE_URL from '@/config/api';
+import { io } from 'socket.io-client';
 
 /* ─────────────────────────────────────────
-   TOP NAV — Glassmorphism header
+   TOP NAV — Purplle-Style 2-Tier Header
 ───────────────────────────────────────── */
-const TopNav = ({ cartItemCount }) => {
+const TopNav = ({ cartItemCount, wishlistCount, onOpenPolicy }) => {
   const { user } = useAuthStore();
   const pathname = usePathname();
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const prevCount = useRef(cartItemCount);
   const [cartBounce, setCartBounce] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
+    const handleScroll = () => setScrolled(window.scrollY > 30);
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -38,150 +62,216 @@ const TopNav = ({ cartItemCount }) => {
     prevCount.current = cartItemCount;
   }, [cartItemCount]);
 
-  const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Collection', path: '/products' },
-    { name: 'Contact Us', path: '/contact' },
+  const categoryTabs = [
+    { name: 'All Products', path: '/products' },
+    { name: 'Artisan Soaps', path: '/products?category=Soaps' },
+    { name: 'Face Wash', path: '/products?category=Face%20Wash' },
+    { name: 'Radiance Serums', path: '/products?category=Serums' },
+    { name: 'Face Creams', path: '/products?category=Creams' },
+    { name: 'Hair Care', path: '/products?category=Hair%20Care' },
+    { name: '⚡ Flash Deals', path: '/products?sale=true', isSale: true },
   ];
 
-  const isHomePage = pathname === '/';
-  const isVisible = !isHomePage || scrolled;
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+    setIsSearchOpen(false);
+  };
 
   return (
     <>
-      <motion.header
-        initial={false}
-        animate={{
-          y: isVisible ? 0 : -100,
-          opacity: isVisible ? 1 : 0,
-        }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+      <header
+        className={`sticky top-0 w-full z-40 transition-all duration-300 ${
           scrolled
-            ? 'py-2 shadow-nav'
-            : 'py-3'
-        }`}
-        style={{
-          pointerEvents: isVisible ? 'auto' : 'none',
-          background: scrolled
-            ? 'rgba(255,255,255,0.92)'
-            : 'rgba(255,255,255,0.8)',
-          backdropFilter: 'blur(24px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-          borderBottom: scrolled ? '1px solid rgba(90,42,108,0.08)' : '1px solid transparent',
-        }}
+            ? 'shadow-[0_4px_20px_rgba(62,29,74,0.10)] bg-white/95 backdrop-blur-xl'
+            : 'bg-white/95 backdrop-blur-md'
+        } border-b border-purple-100/70`}
       >
-        <div className="max-w-7xl mx-auto px-4 md:px-8 w-full flex justify-between items-center">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 md:space-x-3 group whitespace-nowrap min-h-[48px]">
+        {/* ── TIER 1: Main Header Row ── */}
+        <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 flex items-center justify-between gap-2.5 sm:gap-6">
+          
+          {/* Mobile Hamburger Button */}
+          <button
+            onClick={() => setIsMenuOpen(true)}
+            className="md:hidden w-9 h-9 rounded-full bg-purple-50 text-purple-900 flex items-center justify-center flex-shrink-0"
+            aria-label="Open navigation menu"
+          >
+            <div className="space-y-1 w-4 flex flex-col items-center">
+              <span className="block w-4 h-0.5 bg-purple-900 rounded-full" />
+              <span className="block w-3.5 h-0.5 bg-purple-600 rounded-full" />
+              <span className="block w-4 h-0.5 bg-purple-900 rounded-full" />
+            </div>
+          </button>
+
+          {/* Logo & Brand Name (Evans Luxe Beauty) */}
+          <Link href="/" className="flex items-center space-x-2.5 sm:space-x-3 group whitespace-nowrap min-w-0">
             <motion.div
-              whileHover={{ scale: 1.08, rotate: 4 }}
+              whileHover={{ scale: 1.08, rotate: 3 }}
               transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-              className="relative w-9 h-9 md:w-11 md:h-11 p-[2.5px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_0_12px_rgba(212,175,55,0.45)] group-hover:shadow-[0_0_18px_rgba(212,175,55,0.75)] transition-all duration-300 shrink-0"
+              className="relative w-8 h-8 sm:w-10 sm:h-10 p-[2px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_0_12px_rgba(212,175,55,0.45)] group-hover:shadow-[0_0_18px_rgba(212,175,55,0.7)] transition-all shrink-0"
             >
-              <div className="w-full h-full rounded-full overflow-hidden border border-purple-950/40 relative">
-                <Image src="/images/logo.jpg" alt="Evans Luxe Logo" fill sizes="44px" className="object-cover group-hover:scale-110 transition-transform duration-500" priority />
+              <div className="w-full h-full rounded-full overflow-hidden border border-purple-950/30 relative">
+                <Image src="/images/logo.jpg" alt="Evans Luxe Beauty" fill sizes="40px" className="object-cover" priority />
               </div>
             </motion.div>
             <div className="flex flex-col leading-none">
-              <span className="font-serif text-lg md:text-xl font-bold tracking-tight text-purple-900 group-hover:text-purple-700 transition-colors">
-                Evans Luxe
+              <span className="font-serif text-base sm:text-xl font-bold tracking-tight text-purple-900 group-hover:text-purple-700 transition-colors">
+                Evans Luxe Beauty
               </span>
-              <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-gold-500">
-                Beauty
+              <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.25em] text-gold-600 mt-0.5">
+                evansluxebeauty
               </span>
             </div>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center space-x-10">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.path || (link.path !== '/' && pathname.startsWith(link.path));
+          {/* Desktop Search Bar (Purplle-Style) */}
+          <div className="hidden md:flex flex-1 max-w-md lg:max-w-lg mx-2">
+            <form onSubmit={handleSearchSubmit} className="relative w-full">
+              <input
+                type="text"
+                placeholder="Search for serums, soaps, face wash..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-20 py-2 rounded-full text-xs bg-purple-50/70 border border-purple-100 text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-200 transition-all"
+              />
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-purple-500" />
+              {searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-12 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X size={13} />
+                </button>
+              ) : null}
+              <button
+                type="submit"
+                className="absolute right-1 top-1/2 -translate-y-1/2 px-3 py-1 bg-purple-900 text-gold-300 font-bold text-[10px] uppercase tracking-wider rounded-full hover:bg-purple-950 transition-colors"
+              >
+                Search
+              </button>
+            </form>
+          </div>
+
+          {/* Right Action Icons */}
+          <div className="flex items-center space-x-1.5 sm:space-x-3">
+            
+            {/* Mobile Search Toggle */}
+            <button
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="md:hidden w-8 h-8 rounded-full bg-purple-50 text-purple-800 flex items-center justify-center"
+              aria-label="Toggle search input"
+            >
+              <Search size={16} />
+            </button>
+
+            {/* Offers / Deals Chip (Desktop) */}
+            <Link
+              href="/products?sale=true"
+              className="hidden lg:flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-100 via-pink-50 to-purple-100 text-purple-900 border border-purple-200 hover:border-purple-300 transition-all group"
+            >
+              <Percent size={13} className="text-pink-600 group-hover:rotate-12 transition-transform" />
+              <span className="text-[11px] font-bold">Mega Offers</span>
+            </Link>
+
+            {/* Wishlist Icon */}
+            <Link
+              href="/profile/wishlist"
+              className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-800 flex items-center justify-center transition-colors"
+              title="My Wishlist"
+            >
+              <Heart size={18} />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-black w-[18px] h-[18px] min-w-[18px] rounded-full flex items-center justify-center shadow-sm leading-none aspect-square shrink-0">
+                  {wishlistCount > 9 ? '9+' : wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            {/* Cart / Bag Icon */}
+            <button
+              onClick={() => useStore.getState().openCart()}
+              className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-purple-900 hover:bg-purple-950 text-gold-300 flex items-center justify-center transition-all shadow-sm active:scale-95"
+              aria-label="Open beauty bag"
+            >
+              <motion.div animate={cartBounce ? { scale: [1, 1.3, 0.9, 1.1, 1] } : {}} transition={{ duration: 0.5 }}>
+                <ShoppingBag size={17} strokeWidth={2.2} />
+              </motion.div>
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-gold-500 via-amber-300 to-gold-400 text-purple-950 text-[10px] font-black w-[18px] h-[18px] min-w-[18px] rounded-full flex items-center justify-center shadow-md leading-none aspect-square shrink-0">
+                  {cartItemCount > 9 ? '9+' : cartItemCount}
+                </span>
+              )}
+            </button>
+
+            {/* Profile / Account Icon */}
+            <Link
+              href="/profile"
+              className="hidden sm:flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-800 transition-colors"
+              title="My Account"
+            >
+              <User size={18} strokeWidth={2} />
+            </Link>
+          </div>
+        </div>
+
+        {/* ── Mobile Search Dropdown Row ── */}
+        <AnimatePresence>
+          {isSearchOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="md:hidden px-4 pb-3 border-t border-purple-50 overflow-hidden bg-white"
+            >
+              <form onSubmit={handleSearchSubmit} className="relative pt-2">
+                <input
+                  type="text"
+                  placeholder="Search serums, soaps, face wash..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoFocus
+                  className="w-full pl-9 pr-16 py-2 rounded-xl text-xs bg-purple-50/80 border border-purple-200 text-gray-800 focus:outline-none focus:border-purple-600"
+                />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pt-1 text-purple-600" />
+                <button
+                  type="submit"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 pt-1 px-3 py-1 bg-purple-900 text-white font-bold text-[10px] rounded-lg"
+                >
+                  Go
+                </button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── TIER 2: Category Quick Bar (Desktop) ── */}
+        <div className="hidden md:block bg-gradient-to-r from-purple-50/50 via-white to-purple-50/50 border-t border-purple-100/60 py-1.5 px-4 lg:px-8">
+          <nav className="max-w-7xl mx-auto flex items-center justify-center space-x-6 lg:space-x-8 text-xs font-semibold overflow-x-auto no-scrollbar">
+            {categoryTabs.map((tab) => {
+              const isActive = pathname === tab.path || (tab.path !== '/products' && pathname.startsWith(tab.path));
               return (
                 <Link
-                  key={link.name}
-                  href={link.path}
-                  className={`relative font-semibold text-sm transition-colors pb-1.5 group min-h-[48px] flex items-center ${
-                    isActive ? 'text-purple-900' : 'text-gray-500 hover:text-purple-800'
+                  key={tab.name}
+                  href={tab.path}
+                  className={`py-1 transition-all whitespace-nowrap flex items-center space-x-1 ${
+                    tab.isSale
+                      ? 'text-pink-600 font-black hover:text-pink-700'
+                      : isActive
+                      ? 'text-purple-900 font-extrabold border-b-2 border-purple-900'
+                      : 'text-gray-600 hover:text-purple-900'
                   }`}
                 >
-                  {link.name}
-                  <motion.span
-                    className="absolute bottom-0 left-0 h-0.5 rounded-full"
-                    style={{ background: 'linear-gradient(90deg, #D4AF37, #edc757)' }}
-                    initial={false}
-                    animate={{ width: isActive ? '100%' : '0%' }}
-                    whileHover={{ width: '100%' }}
-                    transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-                  />
+                  <span>{tab.name}</span>
                 </Link>
               );
             })}
           </nav>
-
-          {/* Actions */}
-          <div className="flex items-center space-x-2 md:space-x-4">
-            {/* Profile */}
-            <Link
-              href="/profile"
-              className="hidden md:flex items-center justify-center w-9 h-9 rounded-full bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition-all group min-h-[48px] min-w-[36px]"
-              title="My Account"
-            >
-              <motion.div whileHover={{ scale: 1.15 }} transition={{ type: 'spring', stiffness: 400, damping: 15 }}>
-                <User size={19} strokeWidth={2} />
-              </motion.div>
-            </Link>
-
-            {/* Cart */}
-            <button
-              onClick={() => useStore.getState().openCart()}
-              className="relative flex items-center justify-center min-h-[48px] px-1 group cursor-pointer"
-              aria-label="Open Cart Drawer"
-            >
-              <motion.div
-                animate={cartBounce ? { scale: [1, 1.3, 0.9, 1.1, 1] } : {}}
-                transition={{ duration: 0.5 }}
-                className="w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition-all relative"
-              >
-                <ShoppingBag size={19} strokeWidth={2} />
-                <AnimatePresence>
-                  {cartItemCount > 0 && (
-                    <motion.span
-                      key={cartItemCount}
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-                      className="absolute -top-1.5 -right-1.5 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-sm"
-                      style={{
-                        background: 'linear-gradient(135deg, #5A2A6C, #8540b0)',
-                        width: '18px',
-                        height: '18px',
-                        fontSize: '9px',
-                      }}
-                    >
-                      {cartItemCount > 9 ? '9+' : cartItemCount}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            </button>
-
-            {/* Mobile hamburger – custom 3-line icon */}
-            <button
-              onClick={() => setIsMenuOpen(true)}
-              className="md:hidden flex flex-col justify-center items-center w-10 h-10 min-h-[48px] min-w-[48px] space-y-1.5 text-purple-900"
-              aria-label="Open menu"
-            >
-              <span className="block w-6 h-0.5 bg-purple-900 rounded-full" />
-              <span className="block w-4 h-0.5 bg-purple-600 rounded-full" />
-              <span className="block w-5 h-0.5 bg-purple-900 rounded-full" />
-            </button>
-          </div>
         </div>
-      </motion.header>
+      </header>
 
-      {/* ── Mobile Drawer Menu ── */}
+      {/* ── Mobile Side Drawer Menu (Purplle-Style) ── */}
       <AnimatePresence>
         {isMenuOpen && (
           <>
@@ -190,82 +280,142 @@ const TopNav = ({ cartItemCount }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMenuOpen(false)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] md:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] md:hidden"
             />
             <motion.div
-              initial={{ x: '100%' }}
+              initial={{ x: '-100%' }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
+              exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-              className="fixed top-0 right-0 h-full w-[85%] max-w-sm z-[70] md:hidden flex flex-col overflow-hidden"
-              style={{
-                background: 'linear-gradient(160deg, #2d0e3d 0%, #3e1d4a 60%, #5A2A6C 100%)',
-              }}
+              className="fixed top-0 left-0 h-full w-[85%] max-w-sm z-[80] md:hidden flex flex-col bg-white overflow-hidden shadow-2xl"
             >
-              {/* Orb decorations */}
-              <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-20 pointer-events-none"
-                style={{ background: 'radial-gradient(circle, #D4AF37 0%, transparent 70%)', filter: 'blur(40px)' }} />
-              <div className="absolute bottom-20 left-0 w-40 h-40 rounded-full opacity-15 pointer-events-none"
-                style={{ background: 'radial-gradient(circle, #8540b0 0%, transparent 70%)', filter: 'blur(50px)' }} />
+              {/* Drawer Header */}
+              <div className="p-5 bg-gradient-to-r from-purple-950 via-purple-900 to-purple-950 text-white flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="relative w-10 h-10 p-[2px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400">
+                    <div className="w-full h-full rounded-full overflow-hidden relative">
+                      <Image src="/images/logo.jpg" alt="Logo" fill sizes="40px" className="object-cover" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-serif text-base font-bold leading-tight">Evans Luxe Beauty</h3>
+                    <p className="text-[9px] text-gold-300 font-bold uppercase tracking-widest">evansluxebeauty</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20"
+                >
+                  <X size={18} />
+                </button>
+              </div>
 
-              <div className="relative z-10 p-8 flex flex-col h-full">
-                {/* Header */}
-                <div className="flex justify-between items-center mb-12">
-                  <div className="flex items-center space-x-3">
-                    <div className="relative w-11 h-11 p-[2.5px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_0_12px_rgba(212,175,55,0.45)] shrink-0">
-                      <div className="w-full h-full rounded-full overflow-hidden border border-purple-950/40 relative">
-                        <Image src="/images/logo.jpg" alt="Logo" fill sizes="44px" className="object-cover" />
-                      </div>
+              {/* Drawer Content */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                
+                {/* User quick status */}
+                <div className="p-3 bg-purple-50 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-8 h-8 rounded-full bg-purple-900 text-gold-300 flex items-center justify-center text-xs font-bold">
+                      {user ? user.username?.[0]?.toUpperCase() : 'U'}
                     </div>
                     <div>
-                      <span className="font-serif text-lg font-bold text-white block leading-none">Evans Luxe</span>
-                      <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-gold-400">Beauty</span>
+                      <p className="text-xs font-bold text-purple-950">
+                        {user ? user.username : 'Welcome, Guest'}
+                      </p>
+                      <p className="text-[10px] text-gray-500">
+                        {user ? user.email : 'Log in to view orders & points'}
+                      </p>
                     </div>
                   </div>
-                  <button
+                  <Link
+                    href="/profile"
                     onClick={() => setIsMenuOpen(false)}
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all min-h-[48px] min-w-[48px]"
+                    className="text-[10px] font-bold text-purple-800 uppercase underline"
                   >
-                    <X size={24} />
+                    {user ? 'Account' : 'Login'}
+                  </Link>
+                </div>
+
+                {/* Categories */}
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-2 py-1">
+                    Shop Categories
+                  </p>
+                  {categoryTabs.map((cat) => (
+                    <Link
+                      key={cat.name}
+                      href={cat.path}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-purple-50 text-xs font-semibold text-gray-800 transition-colors"
+                    >
+                      <span className={cat.isSale ? 'text-pink-600 font-bold' : ''}>{cat.name}</span>
+                      <ChevronRight size={14} className="text-gray-400" />
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Customer Care & Policies */}
+                <div className="pt-3 border-t border-gray-100 space-y-1">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-2 py-1">
+                    Customer Care & Policies
+                  </p>
+                  <Link
+                    href="/profile/orders"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-purple-50 text-xs font-semibold text-gray-800"
+                  >
+                    <span className="flex items-center space-x-2">
+                      <Truck size={14} className="text-purple-700" />
+                      <span>Track Orders</span>
+                    </span>
+                    <ChevronRight size={14} className="text-gray-400" />
+                  </Link>
+                  <Link
+                    href="/contact"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-purple-50 text-xs font-semibold text-gray-800"
+                  >
+                    <span className="flex items-center space-x-2">
+                      <Phone size={14} className="text-purple-700" />
+                      <span>Contact Us & Store Location</span>
+                    </span>
+                    <ChevronRight size={14} className="text-gray-400" />
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      if (onOpenPolicy) onOpenPolicy('privacy');
+                    }}
+                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-purple-50 text-xs font-semibold text-gray-800 text-left"
+                  >
+                    <span className="flex items-center space-x-2">
+                      <ShieldCheck size={14} className="text-purple-700" />
+                      <span>Privacy & Legal Policies</span>
+                    </span>
+                    <ChevronRight size={14} className="text-gray-400" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      if (onOpenPolicy) onOpenPolicy('returns');
+                    }}
+                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-purple-50 text-xs font-semibold text-gray-800 text-left"
+                  >
+                    <span className="flex items-center space-x-2">
+                      <RotateCcw size={14} className="text-purple-700" />
+                      <span>Returns & Replacements</span>
+                    </span>
+                    <ChevronRight size={14} className="text-gray-400" />
                   </button>
                 </div>
+              </div>
 
-                {/* Nav Links */}
-                <nav className="flex flex-col space-y-1">
-                  {[...navLinks, { name: 'My Account', path: '/profile' }].map((link, i) => {
-                    const isActive = pathname === link.path || (link.path !== '/' && pathname.startsWith(link.path));
-                    return (
-                      <motion.div
-                        key={link.name}
-                        initial={{ opacity: 0, x: 30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.05 * i, duration: 0.4 }}
-                      >
-                        <Link
-                          href={link.path}
-                          onClick={() => setIsMenuOpen(false)}
-                          className={`flex items-center justify-between py-4 px-4 rounded-2xl font-semibold text-base transition-all min-h-[56px] ${
-                            isActive
-                              ? 'bg-white/10 text-gold-300 border border-white/10'
-                              : 'text-white/80 hover:text-white hover:bg-white/8'
-                          }`}
-                        >
-                          <span>{link.name}</span>
-                          <ChevronRight size={18} className={isActive ? 'text-gold-300' : 'text-white/30'} />
-                        </Link>
-                      </motion.div>
-                    );
-                  })}
-                </nav>
-
-                {/* Footer tagline */}
-                <div className="mt-auto pt-8 border-t border-white/10">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <Sparkles size={14} className="text-gold-400" />
-                    <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Evans Luxe Beauty</p>
-                  </div>
-                  <p className="text-xs text-white/40 leading-relaxed italic">"Inspired by nature, perfected by science."</p>
-                </div>
+              {/* Drawer Tagline */}
+              <div className="p-4 border-t border-gray-100 bg-gray-50 text-center">
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+                  Evans Luxe Beauty • 100% Organic Botanical Care
+                </p>
               </div>
             </motion.div>
           </>
@@ -276,7 +426,7 @@ const TopNav = ({ cartItemCount }) => {
 };
 
 /* ─────────────────────────────────────────
-   BOTTOM NAV — Floating pill design (Appears on Scroll)
+   BOTTOM NAV — Purplle-Style Crystal Clear Dock
 ───────────────────────────────────────── */
 const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
   const pathname = usePathname();
@@ -285,120 +435,104 @@ const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'Shop', path: '/products', icon: Grid },
-    { name: 'Wishlist', path: '/profile', icon: Heart, badge: wishlistCount, badgeColor: '#ef4444' },
-    { name: 'Cart', path: '/cart', icon: ShoppingBag, badge: cartItemCount },
-    { name: 'Profile', path: '/profile', icon: User },
+    { name: 'Deals', path: '/products?sale=true', icon: Percent, isOffer: true },
+    { name: 'Wishlist', path: '/profile/wishlist', icon: Heart, badge: wishlistCount, badgeColor: '#ef4444' },
+    { name: 'Bag', path: '/cart', icon: ShoppingBag, badge: cartItemCount },
   ];
 
   if (isPDP) return null;
 
   return (
-    <AnimatePresence>
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-3 px-4 pointer-events-none">
-        <motion.div
-          initial={{ y: 80, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 80, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-          className="pointer-events-auto"
-          style={{
-            background: 'rgba(255,255,255,0.92)',
-            backdropFilter: 'blur(28px) saturate(200%)',
-            WebkitBackdropFilter: 'blur(28px) saturate(200%)',
-            borderRadius: '9999px',
-            border: '1px solid rgba(255,255,255,0.9)',
-            boxShadow: '0 8px 32px rgba(62,29,74,0.18), 0 2px 8px rgba(62,29,74,0.1)',
-            padding: '6px 10px',
-          }}
-        >
-            <nav className="flex items-center space-x-1">
-              {navItems.map((item) => {
-                const isActive = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.path}
-                    className="relative flex flex-col items-center"
-                  >
-                    <motion.div
-                      whileTap={{ scale: 0.85 }}
-                      className={`relative flex items-center justify-center transition-all duration-300 ${
-                        isActive
-                          ? 'w-12 h-10 rounded-full'
-                          : 'w-10 h-10 rounded-full'
-                      }`}
-                      style={isActive ? {
-                        background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)',
-                        boxShadow: '0 4px 16px rgba(90,42,108,0.4)',
-                      } : {}}
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-2.5 px-3 pointer-events-none">
+      <motion.div
+        initial={{ y: 80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+        className="pointer-events-auto w-full max-w-md"
+        style={{
+          background: 'rgba(255, 255, 255, 0.96)',
+          backdropFilter: 'blur(24px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(200%)',
+          borderRadius: '9999px',
+          border: '1px solid rgba(90, 42, 108, 0.12)',
+          boxShadow: '0 8px 32px rgba(62, 29, 74, 0.18), 0 2px 8px rgba(62, 29, 74, 0.08)',
+          padding: '5px 8px',
+        }}
+      >
+        <nav className="flex items-center justify-around">
+          {navItems.map((item) => {
+            const isActive = item.isOffer 
+              ? pathname.includes('sale=true')
+              : pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
+            const Icon = item.icon;
+            
+            return (
+              <Link
+                key={item.name}
+                href={item.path}
+                className="relative flex flex-col items-center justify-center flex-1 py-1"
+              >
+                <motion.div
+                  whileTap={{ scale: 0.86 }}
+                  className={`relative flex items-center justify-center transition-all duration-300 ${
+                    isActive
+                      ? 'w-11 h-9 rounded-full'
+                      : 'w-9 h-9 rounded-full'
+                  }`}
+                  style={isActive ? {
+                    background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)',
+                    boxShadow: '0 3px 12px rgba(90,42,108,0.4)',
+                  } : {}}
+                >
+                  <Icon
+                    size={18}
+                    strokeWidth={isActive ? 2.6 : 2}
+                    className={isActive ? 'text-gold-300' : 'text-gray-500'}
+                    fill={item.name === 'Wishlist' && item.badge > 0 && !isActive ? 'rgba(239,68,68,0.2)' : 'transparent'}
+                  />
+
+                  {/* Badge */}
+                  {item.badge > 0 && (
+                    <motion.span
+                      key={item.badge}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-1 -right-1 text-white text-[8px] font-black rounded-full flex items-center justify-center shadow-sm"
+                      style={{
+                        background: item.badgeColor || 'linear-gradient(135deg, #D4AF37, #edc757)',
+                        width: '15px',
+                        height: '15px',
+                      }}
                     >
-                      {isActive && (
-                        <motion.div
-                          layoutId="nav-active-glow"
-                          className="absolute inset-0 rounded-full opacity-40"
-                          style={{
-                            background: 'radial-gradient(circle, rgba(212,175,55,0.6) 0%, transparent 70%)',
-                            filter: 'blur(6px)',
-                          }}
-                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                        />
-                      )}
-                      <Icon
-                        size={18}
-                        strokeWidth={isActive ? 2.5 : 2}
-                        className={isActive ? 'text-gold-300 relative z-10' : 'text-gray-400'}
-                        fill={item.name === 'Wishlist' && item.badge > 0 && !isActive ? 'rgba(239,68,68,0.25)' : 'transparent'}
-                      />
-                      {/* Badge */}
-                      {item.badge > 0 && (
-                        <motion.span
-                          key={item.badge}
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-                          className="absolute -top-1 -right-1 text-white text-[8px] font-black rounded-full flex items-center justify-center z-20"
-                          style={{
-                            background: item.badgeColor || 'linear-gradient(135deg, #D4AF37, #edc757)',
-                            width: '15px',
-                            height: '15px',
-                          }}
-                        >
-                          {item.badge > 9 ? '9+' : item.badge}
-                        </motion.span>
-                      )}
-                    </motion.div>
-                    {/* Label */}
-                    <AnimatePresence>
-                      {isActive && (
-                        <motion.span
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          className="text-[8px] font-bold uppercase tracking-widest text-purple-800 mt-0.5 whitespace-nowrap"
-                        >
-                          {item.name}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </Link>
-                );
-              })}
-            </nav>
-          </motion.div>
-        </div>
-    </AnimatePresence>
+                      {item.badge > 9 ? '9+' : item.badge}
+                    </motion.span>
+                  )}
+
+                  {/* Offer Mini Dot */}
+                  {item.isOffer && !isActive && (
+                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-pink-500 animate-pulse" />
+                  )}
+                </motion.div>
+
+                {/* Label */}
+                <span
+                  className={`text-[9px] font-bold tracking-tight mt-0.5 whitespace-nowrap transition-colors ${
+                    isActive ? 'text-purple-900 font-extrabold' : 'text-gray-500'
+                  }`}
+                >
+                  {item.name}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
+      </motion.div>
+    </div>
   );
 };
 
-
-
-
-import API_BASE_URL from '@/config/api';
-import { io } from 'socket.io-client';
-
 /* ─────────────────────────────────────────
-   CLIENT LAYOUT — Root wrapper
+   CLIENT LAYOUT — Root Wrapper
 ───────────────────────────────────────── */
 const ClientLayout = ({ children }) => {
   const pathname = usePathname();
@@ -407,6 +541,14 @@ const ClientLayout = ({ children }) => {
   const fetchStoreSettings = useStore((state) => state.fetchStoreSettings);
   const cartItemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const wishlistCount = localWishlist.length;
+
+  const [isPolicyOpen, setIsPolicyOpen] = useState(false);
+  const [selectedPolicyTab, setSelectedPolicyTab] = useState('privacy');
+
+  const handleOpenPolicy = (tab = 'privacy') => {
+    setSelectedPolicyTab(tab);
+    setIsPolicyOpen(true);
+  };
 
   useEffect(() => {
     fetchStoreSettings();
@@ -417,24 +559,31 @@ const ClientLayout = ({ children }) => {
         reconnection: true
       });
 
-      socket.on('settingsUpdated', () => {
+      const handleUpdate = (newSettings) => {
+        if (newSettings) {
+          useStore.setState((prev) => ({
+            storeSettings: {
+              ...prev.storeSettings,
+              ...newSettings,
+              shippingFee: newSettings.shippingFee !== undefined ? Number(newSettings.shippingFee) : prev.storeSettings?.shippingFee,
+              freeShippingThreshold: newSettings.freeShippingThreshold !== undefined ? Number(newSettings.freeShippingThreshold) : prev.storeSettings?.freeShippingThreshold,
+            }
+          }));
+        }
         fetchStoreSettings();
-      });
-
-      socket.on('store_settings_update', () => {
-        fetchStoreSettings();
-      });
-
-      return () => {
-        socket.disconnect();
       };
+
+      socket.on('settingsUpdated', handleUpdate);
+      socket.on('store_settings_update', handleUpdate);
+
+      return () => socket.disconnect();
     } catch (e) {
-      // socket fallback
+      // fallback
     }
   }, [fetchStoreSettings]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-beige-50 relative selection:bg-purple-200 selection:text-purple-900">
+    <div className="flex flex-col min-h-screen bg-[#faf6fc] relative selection:bg-purple-200 selection:text-purple-900">
       <Toaster
         position="top-right"
         toastOptions={{
@@ -453,27 +602,24 @@ const ClientLayout = ({ children }) => {
       />
 
       <FlashSaleBanner />
-      <TopNav cartItemCount={cartItemCount} />
+      <TopNav cartItemCount={cartItemCount} wishlistCount={wishlistCount} onOpenPolicy={handleOpenPolicy} />
       <CartDrawer />
 
-      {/* Background orbs — ambient decoration */}
+      {/* Subtle ambient lavender/gold background orbs */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="orb absolute w-[600px] h-[600px] bg-purple-100 top-[-10%] left-[-10%] opacity-40" />
-        <div className="orb absolute w-[400px] h-[400px] bg-gold-100 top-[40%] right-[-8%] opacity-30"
-          style={{ animationDelay: '3s' }} />
+        <div className="orb absolute w-[650px] h-[650px] bg-purple-100 top-[-10%] left-[-10%] opacity-40" />
+        <div className="orb absolute w-[450px] h-[450px] bg-gold-100 top-[40%] right-[-8%] opacity-35" style={{ animationDelay: '3s' }} />
       </div>
 
-      {/* Main content */}
-      <main className={`flex-1 w-full max-w-7xl mx-auto pb-28 md:pb-10 relative ${
-        pathname === '/' ? '' : 'pt-16 md:pt-28'
-      }`}>
+      {/* Main Content Area */}
+      <main className="flex-1 w-full max-w-7xl mx-auto pb-20 md:pb-12 pt-0 relative">
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             className="w-full h-full"
           >
             {children}
@@ -481,6 +627,20 @@ const ClientLayout = ({ children }) => {
         </AnimatePresence>
       </main>
 
+      {/* End-to-End Purplle-Style Footer */}
+      <Footer onOpenPolicy={handleOpenPolicy} />
+
+      {/* Interactive Policy Modal */}
+      <PolicyModal
+        isOpen={isPolicyOpen}
+        onClose={() => setIsPolicyOpen(false)}
+        initialTab={selectedPolicyTab}
+      />
+
+      {/* Purplle-Style Offer Popup & Floating Trigger ("pop tiger") */}
+      <OfferPopup />
+
+      {/* Fixed Mobile Bottom Nav */}
       <BottomNav cartItemCount={cartItemCount} wishlistCount={wishlistCount} />
     </div>
   );

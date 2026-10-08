@@ -102,18 +102,18 @@ const Products = () => {
   };
 
   return (
-    <div className="px-4 sm:px-6 md:px-12 pt-8 md:pt-14 pb-16 max-w-7xl mx-auto">
+    <div className="px-3.5 sm:px-6 md:px-12 pt-1 sm:pt-4 md:pt-14 pb-16 max-w-7xl mx-auto">
       {/* Header */}
       <motion.div 
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="flex justify-between items-end mb-6 md:mb-8"
+        className="flex justify-between items-end mb-4 sm:mb-6 md:mb-8"
       >
         <div>
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-600 block mb-1">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-600 block mb-0.5 sm:mb-1">
             Botanical Formulations
           </span>
-          <h1 className="font-serif text-3xl md:text-4xl font-bold text-purple-950">Apothecary Collection</h1>
+          <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-purple-950">Apothecary Collection</h1>
         </div>
 
         <button

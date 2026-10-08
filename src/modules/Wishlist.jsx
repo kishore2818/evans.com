@@ -162,25 +162,25 @@ const Wishlist = () => {
   const inStockCount = localWishlist.filter(p => (p.stock ?? 1) > 0).length;
 
   return (
-    <div className="px-4 md:px-12 pt-6 pb-28 md:pb-12 max-w-5xl mx-auto">
+    <div className="px-3.5 sm:px-6 md:px-12 pt-1 sm:pt-3 md:pt-6 pb-20 md:pb-12 max-w-5xl mx-auto">
 
       {/* ── Header ── */}
-      <div className="mb-8">
+      <div className="mb-3 sm:mb-6">
         <button
           onClick={() => router.back()}
-          className="flex items-center space-x-2 text-purple-500 hover:text-purple-900 font-semibold mb-6 transition-all hover:-translate-x-1 min-h-0 min-w-0 text-sm"
+          className="flex items-center space-x-1.5 text-purple-600 hover:text-purple-900 font-semibold mb-2 sm:mb-4 transition-all hover:-translate-x-1 min-h-0 min-w-0 text-xs sm:text-sm"
         >
-          <ChevronLeft size={18} />
+          <ChevronLeft size={16} />
           <span>Back</span>
         </button>
 
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
           <div>
-            <div className="flex items-center space-x-2 mb-1">
-              <Heart size={22} fill="#ef4444" className="text-red-500" />
-              <h1 className="font-serif text-3xl md:text-4xl font-bold text-purple-900">My Wishlist</h1>
+            <div className="flex items-center space-x-2 mb-0.5">
+              <Heart size={20} fill="#ef4444" className="text-red-500" />
+              <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-purple-900">My Wishlist</h1>
             </div>
-            <p className="text-gray-400 text-sm font-medium">
+            <p className="text-gray-400 text-xs sm:text-sm font-medium">
               {isEmpty
                 ? 'Tap the ♥ on any product to save it here'
                 : `${localWishlist.length} saved item${localWishlist.length > 1 ? 's' : ''} · ${inStockCount} available`}
@@ -226,28 +226,28 @@ const Wishlist = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col items-center justify-center py-24 text-center"
+            className="flex flex-col items-center justify-center py-6 sm:py-16 text-center"
           >
             {/* Animated heart */}
             <motion.div
               animate={{ scale: [1, 1.1, 1], rotate: [0, -5, 5, 0] }}
               transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-              className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mb-4 sm:mb-6"
               style={{
                 background: 'linear-gradient(135deg, #fdf0f0, #fde8e8)',
                 border: '1px solid rgba(239,68,68,0.15)',
               }}
             >
-              <Heart size={40} className="text-red-300" />
+              <Heart size={36} className="text-red-300" />
             </motion.div>
 
-            <h2 className="font-serif text-2xl font-bold text-purple-900 mb-2">Your wishlist is empty</h2>
-            <p className="text-gray-400 text-sm max-w-xs leading-relaxed mb-8">
+            <h2 className="font-serif text-xl sm:text-2xl font-bold text-purple-900 mb-1.5 sm:mb-2">Your wishlist is empty</h2>
+            <p className="text-gray-400 text-xs sm:text-sm max-w-xs leading-relaxed mb-4 sm:mb-6">
               Browse our botanical collection and tap the <span className="text-red-400 font-bold">♥</span> on any product to save it here.
             </p>
 
             {/* Tip callout */}
-            <div className="flex items-start space-x-3 bg-purple-50 border border-purple-100 rounded-2xl px-5 py-4 max-w-sm mb-8 text-left">
+            <div className="flex items-start space-x-2.5 bg-purple-50 border border-purple-100 rounded-2xl px-4 py-3 sm:px-5 sm:py-4 max-w-sm mb-5 sm:mb-8 text-left">
               <Sparkles size={16} className="text-gold-500 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-purple-700 font-medium leading-relaxed">
                 <span className="font-bold block mb-0.5">Pro tip</span>

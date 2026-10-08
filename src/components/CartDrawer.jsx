@@ -51,7 +51,8 @@ export default function CartDrawer() {
     loadSuggestions();
   }, []);
 
-  const threshold = storeSettings?.freeShippingThreshold || 2000;
+  const threshold = storeSettings?.freeShippingThreshold !== undefined ? Number(storeSettings.freeShippingThreshold) : 2000;
+  const fee = storeSettings?.shippingFee !== undefined ? Number(storeSettings.shippingFee) : 150;
   
   const getItemPrice = (item) => {
     const effectiveDiscount = item.flashSale?.isActive && item.flashSale?.discountPercentage
@@ -81,8 +82,10 @@ export default function CartDrawer() {
   const totalSavings = Math.max(0, (rawTotal - subtotal) + couponDiscount);
   const finalSubtotal = Math.max(0, subtotal - couponDiscount);
 
-  const amountToFreeShipping = Math.max(0, threshold - finalSubtotal);
-  const freeShippingProgress = Math.min(100, Math.round((finalSubtotal / threshold) * 100));
+  const isFreeShipping = fee === 0 || threshold === 0 || (threshold > 0 && finalSubtotal >= threshold);
+  const amountToFreeShipping = isFreeShipping ? 0 : Math.max(0, threshold - finalSubtotal);
+  const freeShippingProgress = isFreeShipping ? 100 : (threshold > 0 ? Math.min(100, Math.round((finalSubtotal / threshold) * 100)) : 100);
+  const currentShippingCharge = isFreeShipping ? 0 : fee;
 
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -102,13 +105,34 @@ export default function CartDrawer() {
     const targetCode = (codeToApply || couponCode).trim().toUpperCase();
     if (!targetCode) return;
     
-    if (targetCode === 'LUXE25') {
-      setAppliedCoupon({ code: 'LUXE25', value: 25, type: 'percent', label: '25% OFF Luxe Festival Deal' });
-      toast.success('Coupon LUXE25 applied! 25% OFF');
-    } else if (targetCode === 'WELCOME10') {
+    // 1. Dynamic Backend Flash Sale / Pop Tiger Coupon from MongoDB Settings
+    const activeFlashCode = (storeSettings?.flashSale?.couponCode || 'TIGER25').trim().toUpperCase();
+    if (targetCode === activeFlashCode || targetCode === 'TIGER25' || targetCode === 'LUXE25') {
+      const minVal = Number(storeSettings?.flashSale?.minOrderValue) || 0;
+      if (minVal > 0 && subtotal < minVal) {
+        toast.error(`Minimum order value of ₹${minVal} required for this coupon`);
+        return;
+      }
+      const discPercent = Number(storeSettings?.flashSale?.discountPercentage) || 25;
+      const perkText = storeSettings?.flashSale?.giftPerk ? ` + ${storeSettings.flashSale.giftPerk}` : '';
+      setAppliedCoupon({
+        code: targetCode,
+        value: discPercent,
+        type: 'percent',
+        label: `${discPercent}% OFF ${storeSettings?.flashSale?.badgeText || 'Pop Tiger Offer'}${perkText}`
+      });
+      toast.success(`Coupon ${targetCode} applied! ${discPercent}% OFF`);
+      return;
+    }
+
+    if (targetCode === 'WELCOME10') {
       setAppliedCoupon({ code: 'WELCOME10', value: 10, type: 'percent', label: '10% OFF First Order' });
       toast.success('Coupon WELCOME10 applied!');
     } else if (targetCode === 'BEAUTY500') {
+      if (subtotal < 1500) {
+        toast.error('Minimum order value of ₹1500 required for BEAUTY500');
+        return;
+      }
       setAppliedCoupon({ code: 'BEAUTY500', value: 500, type: 'fixed', label: '₹500 Flat Savings' });
       toast.success('Coupon BEAUTY500 applied!');
     } else {
@@ -163,7 +187,7 @@ export default function CartDrawer() {
                   </div>
                   <div>
                     <h2 className="font-serif text-base sm:text-lg font-bold text-purple-900 tracking-tight">Your Beauty Bag</h2>
-                    <p className="text-[10px] sm:text-[11px] text-gray-500 font-medium">Evans Botanical Apothecary</p>
+                    <p className="text-[10px] sm:text-[11px] text-gray-500 font-medium">Evans Luxe Beauty • evansluxebeauty</p>
                   </div>
                 </div>
 
@@ -359,18 +383,20 @@ export default function CartDrawer() {
                             </button>
                           </div>
                           {/* Quick Coupon Chip */}
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => handleApplyCoupon('LUXE25')}
-                              className="bg-gold-50 border border-gold-300 text-purple-900 text-[10px] font-bold px-2.5 py-1 rounded-lg hover:bg-gold-100 flex items-center space-x-1"
-                            >
-                              <span>✨ LUXE25 (25% OFF)</span>
-                            </button>
+                          <div className="flex items-center space-x-2 flex-wrap gap-y-1.5">
+                            {storeSettings?.flashSale?.isActive !== false && (
+                              <button
+                                onClick={() => handleApplyCoupon(storeSettings?.flashSale?.couponCode || 'TIGER25')}
+                                className="bg-gold-50 border border-gold-300 text-purple-950 text-[10px] font-bold px-2.5 py-1 rounded-lg hover:bg-gold-100 flex items-center space-x-1 transition-transform active:scale-95 shadow-xs"
+                              >
+                                <span>🐯 {storeSettings?.flashSale?.couponCode || 'TIGER25'} ({storeSettings?.flashSale?.discountPercentage || 25}% OFF)</span>
+                              </button>
+                            )}
                             <button
                               onClick={() => handleApplyCoupon('WELCOME10')}
-                              className="bg-purple-50 border border-purple-200 text-purple-900 text-[10px] font-bold px-2.5 py-1 rounded-lg hover:bg-purple-100"
+                              className="bg-purple-50 border border-purple-200 text-purple-900 text-[10px] font-bold px-2.5 py-1 rounded-lg hover:bg-purple-100 transition-transform active:scale-95"
                             >
-                              WELCOME10
+                              WELCOME10 (10% OFF)
                             </button>
                           </div>
                         </div>
@@ -469,14 +495,14 @@ export default function CartDrawer() {
                   <div className="flex items-center justify-between text-xs text-gray-600">
                     <span>Shipping</span>
                     <span className="font-semibold text-emerald-700">
-                      {amountToFreeShipping === 0 ? 'FREE' : `₹${storeSettings?.shippingFee || 150}`}
+                      {isFreeShipping ? 'FREE' : `₹${currentShippingCharge}`}
                     </span>
                   </div>
 
                   <div className="pt-2 border-t border-beige-200/80 flex items-center justify-between">
                     <span className="font-serif text-sm font-bold text-purple-950">Total Est.</span>
                     <span className="font-serif text-lg font-bold text-purple-900">
-                      ₹{(finalSubtotal + (amountToFreeShipping === 0 ? 0 : (storeSettings?.shippingFee || 150))).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      ₹{(finalSubtotal + currentShippingCharge).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                     </span>
                   </div>
 

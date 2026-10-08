@@ -21,9 +21,10 @@ const Cart = () => {
   };
 
   const subtotal = cart.reduce((sum, item) => sum + (getItemPrice(item) * item.quantity), 0);
-  const threshold = storeSettings?.freeShippingThreshold ?? 2000;
-  const fee = storeSettings?.shippingFee ?? 150;
-  const shipping = subtotal > threshold ? 0 : fee;
+  const threshold = storeSettings?.freeShippingThreshold !== undefined ? Number(storeSettings.freeShippingThreshold) : 2000;
+  const fee = storeSettings?.shippingFee !== undefined ? Number(storeSettings.shippingFee) : 150;
+  const isFreeShipping = fee === 0 || threshold === 0 || (threshold > 0 && subtotal >= threshold);
+  const shipping = isFreeShipping ? 0 : fee;
   const total = subtotal > 0 ? subtotal + shipping : 0;
 
   if (cart.length === 0) {
@@ -42,8 +43,8 @@ const Cart = () => {
   }
 
   return (
-    <div className="px-6 md:px-12 pt-12 md:pt-16 pb-24 md:pb-12 max-w-7xl mx-auto">
-      <h1 className="font-serif text-3xl font-bold mb-6 md:mb-10">Your Bag</h1>
+    <div className="px-3.5 sm:px-6 md:px-12 pt-2 sm:pt-6 md:pt-16 pb-24 md:pb-12 max-w-7xl mx-auto">
+      <h1 className="font-serif text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 md:mb-10 text-purple-950">Your Bag</h1>
       
       <div className="md:flex md:space-x-8 lg:space-x-12">
         {/* Cart Items */}

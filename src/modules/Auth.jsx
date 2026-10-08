@@ -79,7 +79,7 @@ const Auth = () => {
       >
         <div className="text-center mb-10">
           <h2 className="font-serif text-3xl font-bold text-purple-900 mb-2">
-            {forgotStep !== 'none' ? 'Recover Password' : (isLogin ? 'Welcome Back' : 'Join Evans Luxe')}
+            {forgotStep !== 'none' ? 'Recover Password' : (isLogin ? 'Welcome Back' : 'Join Evans Luxe Beauty')}
           </h2>
           <p className="text-gray-500 text-sm">
             {forgotStep === 'request' && 'Enter your mobile number to receive a 6-digit OTP'}

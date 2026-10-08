@@ -31,10 +31,10 @@ const contactDetails = [
   {
     icon: Mail,
     label: 'Email',
-    value: 'hello@evansluxe.com',
+    value: 'evansluxebeauty@gmail.com',
     color: 'text-gold-600',
     bg: 'bg-gold-50',
-    href: 'mailto:hello@evansluxe.com',
+    href: 'mailto:evansluxebeauty@gmail.com',
   },
 ];
 
@@ -58,7 +58,7 @@ export default function ContactPage() {
   return (
     <div className="pb-8">
       {/* Hero Banner */}
-      <div className="relative py-12 md:py-16 px-6 md:px-16 bg-purple-900 text-white rounded-b-[2.5rem] md:rounded-[3rem] md:mx-6 overflow-hidden shadow-2xl mb-12 md:mb-20">
+      <div className="relative py-8 md:py-16 px-4 md:px-16 bg-purple-900 text-white rounded-b-2xl md:rounded-[3rem] md:mx-6 overflow-hidden shadow-2xl mb-6 md:mb-20">
         <div className="absolute inset-0 opacity-20 mix-blend-overlay">
           <div className="absolute top-0 right-0 w-96 h-96 bg-gold-400 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-400 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />

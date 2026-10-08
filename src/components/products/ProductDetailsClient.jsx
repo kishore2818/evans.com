@@ -30,7 +30,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 
-const TABS = ['Description', 'Benefits', 'Ingredients', 'Clinical Results', 'Reviews'];
+const TABS = ['Description', 'Benefits', 'Ingredients', 'Reviews'];
 
 const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchased }) => {
   const router = useRouter();
@@ -41,7 +41,6 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
 
   const [product] = useState(initialProduct);
   const [selectedShade, setSelectedShade] = useState(initialProduct.shades?.[0] || null);
-  const [sliderPosition, setSliderPosition] = useState(50);
   const [showFullINCI, setShowFullINCI] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -400,7 +399,7 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
             ))}
           </div>
 
-          {/* ── Tabs: Description / Benefits / Ingredients / Clinical / Reviews ── */}
+          {/* ── Tabs: Description / Benefits / Ingredients / Reviews ── */}
           <div className="mb-6">
             {/* Tab bar */}
             <div className="flex space-x-1 p-1 rounded-2xl mb-4 bg-purple-50/80 overflow-x-auto no-scrollbar">
@@ -523,84 +522,6 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
                       )}
                     </div>
                   )}
-                </motion.div>
-              )}
-
-              {/* ── Before / After Interactive Clinical Comparison ── */}
-              {activeTab === 'Clinical Results' && (
-                <motion.div
-                  key="clinical"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.25 }}
-                  className="space-y-4"
-                >
-                  {/* Results metric badge */}
-                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-purple-900 to-purple-800 text-white flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] font-bold text-gold-300 uppercase tracking-widest block">
-                        Clinical Efficacy Study ({product.beforeAfter?.timeframe || '4 Weeks'})
-                      </span>
-                      <p className="text-xs font-medium text-cream-100 mt-0.5">
-                        {product.beforeAfter?.resultText || '94% experienced noticeably softer, radiant complexion'}
-                      </p>
-                    </div>
-                    <div className="text-right pl-3">
-                      <span className="text-2xl font-black text-gold-300">
-                        {product.beforeAfter?.resultPercentage || '94%'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Interactive Before/After Split Slider */}
-                  <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden select-none border border-purple-100">
-                    {/* After Image (Full background) */}
-                    <img
-                      src={product.beforeAfter?.afterImage || product.images[0] || product.image}
-                      alt="After Result"
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <span className="absolute top-2 right-2 px-2 py-0.5 bg-purple-950/80 text-gold-300 text-[10px] font-bold rounded-full backdrop-blur-sm z-10">
-                      After ({product.beforeAfter?.timeframe || '4 Weeks'})
-                    </span>
-
-                    {/* Before Image (Clipped overlay) */}
-                    <div
-                      className="absolute inset-0 overflow-hidden"
-                      style={{ width: `${sliderPosition}%` }}
-                    >
-                      <img
-                        src={product.beforeAfter?.beforeImage || product.images[1] || product.images[0] || product.image}
-                        alt="Before Result"
-                        className="w-full h-full object-cover"
-                        style={{ width: '100%', height: '100%', maxWidth: 'none' }}
-                      />
-                      <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/70 text-white text-[10px] font-bold rounded-full backdrop-blur-sm z-10">
-                        Before Day 1
-                      </span>
-                    </div>
-
-                    {/* Draggable Divider Line */}
-                    <div
-                      className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg cursor-ew-resize flex items-center justify-center z-20"
-                      style={{ left: `${sliderPosition}%` }}
-                    >
-                      <div className="w-7 h-7 rounded-full bg-white shadow-md border-2 border-purple-900 flex items-center justify-center text-[10px] font-black text-purple-900">
-                        ↔
-                      </div>
-                    </div>
-
-                    {/* Range input for touch/mouse drag */}
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={sliderPosition}
-                      onChange={(e) => setSliderPosition(Number(e.target.value))}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30"
-                    />
-                  </div>
                 </motion.div>
               )}
 

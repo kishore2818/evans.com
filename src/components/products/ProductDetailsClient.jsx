@@ -401,13 +401,13 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
 
           {/* ── Tabs: Description / Benefits / Ingredients / Reviews ── */}
           <div className="mb-6">
-            {/* Tab bar */}
-            <div className="flex space-x-1 p-1 rounded-2xl mb-4 bg-purple-50/80 overflow-x-auto no-scrollbar">
+            {/* Tab bar — 4 static tabs perfectly fitted without overflow */}
+            <div className="grid grid-cols-4 gap-1 p-1 rounded-2xl mb-4 bg-purple-50/80 w-full">
               {TABS.map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-2 px-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 min-h-0 whitespace-nowrap`}
+                  className={`w-full py-2 px-0.5 sm:px-2 rounded-xl text-[9px] xs:text-[10px] sm:text-[11px] font-black uppercase tracking-tight sm:tracking-wider transition-all duration-300 text-center truncate`}
                   style={activeTab === tab ? {
                     background: 'linear-gradient(135deg, #3e1d4a, #5A2A6C)',
                     color: '#D4AF37',

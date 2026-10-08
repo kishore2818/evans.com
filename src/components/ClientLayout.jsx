@@ -536,6 +536,7 @@ const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
 ───────────────────────────────────────── */
 const ClientLayout = ({ children }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const cart = useStore((state) => state.cart);
   const localWishlist = useStore((state) => state.localWishlist);
   const fetchStoreSettings = useStore((state) => state.fetchStoreSettings);
@@ -573,14 +574,21 @@ const ClientLayout = ({ children }) => {
         fetchStoreSettings();
       };
 
+      const handleProductUpdate = () => {
+        router.refresh();
+      };
+
       socket.on('settingsUpdated', handleUpdate);
       socket.on('store_settings_update', handleUpdate);
+      socket.on('productUpdated', handleProductUpdate);
+      socket.on('product_update', handleProductUpdate);
+      socket.on('products_updated', handleProductUpdate);
 
       return () => socket.disconnect();
     } catch (e) {
       // fallback
     }
-  }, [fetchStoreSettings]);
+  }, [fetchStoreSettings, router]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#faf6fc] relative selection:bg-purple-200 selection:text-purple-900">

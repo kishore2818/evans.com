@@ -219,14 +219,14 @@ const ProductCard = ({ product, priority = false }) => {
         <div className="px-3.5 pt-3 pb-4 flex flex-col flex-grow justify-between">
           <div>
             {/* Top row: Category + Clean Beauty Badge */}
-            <div className="flex items-center justify-between gap-1 mb-1">
+            <div className="flex flex-wrap items-center justify-between gap-1 mb-1">
               {product.category && (
-                <span className="text-[9px] font-bold uppercase tracking-widest text-purple-500 bg-purple-50 px-2 py-0.5 rounded-full">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-purple-500 bg-purple-50 px-2 py-0.5 rounded-full whitespace-nowrap">
                   {product.category}
                 </span>
               )}
               {product.cleanBadges?.[0] && (
-                <span className="text-[8px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200/60">
+                <span className="text-[8px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200/60 whitespace-nowrap">
                   🌿 {product.cleanBadges[0]}
                 </span>
               )}

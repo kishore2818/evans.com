@@ -292,14 +292,14 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
 
           {/* ── Name + Meta ── */}
           <div className="mb-4">
-            <div className="flex items-center space-x-2 mb-2">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
               {product.category && (
-                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
+                <span className="text-[9px] font-black uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-full whitespace-nowrap">
                   {product.category}
                 </span>
               )}
               {product.cleanBadges?.[0] && (
-                <span className="text-[9px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                <span className="text-[9px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 whitespace-nowrap">
                   🌿 {product.cleanBadges[0]}
                 </span>
               )}
@@ -391,10 +391,10 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
             {(product.cleanBadges || ['Cruelty-Free', 'Vegan', 'Paraben-Free', 'Clean Beauty']).map((badge, idx) => (
               <div
                 key={idx}
-                className="flex items-center space-x-1.5 text-xs font-bold text-purple-800 bg-purple-50/70 border border-purple-200/60 px-3 py-1.5 rounded-full"
+                className="flex items-center space-x-1.5 text-xs font-bold text-purple-800 bg-purple-50/70 border border-purple-200/60 px-3 py-1.5 rounded-full whitespace-nowrap"
               >
-                <Leaf size={12} className="text-emerald-600" />
-                <span>{badge}</span>
+                <Leaf size={12} className="text-emerald-600 shrink-0" />
+                <span className="whitespace-nowrap">{badge}</span>
               </div>
             ))}
           </div>

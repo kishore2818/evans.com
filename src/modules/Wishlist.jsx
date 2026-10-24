@@ -8,6 +8,7 @@ import { Heart, ShoppingBag, Trash2, ArrowRight, ShoppingCart, Sparkles, Chevron
 import { useStore } from '@/store/useStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import toast from 'react-hot-toast';
+import { getOptimizedImageUrl } from '@/utils/imageOptimizer';
 
 /* ── Wishlist Item Card ── */
 const WishlistCard = ({ product, onRemove, onAddToCart }) => {
@@ -38,12 +39,12 @@ const WishlistCard = ({ product, onRemove, onAddToCart }) => {
       {/* Product Image */}
       <Link href={`/products/${productId}`} className="block relative aspect-square overflow-hidden bg-beige-50">
         <Image
-          src={product.images?.[0] || product.image || '/images/placeholder.png'}
+          src={getOptimizedImageUrl(product.images?.[0] || product.image, 400)}
           alt={product.name}
           fill
           sizes="(max-width: 640px) 50vw, 33vw"
           className="object-cover group-hover:scale-110 transition-transform duration-700"
-          unoptimized
+          loading="lazy"
         />
         {/* Overlay on hover */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/8 transition-colors duration-500" />

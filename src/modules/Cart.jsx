@@ -3,6 +3,7 @@ import { Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 
 const Cart = () => {
   const { cart, removeFromCart, updateQuantity, storeSettings, fetchStoreSettings } = useStore();
@@ -56,12 +57,12 @@ const Cart = () => {
               <div key={item.cartItemId || item.id} className="bg-white p-4 rounded-3xl flex items-center space-x-4 shadow-card border border-beige-100">
                 <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-beige-100 flex-shrink-0">
                   <Image
-                    src={item.image || '/images/aloevera_gel.jpg'}
+                    src={getOptimizedImageUrl(item.image, 200)}
                     alt={item.name || 'Cart item'}
                     fill
                     sizes="96px"
                     className="object-cover"
-                    unoptimized
+                    loading="lazy"
                   />
                 </div>
                 

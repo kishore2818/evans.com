@@ -3,8 +3,7 @@ import ProductsClient from '@/components/products/ProductsClient';
 import { products as fallbackProducts } from '@/data/products';
 import { Suspense } from 'react';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 30;
 
 async function getProducts() {
   try {
@@ -12,7 +11,7 @@ async function getProducts() {
     const timeoutId = setTimeout(() => controller.abort(), 6000);
 
     const response = await fetch(`${API_BASE_URL}/api/products`, {
-      cache: 'no-store',
+      next: { revalidate: 30 },
       signal: controller.signal
     });
     clearTimeout(timeoutId);

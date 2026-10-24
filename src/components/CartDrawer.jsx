@@ -23,6 +23,7 @@ import {
 
 import { products as fallbackCatalog } from '@/data/products';
 import API_BASE_URL from '@/config/api';
+import { getOptimizedImageUrl } from '@/utils/imageOptimizer';
 
 export default function CartDrawer() {
   const router = useRouter();
@@ -259,11 +260,12 @@ export default function CartDrawer() {
                           {/* Image */}
                           <div className="relative w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-beige-50 border border-beige-100 overflow-hidden flex-shrink-0">
                             <Image
-                              src={item.image || item.images?.[0] || '/images/aloevera_gel.jpg'}
+                              src={getOptimizedImageUrl(item.image || item.images?.[0], 180)}
                               alt={item.name}
                               fill
+                              sizes="72px"
                               className="object-cover"
-                              unoptimized
+                              loading="lazy"
                               onError={(e) => { e.target.srcset = '/images/aloevera_gel.jpg'; }}
                             />
                           </div>
@@ -427,11 +429,12 @@ export default function CartDrawer() {
                               >
                                 <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-white mb-1.5">
                                   <Image
-                                    src={sug.image || sug.images?.[0] || '/images/aloevera_gel.jpg'}
+                                    src={getOptimizedImageUrl(sug.image || sug.images?.[0], 180)}
                                     alt={sug.name}
                                     fill
+                                    sizes="144px"
                                     className="object-cover"
-                                    unoptimized
+                                    loading="lazy"
                                     onError={(e) => { e.target.srcset = '/images/aloevera_gel.jpg'; }}
                                   />
                                   {sug.discountPercentage > 0 && (

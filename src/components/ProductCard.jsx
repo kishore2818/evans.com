@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useState, useRef } from 'react';
+import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 
 const ProductCard = ({ product, priority = false }) => {
   const addToCart = useStore((state) => state.addToCart);
@@ -82,7 +83,8 @@ const ProductCard = ({ product, priority = false }) => {
   const rating = product.rating || product.ratings?.average || 0;
   const reviewCount = product.reviews?.length || product.reviewsCount || product.reviews || 0;
   const [imgSrc, setImgSrc] = useState(null);
-  const displayImage = imgSrc || selectedShade?.image || product.images?.[0] || product.image || '/images/aloevera_gel.jpg';
+  const rawImage = imgSrc || selectedShade?.image || product.images?.[0] || product.image || '/images/aloevera_gel.jpg';
+  const displayImage = getOptimizedImageUrl(rawImage, 600);
   // "New Arrival" = added within last 7 days
   const isNewArrival = product.createdAt && 
     (Date.now() - new Date(product.createdAt).getTime()) < 7 * 24 * 60 * 60 * 1000;
@@ -122,7 +124,8 @@ const ProductCard = ({ product, priority = false }) => {
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
             className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
             priority={priority}
-            unoptimized={typeof displayImage === 'string' && displayImage.startsWith('http')}
+            loading={priority ? undefined : "lazy"}
+            decoding="async"
             onError={() => setImgSrc('/images/aloevera_gel.jpg')}
           />
 

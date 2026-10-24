@@ -1,8 +1,7 @@
 import { io } from 'socket.io-client';
+import API_BASE_URL from './api';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://evans-backend-3oyy.onrender.com';
-
-export const socket = io(API_URL, {
+export const socket = io(API_BASE_URL, {
   autoConnect: true,
   reconnection: true,
   reconnectionAttempts: 10,

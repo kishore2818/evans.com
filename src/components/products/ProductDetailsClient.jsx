@@ -350,41 +350,7 @@ const ProductDetailsClient = ({ initialProduct, hasPurchased: initialHasPurchase
             </p>
           </div>
 
-          {/* ── Color Shade Swatches (Beauty Specific) ── */}
-          {product.shades && product.shades.length > 0 && (
-            <div className="mb-5 p-4 rounded-2xl bg-purple-50/40 border border-purple-100">
-              <div className="flex items-center justify-between mb-2.5">
-                <span className="text-xs font-bold text-purple-900">
-                  Select Shade: <strong className="text-purple-950 font-black">{selectedShade?.name || 'Original'}</strong>
-                </span>
-                <span className="text-[10px] text-gray-500 font-medium">
-                  {product.shades.length} Available Shades
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-2.5">
-                {product.shades.map((shade, idx) => {
-                  const isSelected = selectedShade?.name === shade.name;
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedShade(shade)}
-                      className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border ${
-                        isSelected
-                          ? 'bg-purple-900 text-white border-purple-900 shadow-sm scale-105'
-                          : 'bg-white text-gray-700 border-gray-200 hover:border-purple-300'
-                      }`}
-                    >
-                      <span
-                        className="w-3.5 h-3.5 rounded-full border border-black/20 shadow-inner flex-shrink-0"
-                        style={{ backgroundColor: shade.hex || '#E0A899' }}
-                      />
-                      <span>{shade.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+
 
           {/* ── Clean Beauty & Trust Badges Row ── */}
           <div className="flex flex-wrap gap-2 mb-6">

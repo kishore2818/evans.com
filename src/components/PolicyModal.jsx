@@ -211,20 +211,27 @@ export default function PolicyModal({ isOpen, onClose, initialTab = 'privacy' })
           </div>
 
           {/* Footer Contact Callout */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
-            <div className="flex items-center space-x-4">
-              <span className="flex items-center space-x-1">
-                <Phone size={13} className="text-purple-700" />
-                <span>+91 89037 77150</span>
-              </span>
-              <span className="flex items-center space-x-1">
-                <Mail size={13} className="text-purple-700" />
-                <span>evansluxebeauty@gmail.com</span>
-              </span>
+          <div className="px-4 py-3 sm:px-6 sm:py-3.5 bg-gray-50/90 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-gray-600">
+            <div className="flex items-center justify-between sm:justify-start w-full sm:w-auto gap-2 sm:gap-4 flex-nowrap text-[9.5px] sm:text-xs">
+              <a 
+                href="tel:+918903777150" 
+                className="flex items-center space-x-1 text-gray-700 hover:text-purple-900 whitespace-nowrap flex-shrink-0 transition-colors"
+              >
+                <Phone size={11} className="text-purple-700 flex-shrink-0 sm:w-[13px] sm:h-[13px]" />
+                <span className="font-semibold tracking-tight sm:tracking-normal">+91 89037 77150</span>
+              </a>
+              <span className="text-gray-300 select-none">•</span>
+              <a 
+                href="mailto:evansluxebeauty@gmail.com" 
+                className="flex items-center space-x-1 text-gray-700 hover:text-purple-900 whitespace-nowrap flex-shrink-0 transition-colors"
+              >
+                <Mail size={11} className="text-purple-700 flex-shrink-0 sm:w-[13px] sm:h-[13px]" />
+                <span className="font-semibold tracking-tight sm:tracking-normal">evansluxebeauty@gmail.com</span>
+              </a>
             </div>
             <button
               onClick={onClose}
-              className="w-full sm:w-auto px-5 py-2 rounded-xl bg-purple-900 text-white font-bold hover:bg-purple-950 transition-colors"
+              className="w-full sm:w-auto px-4 py-1.5 sm:px-5 sm:py-2 rounded-xl bg-purple-900 text-white font-bold text-xs hover:bg-purple-950 transition-colors whitespace-nowrap flex-shrink-0 shadow-sm"
             >
               Close Window
             </button>

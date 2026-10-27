@@ -30,7 +30,7 @@ const Cart = () => {
 
   if (cart.length === 0) {
     return (
-      <div className="px-6 py-12 h-[80vh] flex flex-col items-center justify-center text-center">
+      <div className="px-6 py-10 sm:py-16 flex flex-col items-center justify-center text-center">
         <div className="w-24 h-24 bg-beige-200 rounded-full flex items-center justify-center mb-6">
           <Trash2 size={40} className="text-purple-300" />
         </div>
@@ -44,7 +44,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="px-3.5 sm:px-6 md:px-12 pt-2 sm:pt-6 md:pt-16 pb-24 md:pb-12 max-w-7xl mx-auto">
+    <div className="px-3.5 sm:px-6 md:px-12 pt-2 sm:pt-6 md:pt-10 pb-6 sm:pb-8 max-w-7xl mx-auto">
       <h1 className="font-serif text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 md:mb-10 text-purple-950">Your Bag</h1>
       
       <div className="md:flex md:space-x-8 lg:space-x-12">

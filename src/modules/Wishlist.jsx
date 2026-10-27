@@ -163,7 +163,7 @@ const Wishlist = () => {
   const inStockCount = localWishlist.filter(p => (p.stock ?? 1) > 0).length;
 
   return (
-    <div className="px-3.5 sm:px-6 md:px-12 pt-1 sm:pt-3 md:pt-6 pb-20 md:pb-12 max-w-5xl mx-auto">
+    <div className="px-3.5 sm:px-6 md:px-12 pt-1 sm:pt-3 md:pt-4 pb-4 sm:pb-6 max-w-5xl mx-auto">
 
       {/* ── Header ── */}
       <div className="mb-3 sm:mb-6">
@@ -227,7 +227,7 @@ const Wishlist = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col items-center justify-center py-6 sm:py-16 text-center"
+            className="flex flex-col items-center justify-center py-3 sm:py-6 text-center"
           >
             {/* Animated heart */}
             <motion.div

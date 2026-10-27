@@ -105,21 +105,21 @@ const TopNav = ({ cartItemCount, wishlistCount, onOpenPolicy }) => {
           </button>
 
           {/* Logo & Brand Name (Evans Luxe Beauty) */}
-          <Link href="/" className="flex items-center space-x-2.5 sm:space-x-3 group whitespace-nowrap min-w-0">
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group min-w-0 flex-1 sm:flex-initial">
             <motion.div
               whileHover={{ scale: 1.08, rotate: 3 }}
               transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-              className="relative w-8 h-8 sm:w-10 sm:h-10 p-[2px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_0_12px_rgba(212,175,55,0.45)] group-hover:shadow-[0_0_18px_rgba(212,175,55,0.7)] transition-all shrink-0"
+              className="relative w-8 h-8 sm:w-10 sm:h-10 p-[1.5px] sm:p-[2px] rounded-full bg-gradient-to-tr from-gold-500 via-amber-200 to-gold-400 shadow-[0_0_10px_rgba(212,175,55,0.4)] group-hover:shadow-[0_0_18px_rgba(212,175,55,0.7)] transition-all shrink-0"
             >
               <div className="w-full h-full rounded-full overflow-hidden border border-purple-950/30 relative">
                 <Image src="/images/logo.jpg" alt="Evans Luxe Beauty" fill sizes="40px" className="object-cover" priority />
               </div>
             </motion.div>
-            <div className="flex flex-col leading-none">
-              <span className="font-serif text-base sm:text-xl font-bold tracking-tight text-purple-900 group-hover:text-purple-700 transition-colors">
+            <div className="flex flex-col leading-none min-w-0 overflow-hidden">
+              <span className="font-serif text-[13px] sm:text-lg md:text-xl font-bold tracking-tight text-purple-900 group-hover:text-purple-700 transition-colors truncate">
                 Evans Luxe Beauty
               </span>
-              <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.25em] text-gold-600 mt-0.5">
+              <span className="text-[7.5px] sm:text-[9px] font-bold uppercase tracking-[0.16em] sm:tracking-[0.25em] text-gold-600 mt-0.5 truncate">
                 evansluxebeauty
               </span>
             </div>
@@ -155,15 +155,15 @@ const TopNav = ({ cartItemCount, wishlistCount, onOpenPolicy }) => {
           </div>
 
           {/* Right Action Icons */}
-          <div className="flex items-center space-x-1.5 sm:space-x-3">
+          <div className="flex items-center space-x-1 sm:space-x-2.5 flex-shrink-0">
             
             {/* Mobile Search Toggle */}
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="md:hidden w-8 h-8 rounded-full bg-purple-50 text-purple-800 flex items-center justify-center"
+              className="md:hidden w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-full bg-purple-50 text-purple-800 flex items-center justify-center p-1.5 hover:bg-purple-100 transition-colors flex-shrink-0"
               aria-label="Toggle search input"
             >
-              <Search size={16} />
+              <Search size={15} />
             </button>
 
             {/* Offers / Deals Chip (Desktop) */}
@@ -314,16 +314,16 @@ const TopNav = ({ cartItemCount, wishlistCount, onOpenPolicy }) => {
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 
                 {/* User quick status */}
-                <div className="p-3 bg-purple-50 rounded-2xl flex items-center justify-between">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="w-8 h-8 rounded-full bg-purple-900 text-gold-300 flex items-center justify-center text-xs font-bold">
+                <div className="p-3 bg-purple-50 rounded-2xl flex items-center justify-between gap-2.5">
+                  <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+                    <div className="w-8 h-8 rounded-full bg-purple-900 text-gold-300 flex items-center justify-center text-xs font-bold shrink-0">
                       {user ? user.username?.[0]?.toUpperCase() : 'U'}
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-purple-950">
-                        {user ? user.username : 'Welcome, Guest'}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-purple-950 truncate">
+                        {user ? (user.name || user.username) : 'Welcome, Guest'}
                       </p>
-                      <p className="text-[10px] text-gray-500">
+                      <p className="text-[10px] text-gray-500 truncate">
                         {user ? user.email : 'Log in to view orders & points'}
                       </p>
                     </div>
@@ -331,7 +331,7 @@ const TopNav = ({ cartItemCount, wishlistCount, onOpenPolicy }) => {
                   <Link
                     href="/profile"
                     onClick={() => setIsMenuOpen(false)}
-                    className="text-[10px] font-bold text-purple-800 uppercase underline"
+                    className="shrink-0 flex-shrink-0 whitespace-nowrap text-[10px] font-bold text-purple-900 bg-white border border-purple-200 px-2.5 py-1 rounded-lg uppercase tracking-wider hover:bg-purple-100 transition-colors shadow-xs"
                   >
                     {user ? 'Account' : 'Login'}
                   </Link>
@@ -431,16 +431,17 @@ const TopNav = ({ cartItemCount, wishlistCount, onOpenPolicy }) => {
 const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
   const pathname = usePathname();
   const isPDP = pathname.startsWith('/products/') && pathname !== '/products';
+  const isCheckout = pathname === '/checkout';
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'Shop', path: '/products', icon: Grid },
     { name: 'Deals', path: '/products?sale=true', icon: Percent, isOffer: true },
     { name: 'Wishlist', path: '/profile/wishlist', icon: Heart, badge: wishlistCount, badgeColor: '#ef4444' },
-    { name: 'Bag', path: '/cart', icon: ShoppingBag, badge: cartItemCount },
+    { name: 'Account', path: '/profile', icon: User },
   ];
 
-  if (isPDP) return null;
+  if (isPDP || isCheckout) return null;
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-2.5 px-3 pointer-events-none">
@@ -463,7 +464,13 @@ const BottomNav = ({ cartItemCount, wishlistCount = 0 }) => {
           {navItems.map((item) => {
             const isActive = item.isOffer 
               ? pathname.includes('sale=true')
-              : pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
+              : item.path === '/profile'
+                ? pathname.startsWith('/profile') && !pathname.includes('wishlist')
+                : item.path === '/profile/wishlist'
+                  ? pathname.includes('wishlist')
+                  : item.path === '/'
+                    ? pathname === '/'
+                    : pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
             const Icon = item.icon;
             
             return (
@@ -620,7 +627,7 @@ const ClientLayout = ({ children }) => {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-7xl mx-auto pb-20 md:pb-12 pt-0 relative">
+      <main className={`w-full max-w-7xl mx-auto ${pathname === '/checkout' ? 'pb-2' : 'pb-4 sm:pb-6 md:pb-8'} pt-0 relative`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}

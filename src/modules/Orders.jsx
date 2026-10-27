@@ -17,7 +17,7 @@ const Orders = () => {
   }, [user]);
 
   return (
-    <div className="bg-gray-50/50 min-h-screen pt-1 sm:pt-4 md:pt-12 pb-24">
+    <div className="bg-gray-50/50 pt-1 sm:pt-4 md:pt-8 pb-6 sm:pb-8">
       <div className="max-w-4xl mx-auto px-3.5 sm:px-6">
         <button 
           onClick={() => navigate(-1)} 
@@ -43,21 +43,21 @@ const Orders = () => {
               >
                 <div className="p-6 md:p-8 flex flex-col md:flex-row gap-6">
                   <div className="flex-1 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                    <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+                      <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                        <div className={`px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[9.5px] sm:text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shrink-0 ${
                           order.orderStatus === 'delivered' ? 'bg-green-50 text-green-600' : 
                           order.orderStatus === 'cancelled' ? 'bg-red-50 text-red-600' : 
-                          'bg-yellow-50 text-yellow-600'
+                          'bg-yellow-50 text-yellow-700'
                         }`}>
                           {order.orderStatus}
                         </div>
-                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+                        <span className="text-[9.5px] sm:text-[10px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
                           ID: {order._id.slice(-8)}
                         </span>
                       </div>
-                      <div className="flex items-center text-gray-400 text-xs">
-                        <Clock size={14} className="mr-1" />
+                      <div className="flex items-center text-gray-400 text-[10px] sm:text-xs whitespace-nowrap shrink-0">
+                        <Clock size={12} className="mr-1 shrink-0" />
                         {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </div>
                     </div>

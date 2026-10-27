@@ -207,7 +207,7 @@ const Profile = () => {
 
   if (!user) {
     return (
-      <div className="px-6 py-20 h-[80vh] flex flex-col items-center justify-center text-center">
+      <div className="px-6 py-10 sm:py-16 flex flex-col items-center justify-center text-center">
         <div className="w-24 h-24 bg-beige-100 rounded-full flex items-center justify-center mb-6 text-purple-300">
           <User size={40} />
         </div>
@@ -226,7 +226,7 @@ const Profile = () => {
   ];
 
   return (
-    <div className="bg-gray-50/50 min-h-screen pt-4 md:pt-12 pb-24">
+    <div className="bg-gray-50/50 pt-2 sm:pt-4 md:pt-8 pb-6 sm:pb-8">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row gap-4 lg:gap-8">
           
@@ -485,11 +485,11 @@ const Profile = () => {
                       <div key={order._id} className="border-b border-gray-100 last:border-b-0 p-4 md:p-6 hover:bg-gray-50 transition-colors flex flex-col md:flex-row gap-4 md:gap-6">
                         
                         <div className="flex-1 space-y-3 md:space-y-4">
-                          <div className="flex items-center space-x-2 md:space-x-3 mb-1">
-                            <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${order.orderStatus === 'delivered' ? 'bg-green-500' : order.orderStatus === 'cancelled' ? 'bg-red-500' : 'bg-yellow-500'}`}></div>
-                            <span className="text-xs md:text-sm font-bold text-gray-900 uppercase tracking-wide">{order.orderStatus}</span>
+                          <div className="flex items-center space-x-2 md:space-x-3 mb-1 flex-wrap">
+                            <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full shrink-0 ${order.orderStatus === 'delivered' ? 'bg-green-500' : order.orderStatus === 'cancelled' ? 'bg-red-500' : 'bg-yellow-500'}`}></div>
+                            <span className="text-xs md:text-sm font-bold text-gray-900 uppercase tracking-wide whitespace-nowrap shrink-0">{order.orderStatus}</span>
                             <span className="text-gray-300">•</span>
-                            <span className="text-[10px] md:text-xs font-semibold text-gray-500">ID: {order._id.slice(-8)}</span>
+                            <span className="text-[10px] md:text-xs font-semibold text-gray-500 whitespace-nowrap">ID: {order._id.slice(-8)}</span>
                           </div>
                           
                           <div className="space-y-2 md:space-y-3">

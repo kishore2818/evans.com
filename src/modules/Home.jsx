@@ -74,11 +74,11 @@ const Home = () => {
       <div className="relative py-8 md:py-12 px-6 md:px-16 bg-gradient-to-br from-[#1a0a22] via-[#3e1d4a] to-[#5A2A6C] text-white rounded-b-[2rem] md:rounded-[3rem] md:mx-6 overflow-hidden shadow-2xl">
         
         {/* Background Image Layer */}
-        <div className="absolute inset-0 opacity-20 mix-blend-overlay">
+        <div className="absolute inset-0 opacity-25 md:opacity-20 mix-blend-overlay pointer-events-none flex items-center justify-center overflow-hidden">
           <img 
             src="/images/hero_background_1775973263788.png" 
             alt="Botanical Leaves" 
-            className="w-full h-full object-cover scale-105"
+            className="w-full h-full object-contain md:object-cover object-center"
           />
         </div>
 
@@ -146,7 +146,7 @@ const Home = () => {
             </motion.div>
 
             {/* Brand Title directly below logo */}
-            <h1 className="font-serif text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-gold-200 drop-shadow-md leading-tight">
+            <h1 className="font-serif text-xl sm:text-3xl md:text-5xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-gold-200 drop-shadow-md leading-tight">
               Evans Luxe Beauty
             </h1>
             
@@ -171,7 +171,7 @@ const Home = () => {
           >
             <motion.h2 
               variants={fadeUp}
-              className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold leading-[1.08] mb-4 text-white"
+              className="font-serif text-2xl sm:text-4xl md:text-6xl font-bold leading-[1.12] mb-3 text-white"
             >
               Radiant Skin,<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-amber-200">
@@ -181,7 +181,7 @@ const Home = () => {
 
             <motion.p 
               variants={fadeUp}
-              className="text-white/80 text-xs sm:text-sm md:text-base mb-6 leading-relaxed max-w-lg italic font-light"
+              className="text-white/80 text-[11px] sm:text-sm md:text-base mb-5 leading-relaxed max-w-lg italic font-light"
             >
               100% organic botanical care — cruelty-free, chemical-free, and sustainably sourced for your most radiant self.
             </motion.p>
@@ -227,6 +227,43 @@ const Home = () => {
       </div>
 
       {/* ══════════════════════════════════════════
+          LUXURY ANIMATED MARQUEE TICKER RIBBON
+      ══════════════════════════════════════════ */}
+      <div className="relative w-full overflow-hidden bg-gradient-to-r from-[#180820] via-[#2d1136] to-[#180820] border-y border-gold-400/20 py-3.5 my-3 shadow-inner">
+        <div className="flex w-max animate-marquee space-x-8 text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase text-gold-200/90 select-none">
+          {[...Array(2)].map((_, loopIdx) => (
+            <div key={loopIdx} className="flex items-center space-x-8 flex-shrink-0">
+              <span className="flex items-center space-x-2 text-white">
+                <Sparkles size={13} className="text-gold-400" />
+                <span>100% Organic Botanical Actives</span>
+              </span>
+              <span className="text-gold-400/50">✦</span>
+              <span className="flex items-center space-x-2 text-gold-300">
+                <Leaf size={13} className="text-emerald-400" />
+                <span>Cold-Pressed Herbal Elixirs</span>
+              </span>
+              <span className="text-gold-400/50">✦</span>
+              <span className="flex items-center space-x-2 text-white">
+                <ShieldCheck size={13} className="text-gold-400" />
+                <span>Dermatologist Approved & Certified</span>
+              </span>
+              <span className="text-gold-400/50">✦</span>
+              <span className="flex items-center space-x-2 text-gold-300">
+                <Droplet size={13} className="text-blue-400" />
+                <span>24Kt Pure Gold Micro-Radiance</span>
+              </span>
+              <span className="text-gold-400/50">✦</span>
+              <span className="flex items-center space-x-2 text-white">
+                <Package size={13} className="text-amber-400" />
+                <span>Complimentary Express Shipping On ₹999+</span>
+              </span>
+              <span className="text-gold-400/50">✦</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════
           SHOP BY CATEGORY
       ══════════════════════════════════════════ */}
       <motion.div 
@@ -236,10 +273,10 @@ const Home = () => {
         transition={{ duration: 0.6 }}
         className="px-6 mt-14 md:mt-24"
       >
-        <div className="text-center mb-10">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold-500 mb-2">Browse Our Range</p>
-          <h3 className="font-serif text-3xl md:text-4xl font-bold text-purple-900">Shop by Category</h3>
-          <div className="h-1 w-16 bg-gradient-to-r from-gold-400 to-amber-300 rounded-full mx-auto mt-3" />
+        <div className="text-center mb-8">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold-500 mb-1.5">Browse Our Range</p>
+          <h3 className="font-serif text-xl sm:text-2xl md:text-3xl font-bold text-purple-900">Shop by Category</h3>
+          <div className="h-0.5 sm:h-1 w-12 sm:w-16 bg-gradient-to-r from-gold-400 to-amber-300 rounded-full mx-auto mt-2.5" />
         </div>
 
         <div className="flex overflow-x-auto no-scrollbar space-x-5 sm:space-x-8 pt-6 pb-8 -mx-6 px-6 md:justify-center items-start snap-x touch-pan-x">
@@ -296,8 +333,8 @@ const Home = () => {
               <Sparkles size={12} />
               <span>Our Promise</span>
             </span>
-            <h4 className="font-serif font-bold text-white text-3xl md:text-4xl mb-3 leading-tight">100% Organic Botanical Care</h4>
-            <p className="text-white/80 text-sm md:text-base leading-relaxed">Cruelty-free, chemical-free, and sustainably sourced for your most radiant, healthier skin.</p>
+            <h4 className="font-serif font-bold text-white text-xl sm:text-2xl md:text-3xl mb-2.5 leading-tight">100% Organic Botanical Care</h4>
+            <p className="text-white/80 text-xs sm:text-sm md:text-base leading-relaxed">Cruelty-free, chemical-free, and sustainably sourced for your most radiant, healthier skin.</p>
           </div>
 
           <div className="flex space-x-6 md:space-x-10 relative z-10">
@@ -330,8 +367,8 @@ const Home = () => {
         <div className="flex justify-between items-end mb-8">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold-500 mb-1">Customer Favorites</p>
-            <h3 className="font-serif text-3xl font-bold text-purple-900">Our Best Sellers</h3>
-            <div className="h-1 w-12 bg-gold-400 rounded-full mt-2" />
+            <h3 className="font-serif text-xl sm:text-2xl md:text-3xl font-bold text-purple-900">Our Best Sellers</h3>
+            <div className="h-0.5 sm:h-1 w-12 bg-gold-400 rounded-full mt-2" />
           </div>
           <Link to="/products?category=All" className="group flex items-center space-x-2 text-purple-700 text-sm font-bold hover:text-purple-900 transition-colors">
             <span>View All</span>
@@ -365,10 +402,10 @@ const Home = () => {
           TESTIMONIALS
       ══════════════════════════════════════════ */}
       <div className="px-6 md:px-16 mt-20 mb-12">
-        <div className="text-center mb-12">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold-500 mb-2">Community</p>
-          <h3 className="font-serif text-3xl md:text-5xl font-bold text-purple-900 mb-4">Loved by You</h3>
-          <p className="text-gray-500 text-sm md:text-lg max-w-xl mx-auto italic">"Inspired by nature, perfected by science. Join our botanical community."</p>
+        <div className="text-center mb-8">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold-500 mb-1.5">Community</p>
+          <h3 className="font-serif text-xl sm:text-2xl md:text-3xl font-bold text-purple-900 mb-2">Loved by You</h3>
+          <p className="text-gray-500 text-xs sm:text-sm md:text-base max-w-xl mx-auto italic">"Inspired by nature, perfected by science. Join our botanical community."</p>
         </div>
         
         <div className="flex overflow-x-auto no-scrollbar space-x-6 pb-6 -mx-6 px-6 md:grid md:grid-cols-3 md:gap-8 md:space-x-0 md:mx-0">

@@ -369,17 +369,17 @@ export default function CartDrawer() {
                         </div>
                       ) : (
                         <div className="space-y-2">
-                          <div className="flex space-x-2">
+                          <div className="flex items-stretch gap-2">
                             <input
                               type="text"
-                              placeholder="Enter coupon code (e.g. LUXE25)"
+                              placeholder="Coupon code"
                               value={couponCode}
                               onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                              className="flex-1 text-xs border border-gray-200 rounded-xl px-3 py-1.5 uppercase font-mono tracking-wider focus:outline-none focus:border-purple-600"
+                              className="min-w-0 flex-1 text-xs border border-purple-200/80 rounded-xl px-3 py-2 uppercase font-mono tracking-wider focus:outline-none focus:border-purple-600 bg-white"
                             />
                             <button
                               onClick={() => handleApplyCoupon()}
-                              className="px-4 py-1.5 bg-purple-900 hover:bg-purple-950 text-white font-bold text-xs rounded-xl transition-all"
+                              className="shrink-0 flex-shrink-0 whitespace-nowrap px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white font-bold text-xs rounded-xl transition-all active:scale-95 shadow-sm"
                             >
                               Apply
                             </button>

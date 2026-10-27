@@ -208,7 +208,7 @@ const Checkout = () => {
   const currentAddress = user.addresses?.[selectedAddressIndex];
 
   return (
-    <div className="min-h-screen bg-beige-50 pb-24 pt-2 sm:pt-4 md:pt-6 relative overflow-hidden">
+    <div className="bg-beige-50 pb-4 sm:pb-8 pt-2 sm:pt-4 md:pt-6 relative overflow-hidden">
       
       {/* Background orbs */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">

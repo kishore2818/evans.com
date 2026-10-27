@@ -20,9 +20,6 @@ const ProductCard = ({ product, priority = false }) => {
   const [addedToCart, setAddedToCart] = useState(false);
   const cardRef = useRef(null);
 
-  // Active shade selection
-  const [selectedShade, setSelectedShade] = useState(product.shades?.[0] || null);
-
   /* ── 3D Tilt via mouse ── */
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -48,13 +45,8 @@ const ProductCard = ({ product, priority = false }) => {
   const handleAdd = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const itemToAdd = {
-      ...product,
-      selectedShade: selectedShade || (product.shades?.[0] || null),
-      image: selectedShade?.image || product.images?.[0] || product.image
-    };
-    addToCart(itemToAdd);
-    toast.success(`${product.name}${selectedShade ? ` (${selectedShade.name})` : ''} added!`);
+    addToCart(product);
+    toast.success(`${product.name} added!`);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 1500);
   };
@@ -64,12 +56,6 @@ const ProductCard = ({ product, priority = false }) => {
     e.stopPropagation();
     toggleLocalWishlist(product);
     toast.success(isWishlisted ? 'Removed from wishlist' : 'Saved to wishlist ♥');
-  };
-
-  const handleShadeSelect = (e, shade) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setSelectedShade(shade);
   };
 
   const effectiveDiscount = product.flashSale?.isActive && product.flashSale?.discountPercentage
@@ -83,7 +69,7 @@ const ProductCard = ({ product, priority = false }) => {
   const rating = product.rating || product.ratings?.average || 0;
   const reviewCount = product.reviews?.length || product.reviewsCount || product.reviews || 0;
   const [imgSrc, setImgSrc] = useState(null);
-  const rawImage = imgSrc || selectedShade?.image || product.images?.[0] || product.image || '/images/aloevera_gel.jpg';
+  const rawImage = imgSrc || product.images?.[0] || product.image || '/images/aloevera_gel.jpg';
   const displayImage = getOptimizedImageUrl(rawImage, 600);
   // "New Arrival" = added within last 7 days
   const isNewArrival = product.createdAt && 
@@ -254,34 +240,6 @@ const ProductCard = ({ product, priority = false }) => {
             <h3 className="font-serif font-bold text-purple-900 text-[14px] leading-tight mb-1.5 line-clamp-2">
               {product.name}
             </h3>
-
-            {/* ── Shade Swatches (if product has shades) ── */}
-            {product.shades && product.shades.length > 0 && (
-              <div className="my-1.5 flex items-center space-x-1.5">
-                <span className="text-[9px] text-gray-400 font-medium">Shades:</span>
-                <div className="flex items-center space-x-1">
-                  {product.shades.slice(0, 4).map((shade, sIdx) => {
-                    const isCurrent = (selectedShade?.name || product.shades[0].name) === shade.name;
-                    return (
-                      <button
-                        key={sIdx}
-                        onClick={(e) => handleShadeSelect(e, shade)}
-                        title={shade.name}
-                        className={`w-3.5 h-3.5 rounded-full border transition-all duration-200 ${
-                          isCurrent
-                            ? 'ring-2 ring-purple-900 ring-offset-1 scale-110'
-                            : 'border-black/20 hover:scale-110 opacity-80 hover:opacity-100'
-                        }`}
-                        style={{ backgroundColor: shade.hex || '#E0A899' }}
-                      />
-                    );
-                  })}
-                  {product.shades.length > 4 && (
-                    <span className="text-[8px] text-gray-400 font-bold">+{product.shades.length - 4}</span>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Price + Add button row */}
